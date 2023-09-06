@@ -5,6 +5,8 @@ from bpy.types import Context, Armature, Bone, Event, UILayout
 from bpy.props import StringProperty, IntProperty, FloatProperty, BoolProperty, FloatVectorProperty, EnumProperty
 from mathutils import Vector, Matrix, Quaternion
 
+from math import pi
+
 from ...gpu import draw
 from ...utils.geometry import point_inside_rect, rotate_point
 from ...utils.armature import deselect_all_bones_from_active
@@ -139,6 +141,8 @@ class AP_BonePickerNode(AP_Node, Node):
         name="Rotation",
         description="Picker button rotation in the NodeGraph 2D view",
         default=0,
+        min=-pi/2,
+        max=pi/2,
         subtype='ANGLE',
         unit='ROTATION',
         update=update_graphics
