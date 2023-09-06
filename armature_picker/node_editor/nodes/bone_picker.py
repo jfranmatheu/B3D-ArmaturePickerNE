@@ -6,7 +6,7 @@ from bpy.props import StringProperty, IntProperty, FloatProperty, BoolProperty, 
 from mathutils import Vector, Matrix, Quaternion
 
 from ...gpu import draw
-from ...utils.geometry import point_inside_rect
+from ...utils.geometry import point_inside_rect, rotate_point
 from ...utils.armature import deselect_all_bones_from_active
 from ...utils.node_editor import get_node_editor_view_point
 
@@ -58,28 +58,32 @@ class AP_BonePickerNode(AP_Node, Node):
         self.node_tree.nodes.active = self
 
     def test_select(self, context: Context, loc: Vector, zoom: float, offset: Vector) -> bool:
-        return point_inside_rect(loc, self.position, self.size)
+        return point_inside_rect(loc, self.position, self.size, self.rotation)
 
     def draw(self, context: Context, scale: float, active: bool) -> None:
         draw.rectangle(
             self.uuid, 'BUTTON_BASE', self.dirty, # CACHE.
-            self.position, self.size, # TRANSFORM.
+            self.position, self.size, self.rotation, # TRANSFORM.
             # *self.get_pos_size_at_graph(zoom, offset), # TRANSFORM NODE GRAPH. NOW using gpu.matrix instead.
             self.color # STYLE.
         )
+
+        padding = 4 * scale
+
         draw.text(
-            Vector(self.location),
+            Vector(self.location) if self.rotation == 0 else rotate_point(Vector(self.position) + Vector((padding, padding)), self.location, self.rotation),
             self.label,
             self.text_size,
             scale=1.0,
-            pivot=(0.5, 0.5),
+            pivot=(0.5, 0.5) if self.rotation == 0 else (0, 0),
+            angle=self.rotation,
             color=self.text_color
         )
 
         if active:
             draw.box(
                 self.uuid, 'BUTTON_BOX_ACTIVE', self.dirty,
-                self.position, self.size,
+                self.position, self.size, self.rotation,
                 line_thickness=2.5 * scale,
                 color=(.32, .6, .94, 1.0)
             )
