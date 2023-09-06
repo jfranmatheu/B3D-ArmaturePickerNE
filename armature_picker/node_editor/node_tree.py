@@ -168,6 +168,7 @@ class AP_NodeTree(NodeTree):
                 self.nodes.remove(self.active_node)
 
         elif 'new' in self.active_node:
+            self.nodes.active = self.active_node
             del self.active_node['new']
 
         self.active_node = None
