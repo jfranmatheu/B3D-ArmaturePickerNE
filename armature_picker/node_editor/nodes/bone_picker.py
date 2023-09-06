@@ -236,6 +236,7 @@ class AP_BonePickerNode(AP_Node, Node):
         name='Text Size',
         description="Label text size",
         default=12,
+        min=10,
         update=update_dimensions
     )
 
