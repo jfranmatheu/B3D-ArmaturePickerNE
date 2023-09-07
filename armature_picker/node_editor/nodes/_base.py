@@ -270,24 +270,25 @@ class AP_Node:
 
     # ----- DRAWING --------------------------------
 
-    def draw__pose(self, context, scale: float, active: bool) -> None:
+    def draw__pose(self, context, scale: float, active: bool, hovered: bool) -> None:
         ''' Specific drawing for POSE mode '''
         pass
 
-    def draw__edit(self, context, scale: float, active: bool) -> None:
+    def draw__edit(self, context, scale: float, active: bool, hovered: bool) -> None:
         ''' Specific drawing for EDIT mode. '''
         pass
 
-    def draw_common(self, context, scale: float, active: bool) -> None:
+    def draw_common(self, context, scale: float, active: bool, hovered: bool) -> None:
         ''' Shader drawing between POSE and EDIT. '''
         pass
 
     def _draw(self, context, scale: float, active: bool, in_edit: bool) -> None:
         ''' Internal. '''
-        self.draw_common(context, scale, active)
+        hovered = self.is_hovered
+        self.draw_common(context, scale, active, hovered)
         if in_edit:
-            self.draw__edit(context, scale, active)
+            self.draw__edit(context, scale, active, hovered)
         else:
-            self.draw__pose(context, scale, active)
+            self.draw__pose(context, scale, active, hovered)
         if self.dirty:
             set_dirty_state(self.uuid, False)

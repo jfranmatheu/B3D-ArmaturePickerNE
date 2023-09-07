@@ -35,11 +35,11 @@ class AP_BonePickerNode(AP_BonePickerNode_Props, AP_Node, Node):
     def on_hover(self, context: Context, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
         return point_inside_rect(view_loc, self.position, self.size, self.rotation)
 
-    def draw_common(self, context: Context, scale: float, active: bool) -> None:
+    def draw_common(self, context: Context, scale: float, active: bool, hovered: bool) -> None:
         draw.rectangle(
             self.uuid, 'BUTTON_BASE', self.dirty, # CACHE.
             self.position, self.size, self.rotation, # TRANSFORM.
-            self.color # STYLE.
+            self.color if not hovered else Vector(self.color) * 0.8 # STYLE.
         )
 
         if self.label != '':
