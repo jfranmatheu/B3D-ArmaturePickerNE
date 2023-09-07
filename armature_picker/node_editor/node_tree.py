@@ -131,12 +131,18 @@ class AP_NodeTree(NodeTree):
     def _invoke(self, context: Context, event: Event) -> set[str]:
         # Skip navigation km.
         if event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE', 'T', 'N'}:
+            if event.value != 'PRESS':
+                return {'FINISHED'}
             if event.type == 'WHEELUPMOUSE':
                 bpy.ops.view2d.zoom_in('INVOKE_DEFAULT')
             elif event.type == 'WHEELDOWNMOUSE':
                 bpy.ops.view2d.zoom_out('INVOKE_DEFAULT')
             elif event.type == 'MIDDLEMOUSE':
                 bpy.ops.view2d.pan('INVOKE_DEFAULT')
+            elif event.type == 'N':
+                context.space_data.show_region_ui = not context.space_data.show_region_ui
+            elif event.type == 'T':
+                context.space_data.show_region_toolbar = not context.space_data.show_region_toolbar
             return {'PASS_THROUGH'}
 
         self.mouse_pos = Vector((event.mouse_region_x, event.mouse_region_y))
