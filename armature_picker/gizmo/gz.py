@@ -19,4 +19,4 @@ class TheAPGZ(GZ):
     def exit(gz,c,ca):
         print("TheAPGZ::exit", ca)
         return get_tree(c)._exit(c,ca)
-    def draw(gz,c): get_tree(c)._draw(c)
+    def draw(gz,c): pass # get_tree(c)._draw(c)
