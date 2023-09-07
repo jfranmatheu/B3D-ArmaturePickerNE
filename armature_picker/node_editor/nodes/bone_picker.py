@@ -70,17 +70,18 @@ class AP_BonePickerNode(AP_Node, Node):
             self.color # STYLE.
         )
 
-        padding = 4 * scale
+        if self.label != '':
+            padding = 4 * scale
 
-        draw.text(
-            Vector(self.location) if self.rotation == 0 else rotate_point(Vector(self.position) + Vector((padding, padding)), self.location, self.rotation),
-            self.label,
-            self.text_size,
-            scale=1.0,
-            pivot=(0.5, 0.5) if self.rotation == 0 else (0, 0),
-            angle=self.rotation,
-            color=self.text_color
-        )
+            draw.text(
+                Vector(self.location) if self.rotation == 0 else rotate_point(Vector(self.position) + Vector((padding, padding)), self.location, self.rotation),
+                self.label,
+                self.text_size,
+                scale=1.0,
+                pivot=(0.5, 0.5) if self.rotation == 0 else (0, 0),
+                angle=self.rotation,
+                color=self.text_color
+            )
 
         if active:
             draw.box(
