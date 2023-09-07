@@ -172,11 +172,15 @@ class AP_Node:
     def _test_select(self, context: Context, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
         ''' Internal. '''
         if self.on_hover(context, region_loc, view_loc, view_zoom, reg_offset):
+            context.region.tag_redraw()
             self.set_hovered(True)
             self.on_hover_enter(context, region_loc, view_loc)
-        elif self.is_hovered:
+            return True
+        elif self.is_hovered():
+            context.region.tag_redraw()
             self.set_hovered(False)
             self.on_hover_exit(context)
+        return False
 
     def on_hover(self, context: Context, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
         raise NotImplementedError
@@ -284,7 +288,7 @@ class AP_Node:
 
     def _draw(self, context, scale: float, active: bool, in_edit: bool) -> None:
         ''' Internal. '''
-        hovered = self.is_hovered
+        hovered = self.is_hovered()
         self.draw_common(context, scale, active, hovered)
         if in_edit:
             self.draw__edit(context, scale, active, hovered)
