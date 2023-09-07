@@ -10,6 +10,6 @@ def deselect_all_bones_from_active(context: Context) -> None:
         armature_bones: dict[str, Bone] = context.active_object.data.bones
         for bone in context.selected_pose_bones_from_active_object:
             armature_bones[bone.name].select = False
-    else:
+    elif context.mode == 'EDIT_ARMATURE':
         for bone in context.selected_bones:
             bone.select = False
