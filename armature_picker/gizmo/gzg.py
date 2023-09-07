@@ -14,7 +14,7 @@ class TheAPGZG(GZG, TheAPGZKM):
 
     @classmethod
     def poll(cls, context: Context) -> bool:
-        return context.space_data.node_tree is not None and context.space_data.node_tree.bl_idname == 'AP_NODETREE' and context.mode in {'POSE', 'EDIT_ARMATURE'}
+        return context.space_data.node_tree is not None and context.space_data.tree_type == 'AP_NODETREE' and context.mode in {'POSE', 'EDIT_ARMATURE'}
 
     def invoke_prepare(gzg, context: Context, gz: TheAPGZ) -> None:
         print("TheAPGZG::invoke_prepare", gz.bl_idname)
