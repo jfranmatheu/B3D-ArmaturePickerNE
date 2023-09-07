@@ -211,7 +211,9 @@ class AP_NodeTree(NodeTree):
 
 
     def invoke__pose(self, context: Context, event: Event) -> set[str] | None:
-        pass
+        global G_hovered_node
+        if G_hovered_node is None:
+            deselect_all_bones_from_active(context)
 
 
     def invoke__edit(self, context: Context, event: Event) -> set[str] | None:
