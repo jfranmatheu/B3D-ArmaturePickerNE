@@ -3,7 +3,7 @@ from bpy.types import NodeTree, Context, Event, Node
 from mathutils import Vector
 import gpu
 
-from typing import List, Tuple, Type, Dict
+from typing import List, Tuple, Type, Dict, Set
 from collections import defaultdict
 
 from .nodes._base import AP_Node
@@ -13,7 +13,8 @@ from ..utils.node_editor import get_node_editor_zoom, get_node_editor_view_point
 # ----------------------------------------------------------------
 
 # GLOBALS.
-hovered_node = ''
+G_active_node = ''
+G_hovered_node = ''
 nodes_count: int = -1
 
 # ----------------------------------------------------------------
@@ -37,8 +38,10 @@ def refresh_nodes_cache(nodes: List[AP_Node]):
         ## print("No nodes")
         return
 
-    nodes_by_draw_layer: Dict[int, List[AP_Node]] = defaultdict(list)
-    {nodes_by_draw_layer[node.draw_layer].append(node) for node in nodes}
+    active_node = nodes.active
+
+    nodes_by_draw_layer: Dict[int, Set[AP_Node]] = defaultdict(set)
+    {nodes_by_draw_layer[node.draw_layer].add(node) for node in nodes}
 
     # print("nodes by draw_layer: {}".format(nodes_by_draw_layer))
 
@@ -48,9 +51,20 @@ def refresh_nodes_cache(nodes: List[AP_Node]):
 
     for node_layer_index in layer_indices:
         # Filter nodes-in-layer by their draw_depth attribute.
+        _nodes = nodes_by_draw_layer[node_layer_index]
+        if active_node in _nodes:
+            _nodes.remove(active_node)
+            active_on_top = True
+        else:
+            active_on_top = False
+
         sorted_nodetree_nodes_cache.append(
-            sorted(nodes_by_draw_layer[node_layer_index], key=lambda node: node.draw_depth)
+            sorted(_nodes, key=lambda node: node.draw_depth)
         )
+
+        # Add Active Node on top ALWAYS.
+        if active_on_top:
+            sorted_nodetree_nodes_cache[-1].append(active_node)
 
 
 # ----------------------------------------------------------------
@@ -94,6 +108,13 @@ class AP_NodeTree(NodeTree):
 
         return new_node
 
+
+    def update_nodes_depth(self) -> None:
+        ''' We can call this after active node is changed. '''
+        # TODO: support partial update, pass Node here and change its order in a more smart way.
+        refresh_nodes_cache(self.nodes)
+
+
     def _test_select(self, context: Context, region_loc) -> int:
         # FIX SCROLLBARS.
         ui_scale = context.preferences.system.ui_scale
@@ -104,18 +125,25 @@ class AP_NodeTree(NodeTree):
         if region_loc[1] < scroll_bar_thickness:
             return -1
 
-        ensure_nodes_cache(self)
+        global G_active_node
+        active_node = self.nodes.active
+        if active_node is not None and G_active_node != active_node.uuid:
+            # Active Node is updated !
+            G_active_node = active_node.uuid
+            refresh_nodes_cache(self.nodes)
+        else:
+            ensure_nodes_cache(self)
 
-        global hovered_node
+        global G_hovered_node
         view_zoom = get_node_editor_zoom(context)
         region_offset = get_node_editor_offset(context)
         view_loc = get_node_editor_view_point(context, region_loc)
         for node in self.nodes:
             if node._test_select(context, region_loc, view_loc, view_zoom, region_offset):
-                hovered_node = node.uuid
+                G_hovered_node = node.uuid
                 print("hovered_node", node.label)
                 return 1
-        hovered_node = None
+        G_hovered_node = None
         return 1
 
 
@@ -147,9 +175,9 @@ class AP_NodeTree(NodeTree):
 
         self.mouse_pos = Vector((event.mouse_region_x, event.mouse_region_y))
 
-        global hovered_node
-        ## print("hovered_node", hovered_node)
-        if hovered_node is None:
+        global G_hovered_node
+        ## print("hovered_node", G_hovered_node)
+        if G_hovered_node is None:
             # Interact with blank space.
             if event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
                 self.new_node(context, 'AP_NODE_bone_picker', event=event)
@@ -166,11 +194,11 @@ class AP_NodeTree(NodeTree):
                 return {'RUNNING_MODAL'}
 
         self.active_node = None
-        if hovered_node is None:
+        if G_hovered_node is None:
             return {'FINISHED'}
 
         # Interact with a node.
-        if node := self.nodes.get(hovered_node, None):
+        if node := self.nodes.get(G_hovered_node, None):
             return node._invoke(context, event)
 
         return {'FINISHED'}
