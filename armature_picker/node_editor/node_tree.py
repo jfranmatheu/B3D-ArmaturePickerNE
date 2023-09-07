@@ -228,7 +228,7 @@ class AP_NodeTree(NodeTree):
 
         if self.nodes.active is not None:
             if (event.type == 'G' and event.value == 'RELEASE') or\
-               (event.type == 'LEFTMOUSE' and event.value == 'CLICK_DRAG'):
+               (event.type == 'LEFTMOUSE' and event.value == 'CLICK_DRAG' and G_hovered_node is not None):
                 self.active_node = self.nodes.active
                 self.set_inject_modal(context, event,
                                       modal_callback=self.modal__move_node__update,
