@@ -11,7 +11,7 @@ import functools
 from .nodes._base import AP_Node
 from ..utils.collections import DefaultOrderedDict
 from ..utils.node_editor import get_node_editor_zoom, get_node_editor_view_point, get_node_editor_offset, get_node_editor_region_coord
-from ..utils.view3d import view3d_set_mode
+from ..utils.armature import deselect_all_bones_from_active
 
 
 # ----------------------------------------------------------------
@@ -188,8 +188,33 @@ class AP_NodeTree(NodeTree):
             #     view3d_set_mode(context, 'EDIT' if context.active_object.mode == 'POSE' else 'POSE')
             return {'PASS_THROUGH'}
 
-        self.mouse_pos = Vector((event.mouse_region_x, event.mouse_region_y))
 
+        if context.active_object.mode == 'POSE':
+            ret = self.invoke__pose(context, event)
+        else:
+            ret = self.invoke__edit(context, event)
+
+        if ret is not None:
+            return ret
+
+        global G_hovered_node
+        self.active_node = None
+        if G_hovered_node is None:
+            return {'FINISHED'}
+
+        # Interact with a node.
+        if node := self.nodes.get(G_hovered_node, None):
+            self.mouse_pos = Vector((event.mouse_region_x, event.mouse_region_y))
+            return node._invoke(context, event, self.mouse_pos)
+
+        return {'FINISHED'}
+
+
+    def invoke__pose(self, context: Context, event: Event) -> set[str] | None:
+        pass
+
+
+    def invoke__edit(self, context: Context, event: Event) -> set[str] | None:
         global G_hovered_node
         ## print("hovered_node", G_hovered_node)
         if G_hovered_node is None:
@@ -200,7 +225,8 @@ class AP_NodeTree(NodeTree):
                 return {'RUNNING_MODAL'}
 
         if self.nodes.active is not None:
-            if event.type == 'G' and event.value == 'RELEASE':
+            if (event.type == 'G' and event.value == 'RELEASE') or\
+               (event.type == 'LEFTMOUSE' and event.value == 'CLICK_DRAG'):
                 self.active_node = self.nodes.active
                 self.set_inject_modal(context, event,
                                       modal_callback=self.modal__move_node__update,
@@ -208,15 +234,8 @@ class AP_NodeTree(NodeTree):
                                       modal_exit_callback=self.modal__move_node__exit)
                 return {'RUNNING_MODAL'}
 
-        self.active_node = None
-        if G_hovered_node is None:
-            return {'FINISHED'}
 
-        # Interact with a node.
-        if node := self.nodes.get(G_hovered_node, None):
-            return node._invoke(context, event, self.mouse_pos)
-
-        return {'FINISHED'}
+    # ----------------------------------------------------------------
 
 
     def _modal(self, context: Context, event: Event, tweak: str) -> set[str]:
