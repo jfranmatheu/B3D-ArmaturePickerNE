@@ -208,7 +208,7 @@ class AP_NodeTree(NodeTree):
 
         # Interact with a node.
         if node := self.nodes.get(G_hovered_node, None):
-            return node._invoke(context, event)
+            return node._invoke(context, event, self.mouse_pos)
 
         return {'FINISHED'}
 

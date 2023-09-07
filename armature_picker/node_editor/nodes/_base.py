@@ -201,7 +201,7 @@ class AP_Node:
 
     # ----- INVOKE --------------------------------
 
-    def _invoke(self, context: Context, event: Event) -> set[str]:
+    def _invoke(self, context: Context, event: Event, mouse_pos: Vector) -> set[str]:
         ''' Internal. '''
         if poll__node_select(context):
             if event.type != EventType.LEFTMOUSE:
@@ -216,7 +216,7 @@ class AP_Node:
             modal_enter = self.modal_enter__edit
             modal_exit = self.modal_exit__edit
 
-        ret = invoke(context, event)
+        ret = invoke(context, event, mouse_pos)
         if ret is None:
             return {'FINISHED'}
 
@@ -231,11 +231,11 @@ class AP_Node:
 
         return ret
 
-    def invoke__pose(self, context: Context, event: Event, mouse: Mouse) -> set[str] | None:
+    def invoke__pose(self, context: Context, event: Event, mouse_pos: Vector) -> set[str] | None:
         ''' Invoke method in POSE mode context. '''
         pass
 
-    def invoke__edit(self, context: Context, event: Event, mouse: Mouse) -> set[str] | None:
+    def invoke__edit(self, context: Context, event: Event, mouse_pos: Vector) -> set[str] | None:
         ''' Invoke method in EDIT mode context. '''
         pass
 
