@@ -22,7 +22,7 @@ class TheAPGZG(GZG, TheAPGZKM):
     def setup(gzg, context: Context):
         print("TheAPGZG::setup")
         gz = gzg.gizmos.new(TheAPGZ.bl_idname)
-        gz.use_event_handle_all = True
+        # gz.use_event_handle_all = True
         gz.use_draw_modal = True
         gz.scale_basis = 1.0
         gzg.the_gz = gz

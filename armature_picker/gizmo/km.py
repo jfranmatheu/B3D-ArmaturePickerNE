@@ -15,11 +15,13 @@ numkeys = (
     'ZERO'
 )
 hotkeys=(
-    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+    'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', # 'N',
+    'O', 'P', 'Q', 'R', 'S', # 'T',
+    'U', 'V', 'W', 'X', 'Y', 'Z',
     'ZERO', 'ONE', 'TWO', 'THREE', 'FOUR', 'FIVE', 'SIX', 'SEVEN', 'EIGHT', 'NINE',
     'LEFT_ARROW', 'DOWN_ARROW', 'RIGHT_ARROW', 'UP_ARROW',
-    'LEFTMOUSE', 'RIGHTMOUSE', 'PEN', 'ERASER', 'MIDDLEMOUSE', #'MOUSEMOVE', 'INBETWEEN_MOUSEMOVE',
-    'WHEELUPMOUSE', 'WHEELDOWNMOUSE', 'WHEELINMOUSE', 'WHEELOUTMOUSE',
+    'LEFTMOUSE', 'RIGHTMOUSE', 'PEN', 'ERASER', # 'MIDDLEMOUSE', #'MOUSEMOVE', 'INBETWEEN_MOUSEMOVE',
+    # 'WHEELUPMOUSE', 'WHEELDOWNMOUSE', 'WHEELINMOUSE', 'WHEELOUTMOUSE',
     'RET', 'SPACE', 'BACK_SPACE', 'DEL',
     'TIMER',
     # 'LEFT_ALT',
