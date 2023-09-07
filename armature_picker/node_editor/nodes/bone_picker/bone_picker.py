@@ -75,6 +75,7 @@ class AP_BonePickerNode(AP_BonePickerNode_Props, AP_Node, Node):
                 color=self.text_color
             )
 
+    def draw__edit(self, context, scale: float, active: bool, hovered: bool) -> None:
         if active:
             draw.box(
                 self.uuid, 'BUTTON_BOX_ACTIVE', self.dirty,
