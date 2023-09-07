@@ -22,8 +22,14 @@ nodes_count: int = -1
 sorted_nodetree_nodes_cache: List[List[AP_Node]] = []
 
 def ensure_nodes_cache(node_tree: NodeTree):
+    # Empty cache? Probably first time?
     if sorted_nodetree_nodes_cache == []:
         return refresh_nodes_cache(node_tree.nodes)
+    # Invalid cached nodes?
+    first_cached_node = sorted_nodetree_nodes_cache[0][0]
+    if first_cached_node is None or not hasattr(first_cached_node, 'uuid'):
+        return refresh_nodes_cache(node_tree.nodes)
+    # Changes in the node count?
     global nodes_count
     if len(node_tree.nodes) == nodes_count:
         return
@@ -138,11 +144,14 @@ class AP_NodeTree(NodeTree):
         view_zoom = get_node_editor_zoom(context)
         region_offset = get_node_editor_offset(context)
         view_loc = get_node_editor_view_point(context, region_loc)
-        for node in self.nodes:
-            if node._test_select(context, region_loc, view_loc, view_zoom, region_offset):
-                G_hovered_node = node.uuid
-                print("hovered_node", node.label)
-                return 1
+
+        for node_layer_nodes in reversed(sorted_nodetree_nodes_cache):
+            for node in reversed(node_layer_nodes):
+                if node._test_select(context, region_loc, view_loc, view_zoom, region_offset):
+                    G_hovered_node = node.uuid
+                    print("hovered_node", node.label)
+                    return 1
+
         G_hovered_node = None
         return 1
 
