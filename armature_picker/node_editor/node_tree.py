@@ -187,7 +187,8 @@ class AP_NodeTree(NodeTree):
             # elif event.type == 'TAB':
             #     view3d_set_mode(context, 'EDIT' if context.active_object.mode == 'POSE' else 'POSE')
             return {'PASS_THROUGH'}
-
+        
+        self.mouse_pos = Vector((event.mouse_region_x, event.mouse_region_y))
 
         if context.active_object.mode == 'POSE':
             ret = self.invoke__pose(context, event)
@@ -204,7 +205,6 @@ class AP_NodeTree(NodeTree):
 
         # Interact with a node.
         if node := self.nodes.get(G_hovered_node, None):
-            self.mouse_pos = Vector((event.mouse_region_x, event.mouse_region_y))
             return node._invoke(context, event, self.mouse_pos)
 
         return {'FINISHED'}
