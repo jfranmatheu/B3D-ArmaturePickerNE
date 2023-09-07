@@ -7,6 +7,7 @@ from mathutils import Vector
 from ....gpu import draw
 from ....utils.geometry import point_inside_rect, rotate_point
 from ....utils.armature import deselect_all_bones_from_active
+from ....utils.node_editor import deselect_all_nodes
 
 
 
@@ -18,22 +19,42 @@ class AP_BonePickerNode(AP_BonePickerNode_Props, AP_Node, Node):
     draw_layer = 10
 
 
-    # METHODS
-    # ----------------------------------------------------------------
-    def invoke__pose(self, context: Context, event: Event) -> None:
+    # ----- SELECT METHODS --------------------------------
+
+    def select_bone(self, context: Context, deselect_all: bool = True) -> None:
         armature: Armature = context.active_object.data
         bones = armature.bones
         bone: Bone
         if bone := bones.get(self.bone_name, None):
-            deselect_all_bones_from_active(context)
+            if deselect_all:
+                deselect_all_bones_from_active(context)
             bone.select = True
             bones.active = bone
 
+    def select_node(self, context: Context, deselect_all: bool = True, set_active: bool = True) -> None:
+        if deselect_all:
+            deselect_all_nodes(context, nullify_active=True)
         self.select = True
-        self.node_tree.nodes.active = self
+        if set_active:
+            self.node_tree.nodes.active = self
+
+
+    # ----- ON HOVER --------------------------------
 
     def on_hover(self, context: Context, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
         return point_inside_rect(view_loc, self.position, self.size, self.rotation)
+
+
+    # ----- INVOKE --------------------------------
+
+    def invoke__pose(self, context: Context, event: Event) -> None:
+        self.select_bone(context, deselect_all=True)
+
+    def invoke__edit(self, context: Context, event: Event, mouse_pos: Vector) -> set[str] | None:
+        self.select_node(context, deselect_all=True, set_active=True)
+
+
+    # ----- DRAWING --------------------------------
 
     def draw_common(self, context: Context, scale: float, active: bool, hovered: bool) -> None:
         draw.rectangle(
