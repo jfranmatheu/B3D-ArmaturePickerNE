@@ -1,95 +1,13 @@
-from ._base import AP_Node, Node
-
 from blf import size as set_text_size, dimensions as get_text_dimensions
-from bpy.types import Context, Armature, Bone, Event, UILayout
+from bpy.types import Context, UILayout
 from bpy.props import StringProperty, IntProperty, FloatProperty, BoolProperty, FloatVectorProperty, EnumProperty
-from mathutils import Vector, Matrix, Quaternion
+from mathutils import Vector
 
 from math import pi
 
-from ...gpu import draw
-from ...utils.geometry import point_inside_rect, rotate_point
-from ...utils.armature import deselect_all_bones_from_active
-from ...utils.node_editor import get_node_editor_view_point
 
 
-
-def poll_select(context: Context) -> None:
-    if context.active_object is None:
-        return False
-    if context.active_object.type != 'ARMATURE':
-        return False
-    if context.mode != 'POSE':
-        return False
-    for area in context.window.screen.areas:
-        if area.type == 'VIEW_3D':
-            return True
-    return False
-
-
-class AP_BonePickerNode(AP_Node, Node):
-    bl_idname = 'AP_NODE_bone_picker'
-    bl_label = 'Bone Picker'
-    bl_icon = 'CONSTRAINT_BONE'
-
-
-    def init(self, context: Context) -> None:
-        super().init(context)
-
-        pass
-
-    # METHODS
-    # ----------------------------------------------------------------
-    def invoke(self, context: Context, event: Event) -> None:
-        if event.type != 'LEFTMOUSE':
-            return
-
-        if not poll_select(context):
-            print("BAD POOLING!")
-            return
-
-        armature: Armature = context.active_object.data
-        bones = armature.bones
-        bone: Bone
-        if bone := bones.get(self.bone_name, None):
-            deselect_all_bones_from_active(context)
-            bone.select = True
-            bones.active = bone
-
-        self.select = True
-        self.node_tree.nodes.active = self
-
-    def test_select(self, context: Context, loc: Vector, zoom: float, offset: Vector) -> bool:
-        return point_inside_rect(loc, self.position, self.size, self.rotation)
-
-    def draw(self, context: Context, scale: float, active: bool) -> None:
-        draw.rectangle(
-            self.uuid, 'BUTTON_BASE', self.dirty, # CACHE.
-            self.position, self.size, self.rotation, # TRANSFORM.
-            self.color # STYLE.
-        )
-
-        if self.label != '':
-            padding = 4 * scale
-
-            draw.text(
-                Vector(self.location) if self.rotation == 0 else rotate_point(Vector(self.position) + Vector((padding, padding)), self.location, self.rotation),
-                self.label,
-                self.text_size,
-                pivot=(0.5, 0.5) if self.rotation == 0 else (0, 0),
-                angle=self.rotation,
-                color=self.text_color
-            )
-
-        if active:
-            draw.box(
-                self.uuid, 'BUTTON_BOX_ACTIVE', self.dirty,
-                self.position, self.size, self.rotation,
-                line_thickness=2.5 * scale,
-                color=(.32, .6, .94, 1.0)
-            )
-
-
+class AP_BonePickerNode_Props:
 
     # UPDATE FUNCTIONS
     # ----------------------------------------------------------------
@@ -259,3 +177,4 @@ class AP_BonePickerNode(AP_Node, Node):
         section_style.prop(self, 'color')
         section_style.prop(self, 'text_size')
         section_style.prop(self, 'text_color')
+

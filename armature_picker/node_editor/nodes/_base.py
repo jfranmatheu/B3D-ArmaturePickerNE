@@ -1,24 +1,109 @@
-from bpy.types import Node, UILayout, NodeTree
-from bpy.props import StringProperty, BoolProperty
+import bpy
+from bpy.types import Node, UILayout, NodeTree, Context, Event
+from bpy.props import StringProperty, BoolProperty, IntProperty
 from mathutils import Vector
 
 from uuid import uuid4
 
+from ...utils.event import Mouse, EventType, EventValue
+from ...utils.operator import OpsReturn
 
-# BUG-FIX: AttributeError: Writing to ID classes in this context is not allowed
+
+# ----------------------------------------------------------------
+# Global variables.
+
+_hovered_node: str = None
+
+
+# ----------------------------------------------------------------
+# In-Modal state.
+
+_in_modal_cache: dict[str, bool] = {}
+def set_in_modal_state(uuid: str, state: bool) -> None:
+    _in_modal_cache[uuid] = state
+
+
+# ----------------------------------------------------------------
+# Dirty state.
+
 _dirty_cache: dict[str, bool] = {}
-
-
 def set_dirty_state(uuid: str, state: bool) -> None:
     _dirty_cache[uuid] = state
+
+
+# ----------------------------------------------------------------
+# Poll functions.
+
+def poll__node_select(context: Context) -> None:
+    if context.active_object is None:
+        return False
+    if context.active_object.type != 'ARMATURE':
+        return False
+    for area in context.window.screen.areas:
+        if area.type == 'VIEW_3D':
+            return context.mode == 'POSE' and context.active_object.mode == 'POSE'
+    return False
+
+
+def poll__node_edit(context: Context) -> None:
+    if context.active_object is None:
+        return False
+    if context.active_object.type != 'ARMATURE':
+        return False
+    for area in context.window.screen.areas:
+        if area.type == 'VIEW_3D':
+            return context.mode == 'EDIT_ARMATURE' and context.active_object.mode == 'EDIT'
+    return False
+
+
+# ----------------------------------------------------------------
 
 
 # Mix-in class for all custom nodes in this tree type.
 # Defines a poll function to enable instantiation.
 class AP_Node:
+    bl_label = ''
+    bl_icon = 'NONE'
+    bl_height_max = 0
+    bl_width_max = 0
+    bl_width_min = 0
+    bl_height_min = 0
+    bl_width_default = 0
+    bl_height_default = 0
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    # Internal Properties.
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    # Properties to store in Node datablock.
     uuid: StringProperty(name="UUID", default='')
-    # dirty: BoolProperty(default=True, options={'HIDDEN'})
+    # dirty: BoolProperty(default=True, options={'HIDDEN'}) # BUG: AttributeError (can't modify in drawing state).
     
+    # Props to sort node elements by layers and depth for drawing and logic sorting.
+    # draw_layer: IntProperty(default=0, min=0, max=100, options={'HIDDEN'}) # BUG: draw_layer should be a class property.
+    draw_layer = 0
+    draw_depth: IntProperty(default=0, min=-1000, max=1000, options={'HIDDEN'})
+
+    # Useful/utility Properties and temporal properties.
+    def is_hovered(self) -> bool:
+        global _hovered_node
+        return _hovered_node == self.uuid
+
+    def set_hovered(self, state: bool) -> None:
+        global _hovered_node
+        if _hovered_node == self.uuid:
+            if not state:
+                _hovered_node = ''
+        else:
+            if state:
+                if _hovered_node != '':
+                    for node in self.node_tree.nodes:
+                        if node.uuid == _hovered_node:
+                            # Trigger on_hover_exit()
+                            node.on_hover_exit(bpy.context)
+                            break
+                _hovered_node = self.uuid
+
     @property
     def node_tree(self) -> NodeTree:
         return self.id_data
@@ -30,6 +115,19 @@ class AP_Node:
     @dirty.setter
     def dirty(self, state: bool) -> bool:
         _dirty_cache[self.uuid] = state
+
+    @property
+    def in_modal(self) -> bool:
+        return _in_modal_cache.get(self.uuid, False)
+
+    @in_modal.setter
+    def in_modal(self, state: bool) -> bool:
+        _in_modal_cache[self.uuid] = state
+
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    # Node type functions.
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     @classmethod
     def poll(cls, ntree):
@@ -52,13 +150,10 @@ class AP_Node:
     def free(self):
         print("Removing node ", self, ", Goodbye!")
 
-    def draw(self, context, scale: float, active: bool) -> None:
-        pass
 
-    def _draw(self, context, scale: float, active: bool) -> None:
-        self.draw(context, scale, active)
-        if self.dirty:
-            set_dirty_state(self.uuid, False)
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    # UI utility functions.
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     def draw_section(self, layout: UILayout, title: str, icon: str = 'NONE', align_content: bool = False) -> UILayout:
         section = layout.column(align=True)
@@ -66,3 +161,133 @@ class AP_Node:
         header.label(text=title, icon=icon)
         content = section.box().column(align=align_content)
         return content
+
+
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    # Gizmo Methods.
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+    # ----- ON HOVER --------------------------------
+
+    def _test_select(self, context: Context, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
+        ''' Internal. '''
+        if self.on_hover(context, region_loc, view_loc, view_zoom, reg_offset):
+            self.set_hovered(True)
+            self.on_hover_enter(context, region_loc, view_loc)
+        elif self.is_hovered:
+            self.set_hovered(False)
+            self.on_hover_exit(context)
+
+    def on_hover(self, context: Context, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
+        raise NotImplementedError
+
+    def on_hover_enter(self, context: Context, region_loc: Vector, view_loc: Vector) -> None:
+        pass
+
+    def on_hover_exit(self, context: Context | None = None) -> None:
+        pass
+    
+    # ----- INTERNAL UTILS --------------------------------
+    
+    def update_mouse(self, context: Context, event: Event) -> None:
+        if hasattr(self, 'mouse'):
+            self.mouse.update(event, context.region.view2d)
+        else:
+            self.mouse = Mouse.init(event, context.region.view2d)
+
+    # ----- INVOKE --------------------------------
+
+    def _invoke(self, context: Context, event: Event) -> set[str]:
+        ''' Internal. '''
+        if poll__node_select(context):
+            if event.type != EventType.LEFTMOUSE:
+                return
+            invoke = self.invoke__pose
+            modal = self.modal__pose
+            modal_enter = self.modal_enter__pose
+            modal_exit = self.modal_exit__pose
+        elif poll__node_edit(context):
+            invoke = self.invoke__edit
+            modal = self.modal__edit
+            modal_enter = self.modal_enter__edit
+            modal_exit = self.modal_exit__edit
+
+        ret = invoke(context, event)
+        if ret is None:
+            return {'FINISHED'}
+
+        if ret == OpsReturn.RUN:
+            # --- MODAL ENTER ---
+            self.update_mouse(context, event)
+            self.modal_enter = modal_enter
+            self.modal = modal
+            self.modal_exit = modal_exit
+            self.modal_enter(context, event, self.mouse)
+            self.in_modal = True
+
+        return ret
+
+    def invoke__pose(self, context: Context, event: Event, mouse: Mouse) -> set[str] | None:
+        ''' Invoke method in POSE mode context. '''
+        pass
+
+    def invoke__edit(self, context: Context, event: Event, mouse: Mouse) -> set[str] | None:
+        ''' Invoke method in EDIT mode context. '''
+        pass
+
+    # ----- MODAL --------------------------------
+
+    def _modal(self, context: Context, event: Event) -> set[str]:
+        ''' Internal. '''
+        modal_ret = self.modal(context, event, self.mouse)
+        if isinstance(modal_ret, int) and modal_ret < 1:
+            # --- MODAL EXIT ---
+            cancelled = modal_ret == -1
+            self.modal_exit(context, event, self.mouse, cancel=cancelled)
+            self.in_modal = False
+            return OpsReturn.CANCEL if cancelled else OpsReturn.FINISH
+        return OpsReturn.RUN
+
+    def modal_enter__pose(self, context: Context, event: Event, mouse: Mouse) -> None:
+        pass
+
+    def modal_enter__edit(self, context: Context, event: Event, mouse: Mouse) -> None:
+        pass
+
+    def modal__pose(self, context: Context, event: Event, mouse: Mouse) -> set[str] | int:
+        ''' Modal method in POSE mode context. Returns 0 for finish, 1 for continue and -1 for cancel. '''
+        pass
+
+    def modal__edit(self, context: Context, event: Event, mouse: Mouse) -> set[str] | int:
+        ''' Modal method in EDIT mode context. Returns 0 for finish, 1 for continue and -1 for cancel. '''
+        pass
+
+    def modal_exit__pose(self, context: Context, event: Event, mouse: Mouse, cancel: bool) -> None:
+        pass
+
+    def modal_exit__edit(self, context: Context, event: Event, mouse: Mouse, cancel: bool) -> None:
+        pass
+
+    # ----- DRAWING --------------------------------
+
+    def draw__pose(self, context, scale: float, active: bool) -> None:
+        ''' Specific drawing for POSE mode '''
+        pass
+
+    def draw__edit(self, context, scale: float, active: bool) -> None:
+        ''' Specific drawing for EDIT mode. '''
+        pass
+
+    def draw_common(self, context, scale: float, active: bool) -> None:
+        ''' Shader drawing between POSE and EDIT. '''
+        pass
+
+    def _draw(self, context, scale: float, active: bool, in_edit: bool) -> None:
+        ''' Internal. '''
+        self.draw_common(context, scale, active)
+        if in_edit:
+            self.draw__edit(context, scale, active)
+        else:
+            self.draw__pose(context, scale, active)
+        if self.dirty:
+            set_dirty_state(self.uuid, False)

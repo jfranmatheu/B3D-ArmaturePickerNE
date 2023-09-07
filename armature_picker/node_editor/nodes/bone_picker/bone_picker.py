@@ -1,0 +1,63 @@
+from .._base import AP_Node, Node
+from .node_props import AP_BonePickerNode_Props
+
+from bpy.types import Context, Armature, Bone, Event
+from mathutils import Vector
+
+from ....gpu import draw
+from ....utils.geometry import point_inside_rect, rotate_point
+from ....utils.armature import deselect_all_bones_from_active
+
+
+
+class AP_BonePickerNode(AP_BonePickerNode_Props, AP_Node, Node):
+    bl_idname = 'AP_NODE_bone_picker'
+    # bl_label = 'Bone Picker'
+    # bl_icon = 'CONSTRAINT_BONE'
+
+    draw_layer = 10
+
+
+    # METHODS
+    # ----------------------------------------------------------------
+    def invoke__pose(self, context: Context, event: Event) -> None:
+        armature: Armature = context.active_object.data
+        bones = armature.bones
+        bone: Bone
+        if bone := bones.get(self.bone_name, None):
+            deselect_all_bones_from_active(context)
+            bone.select = True
+            bones.active = bone
+
+        self.select = True
+        self.node_tree.nodes.active = self
+
+    def on_hover(self, context: Context, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
+        return point_inside_rect(view_loc, self.position, self.size, self.rotation)
+
+    def draw_common(self, context: Context, scale: float, active: bool) -> None:
+        draw.rectangle(
+            self.uuid, 'BUTTON_BASE', self.dirty, # CACHE.
+            self.position, self.size, self.rotation, # TRANSFORM.
+            self.color # STYLE.
+        )
+
+        if self.label != '':
+            padding = 4 * scale
+
+            draw.text(
+                Vector(self.location) if self.rotation == 0 else rotate_point(Vector(self.position) + Vector((padding, padding)), self.location, self.rotation),
+                self.label,
+                self.text_size,
+                pivot=(0.5, 0.5) if self.rotation == 0 else (0, 0),
+                angle=self.rotation,
+                color=self.text_color
+            )
+
+        if active:
+            draw.box(
+                self.uuid, 'BUTTON_BOX_ACTIVE', self.dirty,
+                self.position, self.size, self.rotation,
+                line_thickness=2.5 * scale,
+                color=(.32, .6, .94, 1.0)
+            )
