@@ -66,7 +66,6 @@ class AP_BonePickerNode(AP_Node, Node):
         draw.rectangle(
             self.uuid, 'BUTTON_BASE', self.dirty, # CACHE.
             self.position, self.size, self.rotation, # TRANSFORM.
-            # *self.get_pos_size_at_graph(zoom, offset), # TRANSFORM NODE GRAPH. NOW using gpu.matrix instead.
             self.color # STYLE.
         )
 
@@ -184,18 +183,6 @@ class AP_BonePickerNode(AP_Node, Node):
     @property
     def size(self) -> Vector:
         return Vector(self.dimensions)
-
-    def get_pos_size_at_graph(self, context, zoom: float, offset: Vector) -> tuple[Vector, Vector]:
-        view_dimensions = self.size # * 1/zoom
-
-        view_location = Vector(self.location)
-        view_location.x -= int(view_dimensions.x / 2)
-        view_location.y -= int(view_dimensions.y / 2)
-
-        return (
-            view_location,
-            view_dimensions
-        )
 
 
     # BUTTON PROPERTIES
