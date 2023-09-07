@@ -17,3 +17,12 @@ def get_node_editor_zoom(context: Context) -> float:
     region_height = region.height
     view_height = view2d.region_to_view(0, region_height)[1] - view2d.region_to_view(0, 0)[1]
     return region_height / view_height
+
+
+def deselect_all_nodes(context: Context, nullify_active: bool = True) -> None:
+    if context.space_data.node_tree is not None:
+        return
+    for node in context.selected_nodes:
+        node.select = False
+    if nullify_active:
+        context.space_data.node_tree.nodes.active = None
