@@ -2,13 +2,17 @@ import bpy
 from bpy.types import NodeTree, Context, Event, Node
 from mathutils import Vector
 import gpu
+from bpy.app import timers
 
 from typing import List, Tuple, Type, Dict, Set
 from collections import defaultdict
+import functools
 
 from .nodes._base import AP_Node
 from ..utils.collections import DefaultOrderedDict
 from ..utils.node_editor import get_node_editor_zoom, get_node_editor_view_point, get_node_editor_offset, get_node_editor_region_coord
+from ..utils.view3d import view3d_set_mode
+
 
 # ----------------------------------------------------------------
 
@@ -167,9 +171,9 @@ class AP_NodeTree(NodeTree):
 
     def _invoke(self, context: Context, event: Event) -> set[str]:
         # Skip navigation km.
-        if event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE', 'T', 'N'}:
+        if event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE', 'T', 'N', 'TAB'}:
             if event.value != 'PRESS':
-                return {'FINISHED'}
+                return {'PASS_THROUGH'}
             if event.type == 'WHEELUPMOUSE':
                 bpy.ops.view2d.zoom_in('INVOKE_DEFAULT')
             elif event.type == 'WHEELDOWNMOUSE':
@@ -180,6 +184,8 @@ class AP_NodeTree(NodeTree):
                 context.space_data.show_region_ui = not context.space_data.show_region_ui
             elif event.type == 'T':
                 context.space_data.show_region_toolbar = not context.space_data.show_region_toolbar
+            # elif event.type == 'TAB':
+            #     view3d_set_mode(context, 'EDIT' if context.active_object.mode == 'POSE' else 'POSE')
             return {'PASS_THROUGH'}
 
         self.mouse_pos = Vector((event.mouse_region_x, event.mouse_region_y))
