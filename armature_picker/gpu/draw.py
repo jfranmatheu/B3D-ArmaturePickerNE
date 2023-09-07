@@ -75,14 +75,15 @@ def rectangle(data_id: str,
 def text(pos: Vector,
          text: str,
          size: int,
-         scale: float = 1.0,
          pivot: tuple[float, float] = (0, 0),
          angle: float = 0.0,
          color: tuple[float, float, float] = (.92, .92, .92),
          alpha: float = 1.0,
          width=0) -> Vector:
+    if size < 10:
+        return
     blend_state = state.blend_get()
-    blf.size(0, size*scale, 72)
+    blf.size(0, size, 72)
     text_dim = None
     if width:
         text_dim = blf.dimensions(0, text)
@@ -105,7 +106,7 @@ def text(pos: Vector,
             text_dim = blf.dimensions(0, text)
             pos.x -= text_dim[0] * pivot[0]
         if pivot[1] != 0:
-            text_h = TEXT_11P_HEIGHT * (size*scale) / 11 # blf.dimensions(0, 'X')
+            text_h = TEXT_11P_HEIGHT * size / 11 # blf.dimensions(0, 'X')
             pos.y -= text_h * pivot[1]
     if angle != 0:
         blf.enable(0, blf.ROTATION)
