@@ -151,6 +151,8 @@ class AP_NodeTree(NodeTree):
 
         for node_layer_nodes in reversed(sorted_nodetree_nodes_cache):
             for node in reversed(node_layer_nodes):
+                if not node.visible:
+                    continue
                 if node._test_select(context, region_loc, view_loc, view_zoom, region_offset):
                     G_hovered_node = node.uuid
                     print("hovered_node", node.label)
@@ -279,6 +281,8 @@ class AP_NodeTree(NodeTree):
 
             for node_layer_nodes in sorted_nodetree_nodes_cache:
                 for node in node_layer_nodes:
+                    if not node.visible:
+                        continue
                     if node.dirty:
                         refresh = True
                     node._draw(context, ui_scale, node==active_node, in_edit=in_edit)
