@@ -11,3 +11,4 @@ class LIST_PickerLayers(UIList):
         row = layout.row(align=True)
         row.prop(item, 'enabled', expand=False, text='', icon='HIDE_OFF' if item.enabled else 'HIDE_ON', emboss=False)
         row.prop(item, 'edit_name', text="", emboss=False)
+        row.operator('armature_picker.select_nodes_in_picker_layer', text='', icon='RESTRICT_SELECT_OFF').picker_layer_index = index

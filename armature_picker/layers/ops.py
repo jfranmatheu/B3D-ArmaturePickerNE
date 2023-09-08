@@ -1,10 +1,12 @@
 from bpy.types import Context, Operator, NodeTree
+from bpy.props import IntProperty
 
 from uuid import uuid4
 
 from .poll import poll_node_editor
 from ..utils.operator import OpsReturn
 from .update import on_remove_layer
+from ..utils.node_editor import deselect_all_nodes
 
 
 class AddPickerLayer(Operator):
@@ -47,5 +49,25 @@ class RemovePickerLayer(Operator):
         on_remove_layer(node_tree, context, node_tree.active_picker_layer)
 
         node_tree.active_picker_layer = ( len(node_tree.picker_layers) - 1 )
+
+        return OpsReturn.FINISH
+
+
+
+class SelectNodesInPickerLayer(Operator):
+    bl_idname = 'armature_picker.select_nodes_in_picker_layer'
+    bl_label = 'Select Nodes in Picker Layer'
+    
+    picker_layer_index: IntProperty(default=-1)
+
+    @classmethod
+    def poll(cls, context: Context):
+        return poll_node_editor(context)
+
+    def execute(self, context: Context) -> OpsReturn:
+        node_tree: NodeTree = context.space_data.node_tree
+        picker_layer_id: str = node_tree.picker_layers[self.picker_layer_index].uuid
+        for node in node_tree.nodes:
+            node.select = node.picker_layer == picker_layer_id
 
         return OpsReturn.FINISH
