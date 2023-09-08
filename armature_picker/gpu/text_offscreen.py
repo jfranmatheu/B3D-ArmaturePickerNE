@@ -50,7 +50,7 @@ def draw_offscreen(data_id: str, draw_callback: callable, _width: int, _height: 
 
         _caching.remove(data_id)
 
-        print("Redraw Offscreen")
+        ## print("Redraw Offscreen")
 
         ## image = bpy.data.images.get('tmp', None)
         ## if image is None:

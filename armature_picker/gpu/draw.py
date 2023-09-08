@@ -180,7 +180,7 @@ def text_cached(data_id: str,
 
     if not dirty_text and (off := get_offscreen(data_id)) is not None:
         offscreen(data_id, graphic_id, dirty, _pos, Vector(get_text_dim(_text, _size)), angle, off)
-        print("Drawing cached text")
+        ## print("Drawing cached text")
     else:
         draw_offscreen(data_id, partial(text, Vector((0, 0)), _text, _size*10*render_scale, (0, 0), 0, color, alpha, 0), *get_text_dim(_text, _size*render_scale))
         text(_text_pos, _text, _size, pivot, angle, color, alpha, width)
