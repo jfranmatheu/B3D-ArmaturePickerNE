@@ -4,7 +4,7 @@ from mathutils import Vector
 import gpu
 from bpy.app import timers
 
-from typing import List, Tuple, Type, Dict, Set
+from typing import List, Tuple, Type, Dict, Set, Union
 from collections import defaultdict
 import functools
 
@@ -89,6 +89,10 @@ class AP_NodeTree(NodeTree):
     bl_label = "Armature Picker"
     # Icon identifier
     bl_icon = 'OUTLINER_OB_ARMATURE' # CON_ARMATURE
+    
+    
+    active_node: Union[AP_Node, Node]
+    modal_nodes: Union[List[AP_Node], List[Node]]
 
 
     def get_selected_nodes(self, context: Context) -> set[AP_Node]:
