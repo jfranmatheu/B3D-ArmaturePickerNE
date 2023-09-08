@@ -82,6 +82,8 @@ get_tex_coords = lambda _p, _s: (
     (_p.x,_p.y+_s.y),_p,
     (_p.x+_s.x,_p.y),_p+_s
 )
+get_rotated_tex_coords = lambda pos, size, origin, angle: tuple(rotate_point(Vector(co), origin, angle).to_tuple() for co in get_tex_coords(pos, size))
+
 tex_uv_indices = ((0,1),(0,0),(1,0),(1,1))
 tex_indices = ((0,1,2),(2,3,0))
 
@@ -208,8 +210,9 @@ def image(data_id: str, graphic_id: str, dirty: bool, pos: Vector, size: Vector,
     if not dirty and (batch := get_batch_from_cache(data_id, graphic_id)) is not None:
         pass
     else:
+        coords = get_tex_coords(pos, size) if angle == 0 else get_rotated_tex_coords(pos, size, pos+size*0.5, angle)
         batch=batch_for_shader(_shader, 'TRIS',
-        {'pos': get_tex_coords(pos, size),
+        {'pos': coords,
          'texCoord': tex_uv_indices},
         indices=tex_indices)
         set_batch_to_cache(data_id, graphic_id, batch)
