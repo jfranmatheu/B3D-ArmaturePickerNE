@@ -3,6 +3,8 @@ from bpy.types import Context, Operator, NodeTree
 from .poll import poll_node_editor
 from ..utils.operator import OpsReturn
 
+from .update import on_remove_layer
+
 
 class AddPickerLayer(Operator):
     bl_idname = 'armature_picker.add_picker_layer'
@@ -34,11 +36,14 @@ class RemovePickerLayer(Operator):
 
         if node_tree.active_picker_layer == -1:
             return OpsReturn.CANCEL
-        
+
         if node_tree.active_picker_layer >= len(node_tree.picker_layers):
             return OpsReturn.CANCEL
 
         node_tree.picker_layers.remove(node_tree.active_picker_layer) # node_tree.picker_layers[node_tree.active_picker_layer])
+
+        on_remove_layer(node_tree, context, node_tree.active_picker_layer)
+
         node_tree.active_picker_layer = ( len(node_tree.picker_layers) - 1 )
 
         return OpsReturn.FINISH
