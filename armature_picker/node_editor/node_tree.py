@@ -108,7 +108,7 @@ class AP_NodeTree(NodeTree):
         if isinstance(event, Event):
             # --- Interactive Add Node. ---
             new_node['new'] = 1
-            self.active_node = new_node
+            self.modal_nodes = (new_node, )
             self.set_inject_modal(context, event,
                                     modal_callback=self.modal__move_node__update,
                                     modal_enter_callback=self.modal__move_node__enter,
@@ -195,6 +195,9 @@ class AP_NodeTree(NodeTree):
             return {'PASS_THROUGH'}
 
         self.mouse_pos = Vector((event.mouse_region_x, event.mouse_region_y))
+        
+        self.modal_nodes = None
+        self.active_node = None
 
         if context.active_object.mode == 'POSE':
             ret = self.invoke__pose(context, event)
@@ -205,13 +208,16 @@ class AP_NodeTree(NodeTree):
             return ret
 
         global G_hovered_node
-        self.active_node = None
+        
         if G_hovered_node is None:
             return {'FINISHED'}
 
         # Interact with a node.
         if node := self.nodes.get(G_hovered_node, None):
-            return node._invoke(context, event, self.mouse_pos)
+            ret = node._invoke(context, event, self.mouse_pos)
+            if ret == 'RUNNING_MODAL':
+                self.active_node = node
+            return ret
 
         return {'FINISHED'}
 
@@ -235,7 +241,7 @@ class AP_NodeTree(NodeTree):
         if self.nodes.active is not None:
             if (event.type == 'G' and event.value == 'RELEASE') or\
                (event.type == 'LEFTMOUSE' and event.value == 'CLICK_DRAG' and G_hovered_node is not None):
-                self.active_node = self.nodes.active
+                self.modal_nodes = context.selected_nodes
                 self.set_inject_modal(context, event,
                                       modal_callback=self.modal__move_node__update,
                                       modal_enter_callback=self.modal__move_node__enter,
@@ -301,34 +307,39 @@ class AP_NodeTree(NodeTree):
 
     # MODAL: Move Node.
     def modal__move_node__enter(self, context: Context, event: Event, mouse_pos: Vector) -> None:
-        if 'new' in self.active_node:
-            self.prev_node_location = Vector((0, 0))
-            self.node_location_offset = Vector((0, 0))
+        if 'new' in self.modal_nodes[0]:
+            self.prev_node_location = [Vector((0, 0))]
+            self.node_location_offset = [Vector((0, 0))]
         else:
-            self.prev_node_location = get_node_editor_region_coord(context, self.active_node.location)
-            self.node_location_offset = self.prev_node_location - mouse_pos
+            self.prev_node_location = [get_node_editor_region_coord(context, node.location) for node in self.modal_nodes]
+            self.node_location_offset = [prev_node_loc - mouse_pos for prev_node_loc in self.prev_node_location]
 
     def modal__move_node__update(self, context: Context, event: Event, mouse_pos: Vector) -> int:
-        if self.active_node is None or (event.type == 'LEFTMOUSE' and event.value == 'RELEASE'):
+        if self.modal_nodes is None or (event.type == 'LEFTMOUSE' and event.value == 'RELEASE'):
             return -1
         zoom = get_node_editor_zoom(context)
         inv_zoom = 1/zoom
         offset = get_node_editor_offset(context)
+        
+        def move_node(_node: Node, _node_loc_offset: Vector):
+            _node.location = (mouse_pos - offset + _node_loc_offset) * inv_zoom
 
-        self.active_node.location = (mouse_pos - offset + self.node_location_offset) * inv_zoom
+        {move_node(node, node_loc_offset) for (node, node_loc_offset) in zip(self.modal_nodes, self.node_location_offset)}
         return 1
 
     def modal__move_node__exit(self, context: Context, mouse_pos: Vector, cancel: bool) -> None:
         if cancel:
-            self.active_node.location = self.prev_node_location
+            for (node, prev_node_loc) in zip(self.modal_nodes, self.prev_node_location):
+                node.location = prev_node_loc
             del self.prev_node_location
             del self.node_location_offset
 
             if 'new' in self.active_node:
                 self.nodes.remove(self.active_node)
 
-        elif 'new' in self.active_node:
-            self.nodes.active = self.active_node
-            del self.active_node['new']
+        elif 'new' in self.modal_nodes[0]:
+            new_node = self.modal_nodes[0]
+            self.nodes.active = new_node
+            del new_node['new']
 
-        self.active_node = None
+        self.modal_nodes = None
