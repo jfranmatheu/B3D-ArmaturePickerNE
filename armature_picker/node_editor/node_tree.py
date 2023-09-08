@@ -195,7 +195,7 @@ class AP_NodeTree(NodeTree):
             return {'PASS_THROUGH'}
 
         self.mouse_pos = Vector((event.mouse_region_x, event.mouse_region_y))
-        
+
         self.modal_nodes = None
         self.active_node = None
 
@@ -208,7 +208,7 @@ class AP_NodeTree(NodeTree):
             return ret
 
         global G_hovered_node
-        
+
         if G_hovered_node is None:
             return {'FINISHED'}
 
@@ -238,9 +238,12 @@ class AP_NodeTree(NodeTree):
                 ## print("Create new AP_NODE_bone_picker")
                 return {'RUNNING_MODAL'}
 
+        hovered_node: Node = self.nodes.get(G_hovered_node, None)
+
         if self.nodes.active is not None:
             if (event.type == 'G' and event.value == 'RELEASE') or\
-               (event.type == 'LEFTMOUSE' and event.value == 'CLICK_DRAG' and G_hovered_node is not None):
+               (event.type == 'LEFTMOUSE' and event.value == 'CLICK_DRAG' and G_hovered_node is not None) or\
+               (event.type == 'LEFTMOUSE' and event.value == 'PRESS' and G_hovered_node is not None and hovered_node in self.get_selected_nodes(context)):
                 self.modal_nodes = context.selected_nodes
                 self.set_inject_modal(context, event,
                                       modal_callback=self.modal__move_node__update,
@@ -320,7 +323,7 @@ class AP_NodeTree(NodeTree):
         zoom = get_node_editor_zoom(context)
         inv_zoom = 1/zoom
         offset = get_node_editor_offset(context)
-        
+
         def move_node(_node: Node, _node_loc_offset: Vector):
             _node.location = (mouse_pos - offset + _node_loc_offset) * inv_zoom
 
