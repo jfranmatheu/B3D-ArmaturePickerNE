@@ -1,8 +1,9 @@
 from bpy.types import Context, Operator, NodeTree
 
+from uuid import uuid4
+
 from .poll import poll_node_editor
 from ..utils.operator import OpsReturn
-
 from .update import on_remove_layer
 
 
@@ -19,6 +20,7 @@ class AddPickerLayer(Operator):
 
         node_tree.active_picker_layer = len(node_tree.picker_layers)
         new_picker_layer = node_tree.picker_layers.add()
+        new_picker_layer.name = uuid4().hex
 
         return OpsReturn.FINISH
 

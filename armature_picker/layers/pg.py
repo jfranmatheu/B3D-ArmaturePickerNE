@@ -5,8 +5,14 @@ from .update import update_active_layer
 
 
 class PG_PickerLayer(PropertyGroup):
+    name: str # Internal name... Used as UUID.
+
+    @property
+    def uuid(self) -> str:
+        return self.name
+
     enabled: BoolProperty(default=True, name="Visible", description="Show the picker elements inside this layer")
-    name: StringProperty(default="Layer", name="Layer Name", description="Name of the layer")
+    edit_name: StringProperty(default="Layer", name="Layer Name", description="Name of the layer")
 
 
 def register():
