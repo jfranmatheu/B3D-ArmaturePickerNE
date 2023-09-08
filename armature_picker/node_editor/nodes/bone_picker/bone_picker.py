@@ -52,10 +52,12 @@ class AP_BonePickerNode(AP_BonePickerNode_Props, AP_Node, Node):
     # ----- INVOKE --------------------------------
 
     def invoke__pose(self, context: Context, event: Event, mouse_pos: Vector) -> set[str] | None:
-        self.select_bone(context, deselect_all=not event.shift)
+        if event.type == 'LEFTMOUSE':
+            self.select_bone(context, deselect_all=not event.shift)
 
     def invoke__edit(self, context: Context, event: Event, mouse_pos: Vector) -> set[str] | None:
-        self.select_node(context, deselect_all=not event.shift, set_active=True)
+        if event.type == 'LEFTMOUSE':
+            self.select_node(context, deselect_all=not event.shift, set_active=True)
 
 
     # ----- DRAWING --------------------------------
