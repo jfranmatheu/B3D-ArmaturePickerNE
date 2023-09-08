@@ -91,6 +91,10 @@ class AP_NodeTree(NodeTree):
     bl_icon = 'OUTLINER_OB_ARMATURE' # CON_ARMATURE
 
 
+    def get_selected_nodes(self, context: Context) -> set[AP_Node]:
+        return set(context.selected_nodes)
+
+
     def new_node(self, context: Context, type: str | Type[AP_Node], event: Event | None = None) -> AP_Node:
         ''' Pass Event type if the addition should be interactive (performed inside an invoke to run modal).
             Pass a Vector in the event place to indicate the node element final-location manually. '''
@@ -189,7 +193,7 @@ class AP_NodeTree(NodeTree):
             # elif event.type == 'TAB':
             #     view3d_set_mode(context, 'EDIT' if context.active_object.mode == 'POSE' else 'POSE')
             return {'PASS_THROUGH'}
-        
+
         self.mouse_pos = Vector((event.mouse_region_x, event.mouse_region_y))
 
         if context.active_object.mode == 'POSE':
@@ -274,6 +278,7 @@ class AP_NodeTree(NodeTree):
 
         in_edit = context.mode == 'EDIT_ARMATURE'
         active_node: AP_Node = self.nodes.active
+        sel_nodes: set[AP_Node] = self.get_selected_nodes(context)
 
         with gpu.matrix.push_pop():
             gpu.matrix.translate(offset)
@@ -285,7 +290,7 @@ class AP_NodeTree(NodeTree):
                         continue
                     if node.dirty:
                         refresh = True
-                    node._draw(context, ui_scale, node==active_node, in_edit=in_edit)
+                    node._draw(context, ui_scale, active=node==active_node, selected=node in sel_nodes, in_edit=in_edit)
 
             if refresh:
                 context.region.tag_redraw()

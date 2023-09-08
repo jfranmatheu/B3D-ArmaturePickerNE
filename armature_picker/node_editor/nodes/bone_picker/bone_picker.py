@@ -35,7 +35,9 @@ class AP_BonePickerNode(AP_BonePickerNode_Props, AP_Node, Node):
 
     def select_node(self, context: Context, deselect_all: bool = True, set_active: bool = True) -> None:
         if deselect_all:
-            deselect_all_nodes(context, nullify_active=True)
+            bpy.ops.node.select_all(False, action='DESELECT')
+            # deselect_all_nodes(context, nullify_active=True)
+            self.node_tree.nodes.active = None
         self.select = True
         if set_active:
             self.node_tree.nodes.active = self
@@ -53,12 +55,12 @@ class AP_BonePickerNode(AP_BonePickerNode_Props, AP_Node, Node):
         self.select_bone(context, deselect_all=not event.shift)
 
     def invoke__edit(self, context: Context, event: Event, mouse_pos: Vector) -> set[str] | None:
-        self.select_node(context, deselect_all=True, set_active=True)
+        self.select_node(context, deselect_all=not event.shift, set_active=True)
 
 
     # ----- DRAWING --------------------------------
 
-    def draw_common(self, context: Context, scale: float, active: bool, hovered: bool) -> None:
+    def draw_common(self, context: Context, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         draw.rectangle(
             self.uuid, 'BUTTON_BASE', self.dirty, # CACHE.
             self.position, self.size, self.rotation, # TRANSFORM.
@@ -79,11 +81,11 @@ class AP_BonePickerNode(AP_BonePickerNode_Props, AP_Node, Node):
                 color=self.text_color
             )
 
-    def draw__edit(self, context, scale: float, active: bool, hovered: bool) -> None:
-        if active:
+    def draw__edit(self, context, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+        if active or selected:
             draw.box(
                 self.uuid, 'BUTTON_BOX_ACTIVE', self.dirty,
                 self.position, self.size, self.rotation,
-                line_thickness=2.5 * scale,
-                color=(.32, .6, .94, 1.0)
+                line_thickness=(3 * scale) if active else 2.5 * scale	,
+                color=(1.0, 1.0, .1, 1.0) if active else (.32, .64, 1.0, 1.0)
             )

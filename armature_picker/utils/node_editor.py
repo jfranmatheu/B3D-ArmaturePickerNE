@@ -22,7 +22,7 @@ def get_node_editor_zoom(context: Context) -> float:
 def deselect_all_nodes(context: Context, nullify_active: bool = True) -> None:
     if context.space_data.node_tree is not None:
         return
-    for node in context.selected_nodes:
+    for node in list(context.selected_nodes):
         node.select = False
     if nullify_active:
         context.space_data.node_tree.nodes.active = None
