@@ -11,6 +11,11 @@ class AP_BonePickerNode_Props:
 
     # UPDATE FUNCTIONS
     # ----------------------------------------------------------------
+    def update_label(self, context: Context) -> None:
+        self.update_dimensions(context)
+        self.dirty_label = True
+        self.update_graphics(context)
+
     def update_bone_name(self, context: Context) -> None:
         if self.label == '':
             self.label = self.bone_name.replace('_', ' ').replace('.', ' ').title()
@@ -41,6 +46,8 @@ class AP_BonePickerNode_Props:
 
     def update_graphics(self, context: Context) -> None:
         self.dirty = True
+
+        context.region.tag_redraw()
 
 
     # TRANSFORM PROPERTIES
@@ -108,7 +115,7 @@ class AP_BonePickerNode_Props:
     label: StringProperty(
         name="Label",
         description="Button label",
-        update=update_dimensions,
+        update=update_label,
         options={'TEXTEDIT_UPDATE'}
     )
 
@@ -142,7 +149,7 @@ class AP_BonePickerNode_Props:
         description="Label text size",
         default=12,
         min=10,
-        update=update_dimensions
+        update=update_label
     )
 
     text_color: FloatVectorProperty(

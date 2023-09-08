@@ -32,6 +32,14 @@ def set_dirty_state(uuid: str, state: bool) -> None:
 
 
 # ----------------------------------------------------------------
+# Dirty state.
+
+_dirty_label_cache: dict[str, bool] = {}
+def set_dirty_label_state(uuid: str, state: bool) -> None:
+    _dirty_label_cache[uuid] = state
+
+
+# ----------------------------------------------------------------
 # Poll functions.
 
 def poll__node_select(context: Context) -> None:
@@ -114,7 +122,15 @@ class AP_Node:
 
     @dirty.setter
     def dirty(self, state: bool) -> bool:
-        _dirty_cache[self.uuid] = state
+        set_dirty_state(self.uuid, state)
+    
+    @property
+    def dirty_label(self) -> bool:
+        return _dirty_label_cache.get(self.uuid, False)
+
+    @dirty_label.setter
+    def dirty_label(self, state: bool) -> bool:
+        set_dirty_label_state(self.uuid, state)
 
     @property
     def in_modal(self) -> bool:
@@ -138,6 +154,7 @@ class AP_Node:
         self.dirty = True
         self.mute = True
         self.hide = True
+        self.dirty_label = True
         print("New node ", self)
 
     # Copy function to initialize a copied node from an existing one.
@@ -294,5 +311,9 @@ class AP_Node:
             self.draw__edit(context, scale, active, hovered)
         else:
             self.draw__pose(context, scale, active, hovered)
+
         if self.dirty:
             set_dirty_state(self.uuid, False)
+        if self.dirty_label:
+            set_dirty_label_state(self.uuid, False)
+            self.update_graphics(context)

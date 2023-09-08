@@ -1,8 +1,10 @@
 from .._base import AP_Node, Node
 from .node_props import AP_BonePickerNode_Props
 
+import bpy
 from bpy.types import Context, Armature, Bone, Event
 from mathutils import Vector
+from functools import partial
 
 from ....gpu import draw
 from ....utils.geometry import point_inside_rect, rotate_point
@@ -66,7 +68,9 @@ class AP_BonePickerNode(AP_BonePickerNode_Props, AP_Node, Node):
         if self.label != '':
             padding = 4 * scale
 
-            draw.text(
+            draw.text_cached(
+                self.uuid, 'LABEL', self.dirty, self.dirty_label,
+                self.position + Vector((padding, padding)),
                 Vector(self.location) if self.rotation == 0 else rotate_point(Vector(self.position) + Vector((padding, padding)), self.location, self.rotation),
                 self.label,
                 self.text_size,
