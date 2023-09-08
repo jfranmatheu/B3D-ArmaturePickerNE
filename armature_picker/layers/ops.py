@@ -69,5 +69,8 @@ class SelectNodesInPickerLayer(Operator):
         picker_layer_id: str = node_tree.picker_layers[self.picker_layer_index].uuid
         for node in node_tree.nodes:
             node.select = node.picker_layer == picker_layer_id
+        
+        if context.selected_nodes != []:
+            node_tree.nodes.active = context.selected_nodes[0]
 
         return OpsReturn.FINISH
