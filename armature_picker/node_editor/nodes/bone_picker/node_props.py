@@ -166,6 +166,9 @@ class AP_BonePickerNode_Props:
     def draw_buttons_ext(self, context: Context, layout: UILayout) -> None:
         layout.prop(self, 'label')
         layout.prop(self, 'bone_name')
+        
+        section_v = self.draw_section(layout, 'Visibility', icon='HIDE_OFF')
+        section_v.prop(self, 'picker_layer', expand=False)
 
         section_t = self.draw_section(layout, 'Transform', icon='ORIENTATION_VIEW')
         section_t.prop(self, 'location')

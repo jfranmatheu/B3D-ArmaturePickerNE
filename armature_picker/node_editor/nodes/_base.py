@@ -1,6 +1,6 @@
 import bpy
 from bpy.types import Node, UILayout, NodeTree, Context, Event
-from bpy.props import StringProperty, BoolProperty, IntProperty
+from bpy.props import StringProperty, BoolProperty, IntProperty, EnumProperty
 from mathutils import Vector
 
 from uuid import uuid4
@@ -86,7 +86,29 @@ class AP_Node:
     # Properties to store in Node datablock.
     uuid: StringProperty(name="UUID", default='')
     # dirty: BoolProperty(default=True, options={'HIDDEN'}) # BUG: AttributeError (can't modify in drawing state).
-    
+
+
+    # VISIBILITY LAYERS
+    # ----------------------------------------------------------------
+    visible: BoolProperty(name="Visible", default=True)
+
+    def update_picker_layer(self, context: Context) -> None:
+        if picker_layer := self.node_tree.picker_layers.get(self.picker_layer, None):
+            self.visible = picker_layer.enabled
+        else:
+            self.visible = True
+
+    picker_layer_items = [('NONE', 'NONE', 'No layer. Will be always visible')]
+    def get_picker_layers(self, context: Context) -> list:
+        return self.picker_layer_items + [
+            (picker_layer.uuid, picker_layer.edit_name, '') for picker_layer in self.node_tree.picker_layers
+        ]
+
+    picker_layer: EnumProperty(name="Picker Layer", items=get_picker_layers, update=update_picker_layer)
+
+
+    # DRAW LAYERS
+    # ----------------------------------------------------------------
     # Props to sort node elements by layers and depth for drawing and logic sorting.
     # draw_layer: IntProperty(default=0, min=0, max=100, options={'HIDDEN'}) # BUG: draw_layer should be a class property.
     draw_layer = 0
@@ -123,7 +145,7 @@ class AP_Node:
     @dirty.setter
     def dirty(self, state: bool) -> bool:
         set_dirty_state(self.uuid, state)
-    
+
     @property
     def dirty_label(self) -> bool:
         return _dirty_label_cache.get(self.uuid, False)
@@ -207,9 +229,9 @@ class AP_Node:
 
     def on_hover_exit(self, context: Context | None = None) -> None:
         pass
-    
+
     # ----- INTERNAL UTILS --------------------------------
-    
+
     def update_mouse(self, context: Context, event: Event) -> None:
         if hasattr(self, 'mouse'):
             self.mouse.update(event, context.region.view2d)
