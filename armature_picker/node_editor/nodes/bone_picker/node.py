@@ -55,7 +55,7 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
             draw.text_cached(
                 self.uuid, 'LABEL', self.dirty, self.dirty_label,
                 self.position + Vector((padding, padding)),
-                Vector(self.location) if self.rotation == 0 else rotate_point(Vector(self.position) + Vector((padding, padding)), self.location, self.rotation),
+                Vector(self.origin) if self.rotation == 0 else rotate_point(Vector(self.position) + Vector((padding, padding)), self.origin, self.rotation),
                 self.label,
                 self.text_size,
                 pivot=(0.5, 0.5) if self.rotation == 0 else (0, 0),
@@ -75,7 +75,7 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
     # ----- UI LAYOUT DRAWING -----------------------------------------------------------
     
     def draw_transform(self, layout: UILayout) -> None:
-        layout.prop(self, 'location')
+        layout.prop(self, 'origin')
         layout.prop(self, 'rotation')
         _sub = layout.column()
         _sub.enabled = not self.fit_to_text

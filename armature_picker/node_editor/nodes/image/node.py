@@ -55,7 +55,7 @@ class APNODE_Image(APNODE_Image_NodeProps, AP_Node, Node):
     # ----- UI LAYOUT DRAWING -----------------------------------------------------------
 
     def draw_transform(self, layout: UILayout) -> None:
-        layout.prop(self, 'location')
+        layout.prop(self, 'origin')
         layout.prop(self, 'rotation')
         layout.prop(self, 'keep_aspect_ratio')
         # if self.keep_aspect_ratio:

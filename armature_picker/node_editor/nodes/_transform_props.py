@@ -22,9 +22,9 @@ class NodeTransformProps:
 
     # TRANSFORM PROPERTIES
     # ----------------------------------------------------------------
-    location: FloatVectorProperty(
+    origin: FloatVectorProperty( # old location
         name="Location",
-        description="Picker button position inside the NodeGraph 2D view",
+        description="Picker button origin location (actually its center) inside the NodeGraph 2D view",
         default=(0, 0),
         size=2,
         subtype='XYZ',
@@ -73,7 +73,7 @@ class NodeTransformProps:
 
     @property
     def position(self) -> Vector:
-        x, y = self.location
+        x, y = self.origin
         w, h = self.dimensions
         w_div2 = int(w / 2)
         h_div2 = int(h / 2)
@@ -85,7 +85,7 @@ class NodeTransformProps:
 
 
     def draw_transform(self, layout: UILayout) -> None:
-        layout.prop(self, 'location')
+        layout.prop(self, 'origin') # old location
         layout.prop(self, 'rotation')
         layout.prop(self, 'scale')
         layout.prop(self, 'edit_dimensions')

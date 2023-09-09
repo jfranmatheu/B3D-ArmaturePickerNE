@@ -295,7 +295,7 @@ class AP_NodeTree(NodeTree):
 
     # MODAL: Move Node.
     def modal__move_node__enter(self, context: Context, event: Event, mouse_pos: Vector) -> None:
-        self.prev_node_location = [get_node_editor_region_coord(context, node.location) for node in self.modal_nodes]
+        self.prev_node_location = [get_node_editor_region_coord(context, node.origin) for node in self.modal_nodes]
         self.node_location_offset = [prev_node_loc - mouse_pos for prev_node_loc in self.prev_node_location]
 
     def modal__move_node__update(self, context: Context, event: Event, mouse_pos: Vector) -> int:
@@ -306,7 +306,7 @@ class AP_NodeTree(NodeTree):
         offset = get_node_editor_offset(context)
 
         def move_node(_node: Node, _node_loc_offset: Vector):
-            _node.location = (mouse_pos - offset + _node_loc_offset) * inv_zoom
+            _node.origin = (mouse_pos - offset + _node_loc_offset) * inv_zoom
 
         {move_node(node, node_loc_offset) for (node, node_loc_offset) in zip(self.modal_nodes, self.node_location_offset)}
         return 1
@@ -314,7 +314,7 @@ class AP_NodeTree(NodeTree):
     def modal__move_node__exit(self, context: Context, mouse_pos: Vector, cancel: bool) -> None:
         if cancel:
             for (node, prev_node_loc) in zip(self.modal_nodes, self.prev_node_location):
-                node.location = prev_node_loc
+                node.origin = prev_node_loc
             del self.prev_node_location
             del self.node_location_offset
 
