@@ -27,8 +27,8 @@ class NodeTransformProps:
             # USER-EDITED-DIMENSIONS: self.edit_dimensions
             # INTERNAL DIMENSIONS: self.dimensions
             self.dimensions = (
-                self.edit_dimensions[0] * self.scale[0],
-                self.edit_dimensions[1] * self.scale[1]
+                max(self.edit_dimensions[0] * self.scale[0], 10),
+                max(self.edit_dimensions[1] * self.scale[1], 10)
             )
 
     def update_graphics(self, context: Context) -> None:
