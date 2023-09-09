@@ -1,10 +1,27 @@
-from bpy.types import Context, UILayout
+from bpy.types import Context, UILayout, Armature
 from bpy.props import StringProperty, IntProperty, FloatProperty, BoolProperty, FloatVectorProperty, EnumProperty
 from blf import size as set_text_size, dimensions as get_text_dimensions
 
 
 
 class APNODE_BonePicker_NodeProps:
+    def get_bone_custom_properties(self, context: Context) -> None:
+        armature: Armature = context.active_object.data
+        bones = armature.bones if context.mode == 'POSE' else armature.edit_bones
+        if bone := bones.get(self.bone_name, None):
+            return [
+                (key, key, "") for key in bone.keys() if not key.startswith('_RNA')
+            ]
+        else:
+            return ((
+                'NONE', "None", "",
+            ),)
+
+    def update_ik_fk_idname(self, context: Context) -> None:
+        if self.use_ik_fk and self.ik_fk_prop_idname == 'NONE':
+            self.use_ik_fk = False
+        self.update_dimensions(context)
+
     def update_dimensions(self, context: Context) -> None:
         if self.fit_to_text and self.label == '':
             return
@@ -45,6 +62,14 @@ class APNODE_BonePicker_NodeProps:
 
     # BUTTON PROPERTIES
     # ----------------------------------------------------------------
+    use_ik_fk: BoolProperty(default=False, name="Use IK/FK", description="This button picker controls a bone that has a IK/FK toggle")
+    ik_fk_prop_idname: EnumProperty(
+        name="IK/FK Property",
+        description="Identifier of the Custom Property that controls the IK/FK for the bone",
+        items=get_bone_custom_properties,
+        update=update_ik_fk_idname
+    )
+
     label_dimensions: FloatVectorProperty(
         name="Label Dimensions",
         min=0,
@@ -69,3 +94,9 @@ class APNODE_BonePicker_NodeProps:
     def draw_buttons_ext(self, context: Context, layout: UILayout) -> None:
         layout.prop(self, 'label')
         layout.prop(self, 'bone_name')
+
+        layout.separator()
+
+        row = layout.row(align=True, heading='IK/FK')
+        row.prop(self, 'use_ik_fk', text='', expand=False)
+        row.prop(self, 'ik_fk_prop_idname', text='')

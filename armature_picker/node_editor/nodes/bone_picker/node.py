@@ -7,7 +7,7 @@ from bpy.types import Context, Armature, Bone, Event, UILayout
 from mathutils import Vector
 
 from ....gpu import draw
-from ....utils.geometry import rotate_point
+from ....utils.geometry import rotate_point, point_inside_rect, get_center
 from ....utils.armature import deselect_all_bones_from_active
 
 
@@ -20,25 +20,69 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
     draw_layer = 10
 
 
+    def init(self, context):
+        super().init(context)
+
+        self.set_state('ik_fk_hovered', False)
+
+
+    def get_ik_fk_state(self, context: Context) -> bool:
+        if bone := self.get_bone(context, from_pose_data = True):
+            if self.ik_fk_prop_idname in bone:
+                return bool(bone[self.ik_fk_prop_idname])
+        return False
+
+    def toggle_ik_fk(self, context: Context) -> bool:
+        if bone := context.active_pose_bone:
+            if self.ik_fk_prop_idname in bone:
+                bone[self.ik_fk_prop_idname] = not bool(bone[self.ik_fk_prop_idname])
+        return False
+
+
     # ----- SELECT METHODS --------------------------------
+
+    def get_bone(self, context: Context, from_pose_data: bool = False) -> Bone:
+        armature: Armature = context.active_object.data
+        if from_pose_data:
+            bones = context.active_object.pose.bones
+        else:
+            bones = armature.bones if context.mode == 'POSE' else armature.edit_bones
+        return bones.get(self.bone_name, None)
 
     def select_bone(self, context: Context, deselect_all: bool = True) -> None:
         armature: Armature = context.active_object.data
-        bones = armature.bones
+        bones = armature.bones if context.mode == 'POSE' else armature.edit_bones
         bone: Bone
-        if bone := bones.get(self.bone_name, None):
+        if bone := self.get_bone(context):
             if deselect_all:
                 deselect_all_bones_from_active(context)
             bone.select = True
             bones.active = bone
 
+    def on_hover(self, context: Context, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
+        if point_inside_rect(view_loc, self.position, self.size, self.rotation):
+            self.set_state('ik_fk_hovered', False)
+            return True
+        elif self.use_ik_fk:
+            size = Vector((self.dimensions[1], 0)) + self.size
+            if point_inside_rect(view_loc, self.position, size, self.rotation):
+                self.set_state('ik_fk_hovered', True)
+                return True
+        return False
+    
+    def on_hover_exit(self, context: Context | None = None) -> None:
+        self.set_state('ik_fk_hovered', False)
+
 
     # ----- INVOKE --------------------------------
 
     def invoke__pose(self, context: Context, event: Event, mouse_pos: Vector) -> set[str] | None:
-        if event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
+        if event.type == 'LEFTMOUSE' and event.value == 'CLICK':
             self.select_bone(context, deselect_all=not event.shift)
             self.select_node(context, deselect_all=not event.shift)
+            
+            if self.get_state('ik_fk_hovered'):
+                self.toggle_ik_fk(context)
 
 
     # ----- DRAWING --------------------------------
@@ -51,6 +95,30 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
             pos, size, self.rotation, # TRANSFORM.
             self.color if not hovered else Vector(self.color) * 0.8 # STYLE.
         )
+
+        if self.use_ik_fk:
+            ikfk_pos = pos + Vector((size.x, 0))
+            ikfk_size = Vector((self.dimensions[1], self.dimensions[1]))
+
+            draw.rectangle(
+                self.uuid, 'IKFK_BASE', self.dirty, # CACHE.
+                ikfk_pos, ikfk_size, self.rotation, # TRANSFORM.
+                (.05, .05, .05, .95) if self.get_state('ik_fk_hovered', False) else (.05, .05, .05, .8),
+                origin=self.origin
+            )
+
+
+            ikfk_pos = get_center(ikfk_pos, ikfk_size)
+            text = '•' if self.get_ik_fk_state(context) else 'o'
+
+            draw.text(
+                ikfk_pos,
+                text,
+                self.text_size,
+                pivot=(0.5, 0.5),
+                color=(.92, .92, .92, 1)
+            )
+
 
         if self.label != '':
             padding = 4 * scale

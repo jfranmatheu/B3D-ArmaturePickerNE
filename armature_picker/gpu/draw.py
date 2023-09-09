@@ -99,6 +99,8 @@ def rectangle(data_id: str,
               color: RGBA,
               origin: Vector | None = None,
               _shader=SHADER_UNIFORM_COLOR) -> None:
+    if color[-1] != 1.0:
+        state.blend_set('ALPHA')
     if not dirty and (batch := get_batch_from_cache(data_id, graphic_id)) is not None:
         pass
     else:

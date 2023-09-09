@@ -3,6 +3,7 @@ from bpy.types import Node, UILayout, NodeTree, Context, Event, Armature, Bone
 from bpy.props import StringProperty, BoolProperty, IntProperty, EnumProperty
 from mathutils import Vector
 
+from collections import defaultdict
 from uuid import uuid4
 
 from ...utils.event import Mouse, EventType, EventValue
@@ -41,6 +42,12 @@ def set_dirty_state(uuid: str, state: bool) -> None:
 _dirty_label_cache: dict[str, bool] = {}
 def set_dirty_label_state(uuid: str, state: bool) -> None:
     _dirty_label_cache[uuid] = state
+
+
+# ----------------------------------------------------------------
+# Generic state cache.
+
+_state_cache: dict[str, dict[str, bool]] = defaultdict(dict)
 
 
 # ----------------------------------------------------------------
@@ -86,7 +93,7 @@ class AP_Node(NodeTransformProps):
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     # Internal Properties.
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    
+
     interactable: bool = True
 
     # Properties to store in Node datablock.
@@ -120,6 +127,18 @@ class AP_Node(NodeTransformProps):
     # draw_layer: IntProperty(default=0, min=0, max=100, options={'HIDDEN'}) # BUG: draw_layer should be a class property.
     draw_layer = 0
     draw_depth: IntProperty(default=0, min=-1000, max=1000, options={'HIDDEN'})
+
+
+    # Temporal State variables.
+    # ----------------------------------------------------------------
+    def set_state(self, state_name: str, state_value: bool) -> None:
+        _state_cache[self.uuid][state_name] = state_value
+
+    def get_state(self, state_name: str, default: bool = False) -> None:
+        if self.uuid not in _state_cache:
+            return default
+        return _state_cache[self.uuid].get(state_name, default)
+
 
     # Useful/utility Properties and temporal properties.
     def is_hovered(self) -> bool:
@@ -195,12 +214,12 @@ class AP_Node(NodeTransformProps):
     # Free function to clean up on removal.
     def free(self):
         print("Removing node ", self, ", Goodbye!")
-        
-        
+
+
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     # UI Layout drawing.
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-    
+
     def draw_visibility(self, layout: UILayout) -> None:
         layout.prop(self, 'picker_layer', expand=False)
 

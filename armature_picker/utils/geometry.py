@@ -36,6 +36,10 @@ def point_inside_rect(_p, _pos, _size, _angle=0):
     return ((_pos[0] + _size[0]) > p[0] > _pos[0]) and ((_pos[1] + _size[1]) > p[1] > _pos[1])
 
 
+def get_center(pos: Vector, size: Vector) -> Vector:
+    return pos + size * 0.5
+
+
 def rotate_point(p: Vector, o: Vector, angle: float) -> Vector:
     qx = o.x + cos(angle) * (p.x - o.x) - sin(angle) * (p.y - o.y)
     qy = o.y + sin(angle) * (p.x - o.x) + cos(angle) * (p.y - o.y)
