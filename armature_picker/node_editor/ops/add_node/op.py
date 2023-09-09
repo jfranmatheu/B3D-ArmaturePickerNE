@@ -74,7 +74,7 @@ class AP_OT_add_node(Operator):
 
 
     def modal__move_node__enter(self, context: Context, event: Event, mouse_pos: Vector) -> None:
-        self.prev_node_location = [get_node_editor_region_coord(context, node.locaorigintion) for node in self.modal_nodes]
+        self.prev_node_location = [get_node_editor_region_coord(context, node.origin) for node in self.modal_nodes]
         self.node_location_offset = [prev_node_loc - mouse_pos for prev_node_loc in self.prev_node_location]
 
     def modal__move_node__update(self, context: Context, event: Event, mouse_pos: Vector) -> int:
