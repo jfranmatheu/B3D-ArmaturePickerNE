@@ -168,6 +168,7 @@ class AP_NodeTree(NodeTree):
                 context.space_data.show_region_toolbar = not context.space_data.show_region_toolbar
             elif event.type == 'X':
                 bpy.ops.node.delete('INVOKE_DEFAULT')
+                ensure_nodes_cache(self)
             # elif event.type == 'TAB':
             #     view3d_set_mode(context, 'EDIT' if context.active_object.mode == 'POSE' else 'POSE')
             return {'PASS_THROUGH'}
