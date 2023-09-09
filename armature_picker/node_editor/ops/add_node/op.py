@@ -1,6 +1,7 @@
 from bpy.types import Context, Event, Operator, Node
 from bpy.props import StringProperty
 from mathutils import Vector
+import bpy
 
 from ....utils.operator import OpsReturn, add_modal_handler
 from ....utils.event import get_mouse_pos, EventType, EventValue
@@ -31,14 +32,19 @@ class AP_OT_add_node(Operator):
 
         from ...node_tree import ensure_nodes_cache, AP_NodeTree
 
+        bpy.ops.node.select_all(action='DESELECT')
+
         node_tree: AP_NodeTree = context.space_data.node_tree
         new_node = node_tree.nodes.new(type)
+        new_node.select = True
+        node_tree.nodes.active = new_node
+
         ensure_nodes_cache(node_tree)
 
         if hasattr(new_node, 'bone_name'):
             if context.active_bone is not None:
                 new_node.bone_name = context.active_bone.name
-    
+
         if event is not None:
             mouse_pos = get_mouse_pos(event)
 
@@ -56,14 +62,14 @@ class AP_OT_add_node(Operator):
         if event.type == EventType.LEFTMOUSE and event.value == EventValue.RELEASE:
             self.modal__move_node__exit(context, mouse_pos, cancel=False)
             return OpsReturn.FINISH
-        
+
         if event.type in {EventType.RIGHTMOUSE, EventType.ESC}:
             self.modal__move_node__exit(context, mouse_pos, cancel=True)
             return OpsReturn.CANCEL
-        
+
         if event.type in {EventType.MOUSEMOVE, EventType.INBETWEEN_MOUSEMOVE}:
             self.modal__move_node__update(context, event, mouse_pos)
-        
+
         return OpsReturn.RUN
 
 
