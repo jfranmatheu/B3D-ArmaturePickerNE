@@ -180,12 +180,13 @@ def text_cached(data_id: str,
                 color: tuple[float, float, float] = (.92, .92, .92),
                 alpha: float = 1.0,
                 width=0,
+                origin: Vector | None = None,
                 render_scale: float = 3.0) -> Vector:
     if _text_size < 10:
         return
 
     if not dirty_text and (off := get_offscreen(data_id)) is not None:
-        offscreen(data_id, graphic_id, dirty, _pos, _label_dimensions, angle, off)
+        offscreen(data_id, graphic_id, dirty, _pos, _label_dimensions, angle, off, origin=origin)
         ## print("Drawing cached text")
     else:
         draw_offscreen(data_id, partial(text, Vector((0, 0)), _text, _text_size*10*render_scale, (0, 0), 0, color, alpha, 0), *get_text_dim(_text, _text_size*render_scale))
@@ -205,7 +206,7 @@ def box(data_id: str, graphic_id: str, dirty: bool, pos: Vector, size: Vector, a
     state.line_width_set(1.0)
 
 
-def image(data_id: str, graphic_id: str, dirty: bool, pos: Vector, size: Vector, angle: float, image: Image | GPUTexture, _shader=SHADER_IMAGE) -> None:
+def image(data_id: str, graphic_id: str, dirty: bool, pos: Vector, size: Vector, angle: float, image: Image | GPUTexture, origin: Vector | None = None, _shader=SHADER_IMAGE) -> None:
     if not isinstance(image, (Image, GPUTexture)):
         return
     state.blend_set('ALPHA')
@@ -214,7 +215,7 @@ def image(data_id: str, graphic_id: str, dirty: bool, pos: Vector, size: Vector,
     if not dirty and (batch := get_batch_from_cache(data_id, graphic_id)) is not None:
         pass
     else:
-        coords = get_tex_coords(pos, size) if angle == 0 else get_rotated_tex_coords(pos, size, pos+size*0.5, angle)
+        coords = get_tex_coords(pos, size) if angle == 0 else get_rotated_tex_coords(pos, size, origin if origin is not None else pos+size*0.5, angle)
         batch=batch_for_shader(_shader, 'TRIS',
         {'pos': coords,
          'texCoord': tex_uv_indices},
@@ -225,7 +226,7 @@ def image(data_id: str, graphic_id: str, dirty: bool, pos: Vector, size: Vector,
     batch.draw(_shader)
 
 
-def offscreen(data_id: str, graphic_id: str, dirty: bool, pos: Vector, size: Vector, angle: float, off: GPUOffScreen) -> None:
+def offscreen(data_id: str, graphic_id: str, dirty: bool, pos: Vector, size: Vector, angle: float, off: GPUOffScreen, origin: Vector | None = None) -> None:
     if not isinstance(off, GPUOffScreen):
         return
-    image(data_id, graphic_id, dirty, pos, size, angle, off.texture_color)
+    image(data_id, graphic_id, dirty, pos, size, angle, off.texture_color, origin=origin)
