@@ -12,7 +12,7 @@ class APNODE_Label_StyleProps:
     text_size: IntProperty(
         name='Text Size',
         description="Label text size",
-        default=16,
+        default=24,
         min=10,
         update=lambda node, ctx: node.update_label(ctx)
     )
