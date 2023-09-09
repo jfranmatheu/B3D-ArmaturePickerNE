@@ -11,7 +11,8 @@ class APNODE_BonePicker_StyleProps:
     fit_to_text: BoolProperty(
         name="Fit To Text",
         description="Whether to fit button dimensions to label text box size",
-        default=True
+        default=True,
+        update=lambda node, ctx: node.update_dimensions(ctx)
     )
 
     color: FloatVectorProperty(
