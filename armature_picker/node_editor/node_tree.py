@@ -313,6 +313,8 @@ class AP_NodeTree(NodeTree):
         offset = get_node_editor_offset(context)
 
         def move_node(_node: Node, _node_loc_offset: Vector):
+            if _node.locked:
+                return
             _node.origin = (mouse_pos - offset + _node_loc_offset) * inv_zoom
 
         {move_node(node, node_loc_offset) for (node, node_loc_offset) in zip(self.modal_nodes, self.node_location_offset)}

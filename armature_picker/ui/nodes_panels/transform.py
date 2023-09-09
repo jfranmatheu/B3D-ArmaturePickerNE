@@ -1,6 +1,6 @@
 from bpy.types import Context, Panel
 
-from ...utils.ui_layout import draw_section
+from ...utils.ui_layout import draw_section_h
 from ..poll import poll_node
 
 
@@ -22,5 +22,7 @@ class APNODE_PT_transform(Panel):
         layout = self.layout
         node = context.space_data.node_tree.nodes.active
 
-        section_t = draw_section(layout, 'Transform', icon='ORIENTATION_VIEW')
-        node.draw_transform(section_t)
+        header, content = draw_section_h(layout, 'Transform', icon='ORIENTATION_VIEW')
+        header.prop(node, 'locked', text="", icon='LOCKED' if node.locked else 'UNLOCKED')
+        content.enabled = not node.locked
+        node.draw_transform(content)

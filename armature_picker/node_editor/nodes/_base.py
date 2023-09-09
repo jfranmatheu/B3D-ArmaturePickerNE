@@ -94,6 +94,7 @@ class AP_Node(NodeTransformProps):
 
     # VISIBILITY LAYERS
     # ----------------------------------------------------------------
+    locked: BoolProperty(name="Locked", default=False)
     visible: BoolProperty(name="Visible", default=True)
 
     def update_picker_layer(self, context: Context) -> None:
