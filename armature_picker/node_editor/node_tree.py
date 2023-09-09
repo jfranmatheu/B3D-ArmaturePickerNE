@@ -10,7 +10,7 @@ import functools
 
 from .nodes._base import AP_Node
 from ..utils.collections import DefaultOrderedDict
-from ..utils.node_editor import get_node_editor_zoom, get_node_editor_view_point, get_node_editor_offset, get_node_editor_region_coord
+from ..utils.node_editor import get_node_editor_zoom, get_node_editor_view_point, get_node_editor_offset, get_node_editor_region_coord, deselect_all_nodes
 from ..utils.armature import deselect_all_bones_from_active
 
 
@@ -97,34 +97,6 @@ class AP_NodeTree(NodeTree):
 
     def get_selected_nodes(self, context: Context) -> set[AP_Node]:
         return set(context.selected_nodes)
-
-
-    def new_node(self, context: Context, type: str | Type[AP_Node], event: Event | None = None) -> AP_Node:
-        ''' Pass Event type if the addition should be interactive (performed inside an invoke to run modal).
-            Pass a Vector in the event place to indicate the node element final-location manually. '''
-        new_node = self.nodes.new(type)
-        ensure_nodes_cache(self)
-
-        if hasattr(new_node, 'bone_name'):
-            if context.active_bone is not None:
-                new_node.bone_name = context.active_bone.name
-
-        if isinstance(event, Event):
-            # --- Interactive Add Node. ---
-            new_node['new'] = 1
-            self.modal_nodes = (new_node, )
-            self.set_inject_modal(context, event,
-                                    modal_callback=self.modal__move_node__update,
-                                    modal_enter_callback=self.modal__move_node__enter,
-                                    modal_exit_callback=self.modal__move_node__exit)
-        else:
-            self.nodes.active = new_node
-
-            # Specified the node element location manually ?
-            if isinstance(event, Vector):
-                new_node.location = event
-
-        return new_node
 
 
     def update_nodes_depth(self) -> None:
@@ -238,8 +210,7 @@ class AP_NodeTree(NodeTree):
         if G_hovered_node is None:
             # Interact with blank space.
             if event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
-                self.new_node(context, 'AP_NODE_bone_picker', event=event)
-                ## print("Create new AP_NODE_bone_picker")
+                deselect_all_nodes(context, nullify_active=True)
                 return {'RUNNING_MODAL'}
 
         hovered_node: Node = self.nodes.get(G_hovered_node, None)
@@ -314,12 +285,8 @@ class AP_NodeTree(NodeTree):
 
     # MODAL: Move Node.
     def modal__move_node__enter(self, context: Context, event: Event, mouse_pos: Vector) -> None:
-        if 'new' in self.modal_nodes[0]:
-            self.prev_node_location = [Vector((0, 0))]
-            self.node_location_offset = [Vector((0, 0))]
-        else:
-            self.prev_node_location = [get_node_editor_region_coord(context, node.location) for node in self.modal_nodes]
-            self.node_location_offset = [prev_node_loc - mouse_pos for prev_node_loc in self.prev_node_location]
+        self.prev_node_location = [get_node_editor_region_coord(context, node.location) for node in self.modal_nodes]
+        self.node_location_offset = [prev_node_loc - mouse_pos for prev_node_loc in self.prev_node_location]
 
     def modal__move_node__update(self, context: Context, event: Event, mouse_pos: Vector) -> int:
         if self.modal_nodes is None or (event.type == 'LEFTMOUSE' and event.value == 'RELEASE'):
@@ -340,13 +307,5 @@ class AP_NodeTree(NodeTree):
                 node.location = prev_node_loc
             del self.prev_node_location
             del self.node_location_offset
-
-            if 'new' in self.active_node:
-                self.nodes.remove(self.active_node)
-
-        elif 'new' in self.modal_nodes[0]:
-            new_node = self.modal_nodes[0]
-            self.nodes.active = new_node
-            del new_node['new']
 
         self.modal_nodes = None
