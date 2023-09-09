@@ -1,10 +1,34 @@
 from bpy.types import Context, UILayout
 from bpy.props import StringProperty, IntProperty, FloatProperty, BoolProperty, FloatVectorProperty, EnumProperty
+from blf import size as set_text_size, dimensions as get_text_dimensions
 
-from ....utils.ui_layout import draw_section
 
 
 class APNODE_BonePicker_NodeProps:
+    def update_dimensions(self, context: Context) -> None:
+        if self.fit_to_text and self.label == '':
+            return
+
+        if self.fit_to_text:
+            ui_scale = context.preferences.system.ui_scale
+            padding = 4 * ui_scale
+            padding *= 2
+
+            set_text_size(0, self.text_size)
+            text_dim = get_text_dimensions(0, self.label)
+            self.dimensions = (
+                text_dim[0] + padding,
+                text_dim[1] + padding
+            )
+
+        else:
+            # USER-EDITED-DIMENSIONS: self.edit_dimensions
+            # INTERNAL DIMENSIONS: self.dimensions
+            self.dimensions = (
+                max(self.edit_dimensions[0] * self.scale[0], 10),
+                max(self.edit_dimensions[1] * self.scale[1], 10)
+            )
+
 
     # UPDATE FUNCTIONS
     # ----------------------------------------------------------------

@@ -32,31 +32,12 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
             bone.select = True
             bones.active = bone
 
-    def select_node(self, context: Context, deselect_all: bool = True, set_active: bool = True) -> None:
-        if deselect_all:
-            bpy.ops.node.select_all(False, action='DESELECT')
-            # deselect_all_nodes(context, nullify_active=True)
-            self.node_tree.nodes.active = None
-        self.select = True
-        if set_active:
-            self.node_tree.nodes.active = self
-
-
-    # ----- ON HOVER --------------------------------
-
-    def on_hover(self, context: Context, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
-        return point_inside_rect(view_loc, self.position, self.size, self.rotation)
-
 
     # ----- INVOKE --------------------------------
 
     def invoke__pose(self, context: Context, event: Event, mouse_pos: Vector) -> set[str] | None:
         if event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
             self.select_bone(context, deselect_all=not event.shift)
-
-    def invoke__edit(self, context: Context, event: Event, mouse_pos: Vector) -> set[str] | None:
-        if event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
-            self.select_node(context, deselect_all=not event.shift, set_active=True)
 
 
     # ----- DRAWING --------------------------------

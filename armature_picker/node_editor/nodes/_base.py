@@ -1,5 +1,5 @@
 import bpy
-from bpy.types import Node, UILayout, NodeTree, Context, Event
+from bpy.types import Node, UILayout, NodeTree, Context, Event, Armature, Bone
 from bpy.props import StringProperty, BoolProperty, IntProperty, EnumProperty
 from mathutils import Vector
 
@@ -7,6 +7,8 @@ from uuid import uuid4
 
 from ...utils.event import Mouse, EventType, EventValue
 from ...utils.operator import OpsReturn
+from ...utils.armature import deselect_all_bones_from_active
+from ...utils.geometry import point_inside_rect
 
 from ._transform_props import NodeTransformProps
 
@@ -235,7 +237,7 @@ class AP_Node(NodeTransformProps):
         return False
 
     def on_hover(self, context: Context, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
-        raise NotImplementedError
+        return point_inside_rect(view_loc, self.position, self.size, self.rotation)
 
     def on_hover_enter(self, context: Context, region_loc: Vector, view_loc: Vector) -> None:
         pass
@@ -289,7 +291,20 @@ class AP_Node(NodeTransformProps):
 
     def invoke__edit(self, context: Context, event: Event, mouse_pos: Vector) -> set[str] | None:
         ''' Invoke method in EDIT mode context. '''
-        pass
+        if event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
+            self.select_node(context, deselect_all=not event.shift, set_active=True)
+
+    # ----- SELECT METHODS --------------------------------
+
+    def select_node(self, context: Context, deselect_all: bool = True, set_active: bool = True) -> None:
+        if deselect_all:
+            bpy.ops.node.select_all(False, action='DESELECT')
+            # deselect_all_nodes(context, nullify_active=True)
+            self.node_tree.nodes.active = None
+        self.select = True
+        if set_active:
+            self.node_tree.nodes.active = self
+
 
     # ----- MODAL --------------------------------
 
