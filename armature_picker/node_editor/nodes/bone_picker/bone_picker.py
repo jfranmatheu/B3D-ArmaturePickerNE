@@ -15,8 +15,8 @@ from ....utils.node_editor import deselect_all_nodes
 
 class AP_BonePickerNode(AP_BonePickerNode_Props, AP_Node, Node):
     bl_idname = 'AP_NODE_bone_picker'
-    # bl_label = 'Bone Picker'
-    # bl_icon = 'CONSTRAINT_BONE'
+    bl_label = 'Bone Picker'
+    bl_icon = 'CONSTRAINT_BONE'
 
     draw_layer = 10
 

@@ -2,14 +2,12 @@ import bpy
 from bpy.types import NodeTree, Context, Event, Node
 from mathutils import Vector
 import gpu
-from bpy.app import timers
 
 from typing import List, Tuple, Type, Dict, Set, Union
 from collections import defaultdict
 import functools
 
 from .nodes._base import AP_Node
-from ..utils.collections import DefaultOrderedDict
 from ..utils.node_editor import get_node_editor_zoom, get_node_editor_view_point, get_node_editor_offset, get_node_editor_region_coord, deselect_all_nodes
 from ..utils.armature import deselect_all_bones_from_active
 
@@ -89,8 +87,8 @@ class AP_NodeTree(NodeTree):
     bl_label = "Armature Picker"
     # Icon identifier
     bl_icon = 'OUTLINER_OB_ARMATURE' # CON_ARMATURE
-    
-    
+
+
     active_node: Union[AP_Node, Node]
     modal_nodes: Union[List[AP_Node], List[Node]]
 
@@ -213,7 +211,16 @@ class AP_NodeTree(NodeTree):
                 deselect_all_nodes(context, nullify_active=True)
                 return {'RUNNING_MODAL'}
 
-        hovered_node: Node = self.nodes.get(G_hovered_node, None)
+        if event.type == 'RIGHTMOUSE' and event.value == 'PRESS':
+            from .ops.add_node.pie_menu import MT_add_node
+            # context.window_manager.popup_menu_pie(event, MT_add_node.draw)
+            bpy.ops.wm.call_menu_pie('INVOKE_DEFAULT', name=MT_add_node.bl_idname)
+            # self.draw = MT_add_node.draw
+            # context.window_manager.piemenu_begin__internal(event=event)
+            return {'PASS_THROUGH'}
+
+        if G_hovered_node is not None:
+            hovered_node: Node = self.nodes.get(G_hovered_node, None)
 
         if self.nodes.active is not None:
             if (event.type == 'G' and event.value == 'RELEASE') or\
