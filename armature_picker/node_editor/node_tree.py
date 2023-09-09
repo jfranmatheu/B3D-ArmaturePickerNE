@@ -91,6 +91,8 @@ class AP_NodeTree(NodeTree):
 
     active_node: Union[AP_Node, Node]
     modal_nodes: Union[List[AP_Node], List[Node]]
+    inject_modal: callable = None
+    inject_modal_exit: callable = None
 
 
     def get_selected_nodes(self, context: Context) -> set[AP_Node]:
