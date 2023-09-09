@@ -53,6 +53,8 @@ class AP_OT_add_node(Operator):
             offset = get_node_editor_offset(context)
 
             new_node.origin = (mouse_pos - offset) * inv_zoom
+        
+        new_node.location = (-100000, -100000)
 
         return new_node
 
