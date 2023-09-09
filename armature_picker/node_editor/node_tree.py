@@ -128,6 +128,8 @@ class AP_NodeTree(NodeTree):
         else:
             ensure_nodes_cache(self)
 
+        in_pose = context.mode == 'POSE'
+
         global G_hovered_node
         view_zoom = get_node_editor_zoom(context)
         region_offset = get_node_editor_offset(context)
@@ -136,6 +138,8 @@ class AP_NodeTree(NodeTree):
         for node_layer_nodes in reversed(sorted_nodetree_nodes_cache):
             for node in reversed(node_layer_nodes):
                 if not node.visible:
+                    continue
+                if in_pose and not node.interactable:
                     continue
                 if node._test_select(context, region_loc, view_loc, view_zoom, region_offset):
                     G_hovered_node = node.uuid

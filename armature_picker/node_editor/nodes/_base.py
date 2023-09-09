@@ -86,6 +86,8 @@ class AP_Node(NodeTransformProps):
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     # Internal Properties.
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    
+    interactable: bool = True
 
     # Properties to store in Node datablock.
     uuid: StringProperty(name="UUID", default='')

@@ -13,6 +13,8 @@ class APNODE_Image(APNODE_Image_NodeProps, AP_Node, Node):
     bl_idname = 'AP_NODE_image'
     bl_label = 'Image'
     bl_icon = 'IMAGE_DATA'
+    
+    interactable: bool = False
 
     draw_layer = 0
 
