@@ -151,7 +151,7 @@ class AP_NodeTree(NodeTree):
 
     def _invoke(self, context: Context, event: Event) -> set[str]:
         # Skip navigation km.
-        if event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE', 'T', 'N', 'TAB'}:
+        if event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE', 'T', 'N', 'TAB', 'X'}:
             if event.value != 'PRESS':
                 return {'PASS_THROUGH'}
             if event.type == 'WHEELUPMOUSE':
@@ -164,6 +164,8 @@ class AP_NodeTree(NodeTree):
                 context.space_data.show_region_ui = not context.space_data.show_region_ui
             elif event.type == 'T':
                 context.space_data.show_region_toolbar = not context.space_data.show_region_toolbar
+            elif event.type == 'X':
+                bpy.ops.node.delete('INVOKE_DEFAULT')
             # elif event.type == 'TAB':
             #     view3d_set_mode(context, 'EDIT' if context.active_object.mode == 'POSE' else 'POSE')
             return {'PASS_THROUGH'}
