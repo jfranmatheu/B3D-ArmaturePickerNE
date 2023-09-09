@@ -32,6 +32,17 @@ class APNODE_BonePicker_StyleProps:
         min=10,
         update=lambda node, ctx: node.update_label(ctx)
     )
+    
+    text_alignment: EnumProperty(
+        name="Text Alignment",
+        items=(
+            ('LEFT', 'Left', ""),
+            ('CENTER', 'Center', ""),
+            ('RIGHT', 'Right', "")
+        ),
+        default='CENTER',
+        update=lambda node, ctx: node.update_graphics(ctx)
+    )
 
     text_color: FloatVectorProperty(
         name='Text Color',
@@ -48,4 +59,5 @@ class APNODE_BonePicker_StyleProps:
         layout.separator()
         layout.prop(self, 'color')
         layout.prop(self, 'text_size')
+        layout.prop(self, 'text_alignment')
         layout.prop(self, 'text_color')

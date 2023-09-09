@@ -170,22 +170,23 @@ def text_cached(data_id: str,
                 _pos: Vector,
                 _text_pos: Vector,
                 _text: str,
-                _size: int,
+                _text_size: int,
+                _label_dimensions: Vector,
                 pivot: tuple[float, float] = (0, 0),
                 angle: float = 0.0,
                 color: tuple[float, float, float] = (.92, .92, .92),
                 alpha: float = 1.0,
                 width=0,
                 render_scale: float = 3.0) -> Vector:
-    if _size < 10:
+    if _text_size < 10:
         return
 
     if not dirty_text and (off := get_offscreen(data_id)) is not None:
-        offscreen(data_id, graphic_id, dirty, _pos, Vector(get_text_dim(_text, _size)), angle, off)
+        offscreen(data_id, graphic_id, dirty, _pos, _label_dimensions, angle, off)
         ## print("Drawing cached text")
     else:
-        draw_offscreen(data_id, partial(text, Vector((0, 0)), _text, _size*10*render_scale, (0, 0), 0, color, alpha, 0), *get_text_dim(_text, _size*render_scale))
-        text(_text_pos, _text, _size, pivot, angle, color, alpha, width)
+        draw_offscreen(data_id, partial(text, Vector((0, 0)), _text, _text_size*10*render_scale, (0, 0), 0, color, alpha, 0), *get_text_dim(_text, _text_size*render_scale))
+        text(_text_pos, _text, _text_size, pivot, angle, color, alpha, width)
 
 
 def box(data_id: str, graphic_id: str, dirty: bool, pos: Vector, size: Vector, angle: float, line_thickness: float, color: RGBA, _shader=SHADER_UNIFORM_COLOR):

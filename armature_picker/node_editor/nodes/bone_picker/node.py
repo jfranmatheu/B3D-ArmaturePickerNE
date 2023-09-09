@@ -44,22 +44,44 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
     # ----- DRAWING --------------------------------
 
     def draw_common(self, context: Context, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+        pos, size = self.position, self.size
+
         draw.rectangle(
             self.uuid, 'BUTTON_BASE', self.dirty, # CACHE.
-            self.position, self.size, self.rotation, # TRANSFORM.
+            pos, size, self.rotation, # TRANSFORM.
             self.color if not hovered else Vector(self.color) * 0.8 # STYLE.
         )
 
         if self.label != '':
             padding = 4 * scale
 
+            label_dimensions = Vector(self.label_dimensions)
+
+            if self.fit_to_text:
+                pivot = (0.5, 0.5)
+                tex_pos = self.position + Vector((padding, padding))
+            else:
+                align = self.text_alignment
+                if align == 'LEFT':
+                    pivot = (0.0, 0.5)
+                elif align == 'CENTER':
+                    pivot = (0.5, 0.5)
+                elif align == 'RIGHT':
+                    pivot = (1.0, 0.5)
+
+                tex_pos = Vector((
+                    self.position.x + size.x * pivot[0] - label_dimensions.x * pivot[0],
+                    self.position.y + size.y * pivot[1] - label_dimensions.y * pivot[1],
+                ))
+
             draw.text_cached(
                 self.uuid, 'LABEL', self.dirty, self.dirty_label,
-                self.position + Vector((padding, padding)),
-                Vector(self.origin) if self.rotation == 0 else rotate_point(Vector(self.position) + Vector((padding, padding)), self.origin, self.rotation),
+                tex_pos,
+                Vector(self.origin) if self.rotation == 0 else rotate_point(pos + Vector((padding, padding)), self.origin, self.rotation),
                 self.label,
                 self.text_size,
-                pivot=(0.5, 0.5) if self.rotation == 0 else (0, 0),
+                label_dimensions,
+                pivot=pivot if self.rotation == 0 else (0, 0),
                 angle=self.rotation,
                 color=self.text_color
             )
@@ -72,7 +94,7 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
                 line_thickness=(3 * scale) if active else 2.5 * scale,
                 color=(1.0, 1.0, .1, 1.0) if active else (.32, .64, 1.0, 1.0)
             )
-    
+
     def draw__pose(self, context, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         if active:
             draw.box(
@@ -84,7 +106,7 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
 
 
     # ----- UI LAYOUT DRAWING -----------------------------------------------------------
-    
+
     def draw_transform(self, layout: UILayout) -> None:
         layout.prop(self, 'origin')
         layout.prop(self, 'rotation')
