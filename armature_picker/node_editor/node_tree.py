@@ -221,7 +221,7 @@ class AP_NodeTree(NodeTree):
                 bpy.ops.node.select_all(False, action='DESELECT')
                 return {'RUNNING_MODAL'}
 
-        if event.type == 'RIGHTMOUSE' and event.value == 'PRESS':
+        if event.type == 'A' and event.value == 'PRESS' and event.shift:
             from .ops.add_node.pie_menu import MT_add_node
             # context.window_manager.popup_menu_pie(event, MT_add_node.draw)
             bpy.ops.wm.call_menu_pie('INVOKE_DEFAULT', name=MT_add_node.bl_idname)
