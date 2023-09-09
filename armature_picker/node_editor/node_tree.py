@@ -223,13 +223,12 @@ class AP_NodeTree(NodeTree):
             # context.window_manager.piemenu_begin__internal(event=event)
             return {'PASS_THROUGH'}
 
-        # if G_hovered_node is not None:
-        #     hovered_node: Node = self.nodes.get(G_hovered_node, None)
+        if G_hovered_node is not None:
+            hovered_node: Node = self.nodes.get(G_hovered_node, None)
 
         if self.nodes.active is not None:
             if (event.type == 'G' and event.value == 'RELEASE') or\
-               (event.type == 'LEFTMOUSE' and event.value == 'CLICK_DRAG' and G_hovered_node is not None):# or\
-                #(event.type == 'LEFTMOUSE' and event.value == 'PRESS' and G_hovered_node is not None and hovered_node in self.get_selected_nodes(context)):
+               (event.type == 'LEFTMOUSE' and event.value == 'CLICK_DRAG' and G_hovered_node is not None and hovered_node in self.get_selected_nodes(context)):
                 self.modal_nodes = context.selected_nodes
                 self.set_inject_modal(context, event,
                                       modal_callback=self.modal__move_node__update,
