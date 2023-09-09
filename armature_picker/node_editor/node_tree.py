@@ -212,7 +212,8 @@ class AP_NodeTree(NodeTree):
         if G_hovered_node is None:
             # Interact with blank space.
             if event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
-                deselect_all_nodes(context, nullify_active=True)
+                # deselect_all_nodes(context, nullify_active=True)
+                bpy.ops.node.select_all(False, action='DESELECT')
                 return {'RUNNING_MODAL'}
 
         if event.type == 'RIGHTMOUSE' and event.value == 'PRESS':
