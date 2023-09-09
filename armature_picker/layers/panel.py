@@ -1,7 +1,7 @@
 from bpy.types import Context, Panel
 
 from .ui_list import LIST_PickerLayers
-from .poll import poll_node_editor
+from ..ops.poll import poll_node_editor
 
 
 class PickerLayersPanel(Panel):

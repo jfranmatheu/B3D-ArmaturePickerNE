@@ -3,7 +3,7 @@ from bpy.props import IntProperty
 
 from uuid import uuid4
 
-from .poll import poll_node_editor
+from ..ops.poll import poll_node_editor
 from ..utils.operator import OpsReturn
 from .update import on_remove_layer
 from ..utils.node_editor import deselect_all_nodes
