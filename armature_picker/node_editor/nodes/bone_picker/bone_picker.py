@@ -99,4 +99,7 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
         _sub = layout.column()
         _sub.enabled = not self.fit_to_text
         _sub.prop(self, 'scale')
-        _sub.prop(self, 'edit_dimensions')
+        if self.fit_to_text:
+            _sub.prop(self, 'dimensions')
+        else:
+            _sub.prop(self, 'edit_dimensions')
