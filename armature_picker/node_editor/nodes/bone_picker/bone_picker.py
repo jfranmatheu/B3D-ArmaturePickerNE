@@ -100,7 +100,3 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
         _sub.enabled = not self.fit_to_text
         _sub.prop(self, 'scale')
         _sub.prop(self, 'edit_dimensions')
-
-        layout.separator()
-
-        layout.prop(self, 'fit_to_text')
