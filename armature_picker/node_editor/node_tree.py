@@ -219,8 +219,6 @@ class AP_NodeTree(NodeTree):
             from .ops.add_node.pie_menu import MT_add_node
             # context.window_manager.popup_menu_pie(event, MT_add_node.draw)
             bpy.ops.wm.call_menu_pie('INVOKE_DEFAULT', name=MT_add_node.bl_idname)
-            # self.draw = MT_add_node.draw
-            # context.window_manager.piemenu_begin__internal(event=event)
             return {'PASS_THROUGH'}
 
         if G_hovered_node is not None:
