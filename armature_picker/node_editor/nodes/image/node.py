@@ -5,6 +5,7 @@ import bpy
 from bpy.types import Context, Event, UILayout
 
 from ....gpu import draw
+from ....paths import Paths
 
 
 
@@ -18,6 +19,12 @@ class APNODE_Image(APNODE_Image_NodeProps, AP_Node, Node):
     def init(self, context):
         super().init(context)
         self.label = 'Image'
+        
+        image = bpy.data.images.get('Sav Martin es Muy Cool')
+        if not image:
+            image = bpy.data.images.load(str(Paths.IMAGES.joinpath('default_image.jpg')))
+            image.name = 'Sav Martin es Muy Cool'
+        self.image = image
 
     # ----- DRAWING --------------------------------
 
