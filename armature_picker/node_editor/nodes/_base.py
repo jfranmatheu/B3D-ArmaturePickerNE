@@ -389,3 +389,18 @@ class AP_Node(NodeTransformProps):
         if self.dirty_label:
             set_dirty_label_state(self.uuid, False)
             self.update_graphics(context)
+
+
+        # ----- UI LAYOUT DRAWING --------------------------------
+        
+    def draw_buttons_ext(self, context: Context, layout: UILayout) -> None:
+        if context.mode == 'POSE':
+            self.draw_ui__pose(context, layout)
+        elif context.mode == 'EDIT_ARMATURE':
+            self.draw_ui__edit(context, layout)
+    
+    def draw_ui__pose(self, context: Context, layout: UILayout) -> None:
+        pass
+    
+    def draw_ui__edit(self, context: Context, layout: UILayout) -> None:
+        pass
