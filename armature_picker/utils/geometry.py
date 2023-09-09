@@ -19,18 +19,21 @@ def point_inside_rect(_p, _pos, _size, _angle=0):
         '_pos' should be the lower left corner of the rectangle.
     '''
     if _angle != 0:
+        p = _p.copy()
         # rotate around rectangle center by -rectAngle
         s = sin(-_angle)
         c = cos(-_angle)
         rect_center: Vector = _pos + _size * 0.5
         # set origin to rect center
-        _p -= rect_center
+        p -= rect_center
         # rotate
-        _p = Vector((_p.x * c - _p.y * s, _p.x * s + _p.y * c))
+        p = Vector((p.x * c - p.y * s, p.x * s + p.y * c))
         # put origin back
-        _p += rect_center
+        p += rect_center
+    else:
+        p = _p
 
-    return ((_pos[0] + _size[0]) > _p[0] > _pos[0]) and ((_pos[1] + _size[1]) > _p[1] > _pos[1])
+    return ((_pos[0] + _size[0]) > p[0] > _pos[0]) and ((_pos[1] + _size[1]) > p[1] > _pos[1])
 
 
 def rotate_point(p: Vector, o: Vector, angle: float) -> Vector:
