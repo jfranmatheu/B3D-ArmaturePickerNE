@@ -14,7 +14,7 @@ class APNODE_Image(APNODE_Image_NodeProps, AP_Node, Node):
     bl_icon = 'IMAGE_DATA'
 
     draw_layer = 0
-    
+
     def init(self, context):
         self.label = 'Image'
 
@@ -40,12 +40,12 @@ class APNODE_Image(APNODE_Image_NodeProps, AP_Node, Node):
             draw.box(
                 self.uuid, 'IMAGE_BOX_ACTIVE', self.dirty,
                 self.position, self.size, self.rotation,
-                line_thickness=(3 * scale) if active else 2.5 * scale	,
+                line_thickness=(3 * scale) if active else 2.5 * scale,
                 color=(1.0, 1.0, .1, 1.0) if active else (.32, .64, 1.0, 1.0)
             )
 
     # ----- UI LAYOUT DRAWING -----------------------------------------------------------
-    
+
     def draw_transform(self, layout: UILayout) -> None:
         layout.prop(self, 'location')
         layout.prop(self, 'rotation')

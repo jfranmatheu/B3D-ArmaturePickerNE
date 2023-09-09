@@ -68,7 +68,7 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
             draw.box(
                 self.uuid, 'BUTTON_BOX_ACTIVE', self.dirty,
                 self.position, self.size, self.rotation,
-                line_thickness=(3 * scale) if active else 2.5 * scale	,
+                line_thickness=(3 * scale) if active else 2.5 * scale,
                 color=(1.0, 1.0, .1, 1.0) if active else (.32, .64, 1.0, 1.0)
             )
     
