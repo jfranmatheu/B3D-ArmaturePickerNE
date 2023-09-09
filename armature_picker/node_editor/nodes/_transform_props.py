@@ -68,7 +68,7 @@ class NodeTransformProps:
         default=(20, 20),
         min=20,
         size=2,
-        update=lambda node, ctx: node.update_dimensions(ctx) if not node.fit_to_text else None
+        update=lambda node, ctx: node.update_dimensions(ctx)
     )
 
     @property
