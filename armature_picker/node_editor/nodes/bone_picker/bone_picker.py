@@ -1,19 +1,18 @@
 from .._base import AP_Node, Node
-from .node_props import AP_BonePickerNode_Props
+from .node_props import APNODE_BonePicker_NodeProps
+from .style_props import APNODE_BonePicker_StyleProps
 
 import bpy
-from bpy.types import Context, Armature, Bone, Event
+from bpy.types import Context, Armature, Bone, Event, UILayout
 from mathutils import Vector
-from functools import partial
 
 from ....gpu import draw
 from ....utils.geometry import point_inside_rect, rotate_point
 from ....utils.armature import deselect_all_bones_from_active
-from ....utils.node_editor import deselect_all_nodes
 
 
 
-class AP_BonePickerNode(AP_BonePickerNode_Props, AP_Node, Node):
+class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProps, AP_Node, Node):
     bl_idname = 'AP_NODE_bone_picker'
     bl_label = 'Bone Picker'
     bl_icon = 'CONSTRAINT_BONE'
@@ -91,3 +90,17 @@ class AP_BonePickerNode(AP_BonePickerNode_Props, AP_Node, Node):
                 line_thickness=(3 * scale) if active else 2.5 * scale	,
                 color=(1.0, 1.0, .1, 1.0) if active else (.32, .64, 1.0, 1.0)
             )
+    
+    # ----- UI LAYOUT DRAWING -----------------------------------------------------------
+    
+    def draw_transform(self, layout: UILayout) -> None:
+        layout.prop(self, 'location')
+        layout.prop(self, 'rotation')
+        _sub = layout.column()
+        _sub.enabled = not self.fit_to_text
+        _sub.prop(self, 'scale')
+        _sub.prop(self, 'edit_dimensions')
+
+        layout.separator()
+
+        layout.prop(self, 'fit_to_text')

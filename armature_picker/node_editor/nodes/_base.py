@@ -8,6 +8,8 @@ from uuid import uuid4
 from ...utils.event import Mouse, EventType, EventValue
 from ...utils.operator import OpsReturn
 
+from ._transform_props import NodeTransformProps
+
 
 # ----------------------------------------------------------------
 # Global variables.
@@ -69,7 +71,7 @@ def poll__node_edit(context: Context) -> None:
 
 # Mix-in class for all custom nodes in this tree type.
 # Defines a poll function to enable instantiation.
-class AP_Node:
+class AP_Node(NodeTransformProps):
     bl_label = ''
     bl_icon = 'NONE'
     bl_height_max = 0
