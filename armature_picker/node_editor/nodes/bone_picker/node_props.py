@@ -90,7 +90,31 @@ class APNODE_BonePicker_NodeProps:
         update=update_bone_name
     )
 
-    def draw_buttons_ext(self, context: Context, layout: UILayout) -> None:
+
+    def draw_ui__pose(self, context: Context, layout: UILayout) -> None:
+        if context.active_object.animation_data is None:
+            layout.label(text="No animation data")
+            return
+
+        col = layout.column(align=False)
+        col.use_property_decorate = True
+        col.use_property_split = True
+        if action := context.active_object.animation_data.action:
+            drawn_attr = set()
+            for fcu in action.fcurves:
+                data_path: str = fcu.data_path
+                if data_path.startswith('pose.bones'):
+                    if self.bone_name == data_path.split('"')[1]:
+                        attr = data_path.split('.')[-1]
+                        if attr in drawn_attr:
+                            continue
+                        drawn_attr.add(attr)
+                        col.prop(self.get_bone(context, from_pose_data=True), attr)
+                # print(fcu.data_path + " channel " + str(fcu.array_index))
+                # for keyframe in fcu.keyframe_points:
+                #     print(keyframe.co) #coordinates x,y
+
+    def draw_ui__edit(self, context: Context, layout: UILayout) -> None:
         layout.prop(self, 'label')
         layout.prop(self, 'bone_name')
 
