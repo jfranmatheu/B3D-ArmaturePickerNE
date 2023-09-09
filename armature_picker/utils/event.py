@@ -110,3 +110,7 @@ class Mouse:
 
         self.dir.x = 0 if self.delta.x==0 else 1 if self.delta.x > 0 else -1
         self.dir.y = 0 if self.delta.y==0 else 1 if self.delta.y > 0 else -1
+
+
+def get_mouse_pos(event: Event) -> Vector:
+    return Vector((event.mouse_region_x, event.mouse_region_y))
