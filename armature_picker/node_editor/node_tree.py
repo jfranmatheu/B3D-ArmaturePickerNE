@@ -95,8 +95,12 @@ class AP_NodeTree(NodeTree):
     inject_modal_exit: callable = None
 
 
-    def get_selected_nodes(self, context: Context) -> set[AP_Node]:
-        return set(context.selected_nodes)
+    def get_selected_nodes(self, context: Context, include_active: bool = True) -> set[AP_Node]:
+        sel_nodes = set(context.selected_nodes)
+        if include_active:
+            if act_node := self.nodes.active:
+                sel_nodes.add(act_node)
+        return sel_nodes
 
 
     def update_nodes_depth(self) -> None:
@@ -225,11 +229,14 @@ class AP_NodeTree(NodeTree):
 
         if G_hovered_node is not None:
             hovered_node: Node = self.nodes.get(G_hovered_node, None)
+            
+        sel_nodes = self.get_selected_nodes(context, include_active=True)
+        print("Selected nodes", sel_nodes)
 
         if self.nodes.active is not None:
             if (event.type == 'G' and event.value == 'RELEASE') or\
-               (event.type == 'LEFTMOUSE' and event.value == 'CLICK_DRAG' and G_hovered_node is not None and hovered_node in self.get_selected_nodes(context)):
-                self.modal_nodes = context.selected_nodes
+               (event.type == 'LEFTMOUSE' and event.value == 'CLICK_DRAG' and G_hovered_node is not None and hovered_node in sel_nodes):
+                self.modal_nodes = sel_nodes
                 self.set_inject_modal(context, event,
                                       modal_callback=self.modal__move_node__update,
                                       modal_enter_callback=self.modal__move_node__enter,
