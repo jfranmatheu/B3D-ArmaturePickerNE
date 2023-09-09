@@ -127,7 +127,7 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
 
             if self.fit_to_text:
                 pivot = (0.5, 0.5)
-                tex_pos = self.position + Vector((padding, padding))
+                tex_pos = pos + Vector((padding, padding))
             else:
                 align = self.text_alignment
                 if align == 'LEFT':
@@ -138,8 +138,8 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
                     pivot = (1.0, 0.5)
 
                 tex_pos = Vector((
-                    self.position.x + size.x * pivot[0] - label_dimensions.x * pivot[0],
-                    self.position.y + size.y * pivot[1] - label_dimensions.y * pivot[1],
+                    pos.x + size.x * pivot[0] - label_dimensions.x * pivot[0],
+                    pos.y + size.y * pivot[1] - label_dimensions.y * pivot[1],
                 ))
 
             draw.text_cached(
@@ -151,7 +151,8 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
                 label_dimensions,
                 pivot=pivot if self.rotation == 0 else (0, 0),
                 angle=self.rotation,
-                color=self.text_color
+                color=self.text_color,
+                origin=self.origin
             )
 
     def draw__edit(self, context, scale: float, active: bool, selected: bool, hovered: bool) -> None:

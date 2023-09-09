@@ -17,7 +17,7 @@ class NodeTransformProps:
     def update_graphics(self, context: Context) -> None:
         self.dirty = True
 
-        context.region.tag_redraw()
+        context.area.tag_redraw()
 
 
     # TRANSFORM PROPERTIES
