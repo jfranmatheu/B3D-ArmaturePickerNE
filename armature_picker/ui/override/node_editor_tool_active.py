@@ -37,6 +37,6 @@ def register():
     # set_cls_attribute(NODE_PT_tools_active, 'draw_cls', draw_cls)
     # set_cls_attribute(NODE_PT_tools_active, 'tools_from_context', tools_from_context)
     
-    set_cls_attribute(ToolActivePanelHelper, 'draw', draw)
+    # set_cls_attribute(ToolActivePanelHelper, 'draw', draw)
     
     # set_cls_attribute(ToolSelectPanelHelper, 'draw_active_tool_fallback', draw_active_tool_fallback)
