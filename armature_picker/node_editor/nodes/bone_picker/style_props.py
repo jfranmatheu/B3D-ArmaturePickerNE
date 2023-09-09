@@ -51,7 +51,8 @@ class APNODE_BonePicker_StyleProps:
         size=4,
         min=0.0,
         max=1.0,
-        subtype='COLOR'
+        subtype='COLOR',
+        update=lambda node, ctx: node.update_label(ctx)
     )
 
     def draw_styles(self, layout: UILayout) -> None:
