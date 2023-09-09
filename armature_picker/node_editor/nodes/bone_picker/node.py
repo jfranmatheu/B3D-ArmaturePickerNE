@@ -38,6 +38,7 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
     def invoke__pose(self, context: Context, event: Event, mouse_pos: Vector) -> set[str] | None:
         if event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
             self.select_bone(context, deselect_all=not event.shift)
+            self.select_node(context, deselect_all=not event.shift)
 
 
     # ----- DRAWING --------------------------------
