@@ -6,9 +6,8 @@ from blf import size as set_text_size, dimensions as get_text_dimensions
 
 class APNODE_BonePicker_NodeProps:
     def get_bone_custom_properties(self, context: Context) -> None:
-        armature: Armature = context.active_object.data
-        bones = armature.bones if context.mode == 'POSE' else armature.edit_bones
-        if bone := bones.get(self.bone_name, None):
+        pose = context.active_object.pose
+        if bone := pose.bones.get(self.bone_name, None):
             return [
                 (key, key, "") for key in bone.keys() if not key.startswith('_RNA')
             ]
