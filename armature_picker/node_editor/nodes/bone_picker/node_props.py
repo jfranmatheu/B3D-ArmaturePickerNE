@@ -14,11 +14,9 @@ class APNODE_BonePicker_NodeProps:
             padding = 4 * ui_scale
             padding *= 2
 
-            set_text_size(0, self.text_size)
-            text_dim = get_text_dimensions(0, self.label)
             self.dimensions = (
-                text_dim[0] + padding,
-                text_dim[1] + padding
+                self.label_dimensions[0] + padding,
+                self.label_dimensions[1] + padding
             )
 
         else:
@@ -33,6 +31,9 @@ class APNODE_BonePicker_NodeProps:
     # UPDATE FUNCTIONS
     # ----------------------------------------------------------------
     def update_label(self, context: Context) -> None:
+        set_text_size(0, self.text_size)
+        self.label_dimensions = get_text_dimensions(0, self.label)
+
         self.update_dimensions(context)
         self.dirty_label = True
         self.update_graphics(context)
@@ -44,6 +45,14 @@ class APNODE_BonePicker_NodeProps:
 
     # BUTTON PROPERTIES
     # ----------------------------------------------------------------
+    label_dimensions: FloatVectorProperty(
+        name="Label Dimensions",
+        min=0,
+        size=2,
+        subtype='XYZ',
+        options={'HIDDEN'}
+    )
+
     label: StringProperty(
         name="Label",
         description="Button label",
