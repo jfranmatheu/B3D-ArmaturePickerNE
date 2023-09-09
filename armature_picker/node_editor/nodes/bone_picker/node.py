@@ -7,7 +7,7 @@ from bpy.types import Context, Armature, Bone, Event, UILayout
 from mathutils import Vector
 
 from ....gpu import draw
-from ....utils.geometry import point_inside_rect, rotate_point
+from ....utils.geometry import rotate_point
 from ....utils.armature import deselect_all_bones_from_active
 
 

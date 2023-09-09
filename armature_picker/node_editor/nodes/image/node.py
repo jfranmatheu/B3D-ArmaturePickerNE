@@ -2,12 +2,9 @@ from .._base import AP_Node, Node
 from .node_props import APNODE_Image_NodeProps
 
 import bpy
-from bpy.types import Context, Armature, Bone, Event, UILayout
-from mathutils import Vector
+from bpy.types import Context, Event, UILayout
 
 from ....gpu import draw
-from ....utils.geometry import point_inside_rect, rotate_point
-from ....utils.armature import deselect_all_bones_from_active
 
 
 
@@ -41,7 +38,7 @@ class APNODE_Image(APNODE_Image_NodeProps, AP_Node, Node):
     def draw__edit(self, context, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         if active or selected:
             draw.box(
-                self.uuid, 'BUTTON_BOX_ACTIVE', self.dirty,
+                self.uuid, 'IMAGE_BOX_ACTIVE', self.dirty,
                 self.position, self.size, self.rotation,
                 line_thickness=(3 * scale) if active else 2.5 * scale	,
                 color=(1.0, 1.0, .1, 1.0) if active else (.32, .64, 1.0, 1.0)
