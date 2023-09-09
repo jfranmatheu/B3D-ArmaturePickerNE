@@ -16,6 +16,7 @@ class APNODE_Image(APNODE_Image_NodeProps, AP_Node, Node):
     draw_layer = 0
 
     def init(self, context):
+        super().init(context)
         self.label = 'Image'
 
     # ----- DRAWING --------------------------------
