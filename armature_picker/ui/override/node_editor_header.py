@@ -21,6 +21,8 @@ def draw(self, context: Context):
     layout.template_ID(snode, "node_tree", new="node.new_node_tree")
 
     layout.separator_spacer()
+    
+    layout.popover(panel="AP_PT_picker_layers", text="", icon='HIDE_OFF')
 
     # Overlay toggle & popover
     row = layout.row(align=True)
