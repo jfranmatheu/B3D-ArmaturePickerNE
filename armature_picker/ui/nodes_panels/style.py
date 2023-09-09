@@ -22,5 +22,5 @@ class APNODE_PT_style(Panel):
         layout = self.layout
         node = context.space_data.node_tree.nodes.active
 
-        section_style = draw_section(layout, 'Style', icon='ORIENTATION_VIEW')
+        section_style = draw_section(layout, 'Style', icon='COLOR')
         node.draw_styles(section_style)
