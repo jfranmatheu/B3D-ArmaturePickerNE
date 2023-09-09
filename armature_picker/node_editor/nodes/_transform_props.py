@@ -63,7 +63,7 @@ class NodeTransformProps:
         name="Scale",
         description="Picker button scale",
         default=(1, 1),
-        min=0,
+        min=0.5,
         size=2,
         subtype='XYZ',
         update=update_dimensions
