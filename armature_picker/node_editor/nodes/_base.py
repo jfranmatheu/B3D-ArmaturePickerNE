@@ -190,6 +190,17 @@ class AP_Node(NodeTransformProps):
     # Free function to clean up on removal.
     def free(self):
         print("Removing node ", self, ", Goodbye!")
+        
+        
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    # UI Layout drawing.
+    # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+    
+    def draw_visibility(self, layout: UILayout) -> None:
+        layout.prop(self, 'picker_layer', expand=False)
+
+    def draw_styles(self, layout: UILayout) -> None:
+        pass
 
 
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++

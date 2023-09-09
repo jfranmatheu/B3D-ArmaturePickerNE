@@ -23,4 +23,4 @@ class APNODE_PT_visibility(Panel):
         node = context.space_data.node_tree.nodes.active
 
         section_v = draw_section(layout, 'Visibility', icon='HIDE_OFF')
-        section_v.prop(node, 'picker_layer', expand=False)
+        node.draw_visibility(section_v)
