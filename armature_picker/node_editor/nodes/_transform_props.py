@@ -56,7 +56,7 @@ class NodeTransformProps:
         name="Dimensions",
         min=0,
         size=2,
-        default=(20, 20)
+        default=(20, 20),
         subtype='XYZ',
         options={'HIDDEN'},
         update=update_graphics
