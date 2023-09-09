@@ -97,13 +97,14 @@ def rectangle(data_id: str,
               size: Vector,
               angle: float,
               color: RGBA,
+              origin: Vector | None = None,
               _shader=SHADER_UNIFORM_COLOR) -> None:
     if not dirty and (batch := get_batch_from_cache(data_id, graphic_id)) is not None:
         pass
     else:
         batch: GPUBatch = batch_for_shader(_shader, 'TRIS',
             {"pos": get_rect_coords(*pos, *size) if angle == 0 else
-                    get_rotated_rect_coords(pos, size, pos+size*0.5, angle)},
+                    get_rotated_rect_coords(pos, size, origin if origin is not None else pos+size*0.5, angle)},
             indices=rect_indices)
         set_batch_to_cache(data_id, graphic_id, batch)
     _shader.uniform_float("color", color)
