@@ -210,6 +210,15 @@ class AP_NodeTree(NodeTree):
 
 
     def invoke__pose(self, context: Context, event: Event) -> set[str] | None:
+        if event.type == 'RIGHTMOUSE' and event.value == 'PRESS':
+            if context.active_bone is None:
+                return {'PASS_THROUGH'}
+            from .ops.insert_keyframe import MT_insert_keyframe
+            # context.window_manager.popup_menu_pie(event, MT_insert_keyframe.draw)
+            with context.temp_override(window=context.window, area=context.area, bone=context.active_bone):
+                bpy.ops.wm.call_menu_pie('INVOKE_DEFAULT', name=MT_insert_keyframe.bl_idname)
+            return {'PASS_THROUGH'}
+
         global G_hovered_node
         if G_hovered_node is None:
             deselect_all_bones_from_active(context)
