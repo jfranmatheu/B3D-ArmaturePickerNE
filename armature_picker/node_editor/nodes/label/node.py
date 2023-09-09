@@ -13,6 +13,8 @@ class APNODE_Label(APNODE_Label_NodeProps, APNODE_Label_StyleProps, AP_Node, Nod
     bl_label = 'LABEL'
     bl_icon = 'FILE_FONT'
 
+    interactable = False
+
     draw_layer = 2
 
     
