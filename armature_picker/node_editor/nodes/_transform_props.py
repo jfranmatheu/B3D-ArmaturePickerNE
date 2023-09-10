@@ -104,6 +104,7 @@ class RectTransform(PropertyGroup):
         description="The pivot defines the alignment of the RectTransform. By default (0.5, 0.5) means the origin is centered",
         size=2,
         default=(0.5, 0.5),
+        min=0.0, max=1.0,
         subtype='XYZ',
         update=update
     )
