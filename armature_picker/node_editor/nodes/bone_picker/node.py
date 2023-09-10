@@ -35,6 +35,10 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
 
     def toggle_ik_fk(self, context: Context) -> bool:
         if bone := context.active_pose_bone:
+            if bone.name != self.bone_name:
+                bone = context.active_object.pose.bones.get(self.bone_name, None)
+                if bone is None:
+                    return False
             if self.ik_fk_prop_idname in bone:
                 bone[self.ik_fk_prop_idname] = not bool(bone[self.ik_fk_prop_idname])
         return False
@@ -79,11 +83,11 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
 
     def invoke__pose(self, context: Context, event: Event, mouse_pos: Vector) -> set[str] | None:
         if event.type == 'LEFTMOUSE' and event.value == 'CLICK':
-            self.select_bone(context, deselect_all=not event.shift)
-            self.select_node(context, deselect_all=not event.shift)
-
             if self.get_state('ik_fk_hovered'):
                 self.toggle_ik_fk(context)
+                return
+            self.select_node(context, deselect_all=not event.shift)
+            self.select_bone(context, deselect_all=not event.shift)
 
 
     # ----- DRAWING --------------------------------
