@@ -115,11 +115,20 @@ class APNODE_BonePicker_NodeProps:
                 #     print(keyframe.co) #coordinates x,y
 
     def draw_ui__edit(self, context: Context, layout: UILayout) -> None:
-        layout.prop(self, 'label')
-        layout.prop(self, 'bone_name')
+        layout.prop(self, 'bone_name', text='Bone')
 
         layout.separator()
 
         row = layout.row(align=True, heading='IK/FK')
         row.prop(self, 'use_ik_fk', text='', expand=False)
         row.prop(self, 'ik_fk_prop_idname', text='')
+
+
+    def draw_label_props(self, layout: UILayout) -> None:
+        layout.prop(self, 'label')
+
+        layout.separator()
+
+        layout.prop(self, 'text_size')
+        layout.prop(self, 'text_alignment')
+        layout.prop(self, 'fit_to_text')

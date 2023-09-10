@@ -12,7 +12,9 @@ class APNODE_PT_visibility(Panel):
     bl_region_type = 'UI'
     bl_category = 'Node'
     
-    bl_order = 3
+    bl_options = {'HIDE_HEADER'}
+
+    bl_order = 0
 
     @classmethod
     def poll(cls, context: Context):
@@ -20,7 +22,9 @@ class APNODE_PT_visibility(Panel):
 
     def draw(self, context: Context):
         layout = self.layout
+        layout.use_property_decorate = False
+        layout.use_property_split = True
         node = context.space_data.node_tree.nodes.active
 
-        section_v = draw_section(layout, 'Visibility', icon='HIDE_OFF')
-        node.draw_visibility(section_v)
+        # section_v = draw_section(layout, 'Visibility', icon='HIDE_OFF')
+        node.draw_visibility(layout)

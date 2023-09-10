@@ -56,9 +56,5 @@ class APNODE_BonePicker_StyleProps:
     )
 
     def draw_styles(self, layout: UILayout) -> None:
-        layout.prop(self, 'fit_to_text')
-        layout.separator()
         layout.prop(self, 'color')
-        layout.prop(self, 'text_size')
-        layout.prop(self, 'text_alignment')
         layout.prop(self, 'text_color')
