@@ -117,15 +117,13 @@ class APNODE_BonePicker_NodeProps:
     def draw_ui__edit(self, context: Context, layout: UILayout) -> None:
         layout.prop(self, 'bone_name', text='Bone')
 
-        layout.separator()
-
         row = layout.row(align=True, heading='IK/FK')
         row.prop(self, 'use_ik_fk', text='', expand=False)
         row.prop(self, 'ik_fk_prop_idname', text='')
 
 
     def draw_label_props(self, layout: UILayout) -> None:
-        layout.prop(self, 'label')
+        layout.prop(self, 'label', text="Text")
 
         layout.separator()
 
