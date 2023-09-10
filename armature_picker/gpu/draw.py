@@ -97,6 +97,26 @@ tex_indices = ((0,1,2),(2,3,0))
 
 # ----------------------------------------------------------------
 
+def draw(owner: object, graphic_id: str, pos: Vector, size: Vector, angle: float, shader: GPUShader, origin: Vector | None = None, use_uv: bool = False, wg: bool = False, **uniforms):
+    if not owner.dirty and (batch := get_batch_from_cache(owner.uuid, graphic_id)) is not None:
+        pass
+    else:
+        coords = get_tex_coords(pos, size) if angle == 0 else get_rotated_tex_coords(pos, size, origin if origin is not None else pos+size*0.5, angle)
+        if use_uv:
+            _input = {'pos': coords, 'texco': tex_uv_indices}
+        else:
+            _input = {'pos': coords}
+        batch = batch_for_shader(shader, 'TRIS',
+                                 _input,
+                                 indices=tex_indices)
+        set_batch_to_cache(owner.uuid, graphic_id, batch)
+    for key, value in uniforms.items():
+        shader.uniform_float(key, value)
+    if wg:
+        shader.uniform_float('u_dimensions', size)
+    batch.draw(shader)
+
+
 def draw_node(node: object, graphic_id: str, shader: GPUShader, use_uv: bool = False, wg: bool = False, **uniforms):
     if not node.dirty and (batch := get_batch_from_cache(node.uuid, graphic_id)) is not None:
         pass
@@ -249,7 +269,27 @@ def offscreen(node: object, graphic_id: str, off: GPUOffScreen, origin: Vector |
 # ----------------------------------------------------------------
 
 
-def wg(node: object, graphic_id: str, roundness: float, outline_thickness: float, bg_color: RGBA, _shader=SHADERS.WG) -> None:
+def wg(owner: object, graphic_id: str,
+       pos: Vector, size: Vector, rotation: float,
+       roundness: float, outline_thickness: float, bg_color: RGBA,
+       origin: Vector | None = None, _shader=SHADERS.WG) -> None:
+    ''' Uniforms:
+        ---------------
+        - ``vec2`` u_dimensions;
+        - ``vec4`` u_color;
+        - ``float`` u_radius;
+        - ``float`` u_outline;
+    '''
+    if bg_color[-1] != 1.0:
+        state.blend_set('ALPHA')
+    rad = min(*size) * 0.5 * roundness
+    value = rgb_to_hsv(bg_color[0], bg_color[1], bg_color[2])[-1]
+    outline_color_factor = 1 + pow(value, 2)
+    draw(owner, graphic_id, pos, size, rotation, _shader, use_uv=True, wg=True, origin=origin,
+              u_color=bg_color, u_radius=rad, u_outline=outline_thickness, u_outline_color_factor=outline_color_factor)
+
+
+def wg_ui(node: object, graphic_id: str, roundness: float, outline_thickness: float, bg_color: RGBA, _shader=SHADERS.WG) -> None:
     ''' Uniforms:
         ---------------
         - ``vec2`` u_dimensions;
