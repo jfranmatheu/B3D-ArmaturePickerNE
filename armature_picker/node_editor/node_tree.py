@@ -1,5 +1,6 @@
 import bpy
 from bpy.types import NodeTree, Context, Event, Node
+from bpy.props import BoolProperty
 from mathutils import Vector
 import gpu
 
@@ -93,6 +94,8 @@ class AP_NodeTree(NodeTree):
     modal_nodes: Union[List[AP_Node], List[Node]]
     inject_modal: callable = None
     inject_modal_exit: callable = None
+    
+    dirty: bool
 
 
     def get_selected_nodes(self, context: Context, include_active: bool = True) -> set[AP_Node]:
@@ -110,6 +113,9 @@ class AP_NodeTree(NodeTree):
 
 
     def _test_select(self, context: Context, region_loc) -> int:
+        if self.dirty:
+            context.region.tag_redraw()
+
         # FIX SCROLLBARS.
         ui_scale = context.preferences.system.ui_scale
         region = context.region
@@ -315,7 +321,7 @@ class AP_NodeTree(NodeTree):
 
     # MODAL: Move Node.
     def modal__move_node__enter(self, context: Context, event: Event, mouse_pos: Vector) -> None:
-        self.prev_node_location = [get_node_editor_region_coord(context, node.origin) for node in self.modal_nodes]
+        self.prev_node_location = [get_node_editor_region_coord(context, node.rect_transform.origin) for node in self.modal_nodes]
         self.node_location_offset = [prev_node_loc - mouse_pos for prev_node_loc in self.prev_node_location]
 
     def modal__move_node__update(self, context: Context, event: Event, mouse_pos: Vector) -> int:
@@ -328,7 +334,7 @@ class AP_NodeTree(NodeTree):
         def move_node(_node: Node, _node_loc_offset: Vector):
             if _node.locked:
                 return
-            _node.origin = (mouse_pos - offset + _node_loc_offset) * inv_zoom
+            _node.rect_transform.move_to((mouse_pos - offset + _node_loc_offset) * inv_zoom)
 
         {move_node(node, node_loc_offset) for (node, node_loc_offset) in zip(self.modal_nodes, self.node_location_offset)}
         return 1
@@ -336,8 +342,14 @@ class AP_NodeTree(NodeTree):
     def modal__move_node__exit(self, context: Context, mouse_pos: Vector, cancel: bool) -> None:
         if cancel:
             for (node, prev_node_loc) in zip(self.modal_nodes, self.prev_node_location):
-                node.origin = prev_node_loc
+                node.rect_transform.move_to(prev_node_loc)
             del self.prev_node_location
             del self.node_location_offset
 
         self.modal_nodes = None
+
+
+
+def register():
+    if not hasattr(NodeTree, 'dirty'):
+        NodeTree.dirty = BoolProperty()

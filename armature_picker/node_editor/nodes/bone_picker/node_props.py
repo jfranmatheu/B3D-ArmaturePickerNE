@@ -30,17 +30,17 @@ class APNODE_BonePicker_NodeProps:
             padding = 4 * ui_scale
             padding *= 2
 
-            self.dimensions = (
-                self.label_dimensions[0] + padding,
-                self.label_dimensions[1] + padding
+            self.rect_transform.dimensions = (
+                int(self.label_dimensions[0] + padding),
+                int(self.label_dimensions[1] + padding)
             )
 
         else:
             # USER-EDITED-DIMENSIONS: self.edit_dimensions
             # INTERNAL DIMENSIONS: self.dimensions
-            self.dimensions = (
-                max(self.edit_dimensions[0] * self.scale[0], 10),
-                max(self.edit_dimensions[1] * self.scale[1], 10)
+            self.rect_transform.dimensions = (
+                int(max(self.edit_dimensions[0] * self.scale[0], 10)),
+                int(max(self.edit_dimensions[1] * self.scale[1], 10))
             )
 
 

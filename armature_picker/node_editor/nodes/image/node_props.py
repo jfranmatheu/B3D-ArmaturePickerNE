@@ -1,5 +1,5 @@
 from bpy.types import Context, UILayout, Image
-from bpy.props import PointerProperty, BoolProperty
+from bpy.props import PointerProperty, BoolProperty, FloatVectorProperty
 
 
 
@@ -16,15 +16,17 @@ class APNODE_Image_NodeProps:
         if self.image is not None:
             self.image: Image
             w, h = self.image.size
-            self.dimensions = (
-                w * self.scale[0],
-                h * (self.scale[0] if self.keep_aspect_ratio else self.scale[1])
+            self.rect_transform.dimensions = (
+                int(w * self.image_scale[0]),
+                int(h * (self.image_scale[0] if self.keep_aspect_ratio else self.image_scale[1]))
             )
 
         else:
-            self.dimensions = (
+            self.rect_transform.dimensions = (
                 20, 20
             )
+
+        self.update_graphics(context)
 
 
     # BUTTON PROPERTIES
@@ -34,7 +36,17 @@ class APNODE_Image_NodeProps:
         type=Image,
         update=update_image,
     )
-    
+
+    image_scale: FloatVectorProperty(
+        name="Image Scale",
+        default=(1, 1),
+        min=0.1,
+        max=10,
+        size=2,
+        subtype='XYZ',
+        update=update_dimensions
+    )
+
     keep_aspect_ratio: BoolProperty(
         name="Keep aspect ratio",
         default=True,

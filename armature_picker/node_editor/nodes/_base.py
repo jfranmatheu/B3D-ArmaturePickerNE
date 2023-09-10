@@ -11,7 +11,7 @@ from ...utils.operator import OpsReturn
 from ...utils.armature import deselect_all_bones_from_active
 from ...utils.geometry import point_inside_rect
 
-from ._transform_props import NodeTransformProps
+from ._transform_props import NodeTransformProps, RectTransform
 
 
 # ----------------------------------------------------------------
@@ -129,6 +129,13 @@ class AP_Node(NodeTransformProps):
     draw_depth: IntProperty(default=0, min=-1000, max=1000, options={'HIDDEN'})
 
 
+    def update_graphics(self, context: Context) -> None:
+        # Set Dirty.
+        self.dirty = True
+        context.area.tag_redraw()
+        # self.node_tree.dirty = True
+
+
     # Temporal State variables.
     # ----------------------------------------------------------------
     def set_state(self, state_name: str, state_value: bool) -> None:
@@ -199,10 +206,14 @@ class AP_Node(NodeTransformProps):
 
     def init(self, context):
         self.name = self.uuid = uuid4().hex
+        
+        self.rect_transform.node_idname = self.uuid
+
         self.dirty = True
         self.mute = True
         self.hide = True
         self.dirty_label = True
+
         print("New node ", self)
 
     # Copy function to initialize a copied node from an existing one.
@@ -247,7 +258,7 @@ class AP_Node(NodeTransformProps):
 
     def _test_select(self, context: Context, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
         ''' Internal. '''
-        if self.on_hover(context, region_loc, view_loc, view_zoom, reg_offset):
+        if self.on_hover(context, self.rect_transform, region_loc, view_loc, view_zoom, reg_offset):
             context.region.tag_redraw()
             self.set_hovered(True)
             self.on_hover_enter(context, region_loc, view_loc)
@@ -258,8 +269,8 @@ class AP_Node(NodeTransformProps):
             self.on_hover_exit(context)
         return False
 
-    def on_hover(self, context: Context, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
-        return point_inside_rect(view_loc, self.position, self.size, self.rotation)
+    def on_hover(self, context: Context, rect: RectTransform, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
+        return point_inside_rect(view_loc, rect.bottom_left, rect.size, rect.rotation)
 
     def on_hover_enter(self, context: Context, region_loc: Vector, view_loc: Vector) -> None:
         pass
@@ -363,26 +374,27 @@ class AP_Node(NodeTransformProps):
 
     # ----- DRAWING --------------------------------
 
-    def draw__pose(self, context, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw__pose(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         ''' Specific drawing for POSE mode '''
         pass
 
-    def draw__edit(self, context, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw__edit(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         ''' Specific drawing for EDIT mode. '''
         pass
 
-    def draw_common(self, context, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw_common(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         ''' Shader drawing between POSE and EDIT. '''
         pass
 
     def _draw(self, context, scale: float, active: bool, selected: bool, in_edit: bool) -> None:
         ''' Internal. '''
         hovered = self.is_hovered()
-        self.draw_common(context, scale, active, selected, hovered)
+        rect = self.rect_transform
+        self.draw_common(context, rect, scale, active, selected, hovered)
         if in_edit:
-            self.draw__edit(context, scale, active, selected, hovered)
+            self.draw__edit(context, rect, scale, active, selected, hovered)
         else:
-            self.draw__pose(context, scale, active, selected, hovered)
+            self.draw__pose(context, rect, scale, active, selected, hovered)
 
         if self.dirty:
             set_dirty_state(self.uuid, False)
@@ -392,15 +404,15 @@ class AP_Node(NodeTransformProps):
 
 
         # ----- UI LAYOUT DRAWING --------------------------------
-        
+
     def draw_buttons_ext(self, context: Context, layout: UILayout) -> None:
         if context.mode == 'POSE':
             self.draw_ui__pose(context, layout)
         elif context.mode == 'EDIT_ARMATURE':
             self.draw_ui__edit(context, layout)
-    
+
     def draw_ui__pose(self, context: Context, layout: UILayout) -> None:
         pass
-    
+
     def draw_ui__edit(self, context: Context, layout: UILayout) -> None:
         pass

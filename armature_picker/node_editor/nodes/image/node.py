@@ -1,4 +1,5 @@
 from .._base import AP_Node, Node
+from .._transform_props import RectTransform
 from .node_props import APNODE_Image_NodeProps
 
 import bpy
@@ -30,41 +31,39 @@ class APNODE_Image(APNODE_Image_NodeProps, AP_Node, Node):
 
     # ----- DRAWING --------------------------------
 
-    def draw_common(self, context: Context, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw_common(self, context: Context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         if self.image is not None:
             draw.image(
-                self.uuid, 'IMAGE', self.dirty, # CACHE.
-                self.position, self.size, self.rotation, # TRANSFORM.
-                self.image
+                self, 'IMAGE',
+                image=self.image
             )
         else:
             draw.rectangle(
-                self.uuid, 'IMAGE', self.dirty, # CACHE.
-                self.position, self.size, self.rotation, # TRANSFORM.
-                (1.0, 0.0, 1.0, 1.0)
+                self, 'IMAGE',
+                color=(1.0, 0.0, 1.0, 1.0)
             )
 
 
-    def draw__edit(self, context, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw__edit(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         if active or selected:
             draw.box(
-                self.uuid, 'IMAGE_BOX_ACTIVE', self.dirty,
-                self.position, self.size, self.rotation,
+                self, 'IMAGE_BOX_ACTIVE',
                 line_thickness=(3 * scale) if active else 2.5 * scale,
                 color=(1.0, 1.0, .1, 1.0) if active else (.32, .64, 1.0, 1.0)
             )
 
     # ----- UI LAYOUT DRAWING -----------------------------------------------------------
 
-    def draw_transform(self, layout: UILayout) -> None:
-        layout.prop(self, 'origin')
-        layout.prop(self, 'rotation')
+    def draw_transform(self, layout: UILayout, rect_transform: RectTransform) -> None:
+        layout.row().prop(rect_transform, 'origin')
+        layout.row().prop(rect_transform, 'pivot')
+        layout.prop(rect_transform, 'rotation')
         layout.prop(self, 'keep_aspect_ratio')
         # if self.keep_aspect_ratio:
         #     layout.prop(self, 'image_scale')
         # else:
-        layout.prop(self, 'scale')
+        layout.prop(self, 'image_scale')
 
         _sub = layout.column()
         _sub.enabled = False
-        _sub.prop(self, 'dimensions')
+        _sub.row().prop(self, 'dimensions', text='Size')

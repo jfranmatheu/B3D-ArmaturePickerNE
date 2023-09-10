@@ -10,7 +10,7 @@ class APNODE_Label_NodeProps:
     # ----------------------------------------------------------------
     def update_label(self, context: Context) -> None:
         set_text_size(0, self.text_size)
-        self.dimensions = get_text_dimensions(0, 'X' if self.text == '' else self.text)
+        self.rect_transform.dimensions = [int(v) for v in get_text_dimensions(0, 'X' if self.text == '' else self.text)]
 
         self.dirty_label = True
         self.update_graphics(context)

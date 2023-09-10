@@ -17,6 +17,7 @@ from functools import partial
 
 from .text_offscreen import draw_offscreen, get_offscreen
 from ..utils.geometry import rotate_point
+from .shaders import SHADERS
 
 
 RGBA = Tuple[float, float, float, float]
@@ -63,20 +64,25 @@ def get_gputex(bl_image: Image) -> GPUBatch | None:
 
 # ----------------------------------------------------------------
 
-get_rect_coords = lambda x, y, w, h: (
-    (x, y), (x + w, y),
-    (x, y + h), (x + w, y + h)
-)
-get_rotated_rect_coords = lambda pos, size, origin, angle: tuple(rotate_point(Vector(co), origin, angle).to_tuple() for co in get_rect_coords(*pos, *size))
+def get_rect_coords(rect) -> dict:
+    return {'pos': rect.coords_rotated}
 
-rect_indices = ((0, 1, 2), (2, 1, 3))
+def get_rect_uv_coords(rect) -> dict:
+    return {
+        'pos': rect.coords_rotated,
+        'texco': tex_uv_indices
+    }
+
+def get_rect_coords(rect) -> dict:
+    return {'pos': rect.coords_rotated}
 
 
-get_cage_coords = lambda pos, size: (
-    pos, (pos.x + size.x, pos.y),
-    pos + size, (pos.x, pos.y + size.y)
-)
-get_rotated_cage_coords = lambda pos, size, origin, angle: tuple(rotate_point(Vector(co), origin, angle).to_tuple() for co in get_cage_coords(pos, size))
+def get_rect_cage_coords(rect) -> dict:
+    co = rect.coords_rotated
+    return {'pos': (co[0], co[1], co[2], co[3])} # , co[0])}
+
+
+# ----------------------------------------------------------------
 
 get_tex_coords = lambda _p, _s: (
     (_p.x,_p.y+_s.y),_p,
@@ -87,30 +93,41 @@ get_rotated_tex_coords = lambda pos, size, origin, angle: tuple(rotate_point(Vec
 tex_uv_indices = ((0,1),(0,0),(1,0),(1,1))
 tex_indices = ((0,1,2),(2,3,0))
 
+
 # ----------------------------------------------------------------
 
-
-def rectangle(data_id: str,
-              graphic_id: str,
-              dirty: bool,
-              pos: Vector,
-              size: Vector,
-              angle: float,
-              color: RGBA,
-              origin: Vector | None = None,
-              _shader=SHADER_UNIFORM_COLOR) -> None:
-    if color[-1] != 1.0:
-        state.blend_set('ALPHA')
-    if not dirty and (batch := get_batch_from_cache(data_id, graphic_id)) is not None:
+def draw_node(node: object, graphic_id: str, shader: GPUShader, use_uv: bool = False, **uniforms):
+    if not node.dirty and (batch := get_batch_from_cache(node.uuid, graphic_id)) is not None:
         pass
     else:
-        batch: GPUBatch = batch_for_shader(_shader, 'TRIS',
-            {"pos": get_rect_coords(*pos, *size) if angle == 0 else
-                    get_rotated_rect_coords(pos, size, origin if origin is not None else pos+size*0.5, angle)},
-            indices=rect_indices)
-        set_batch_to_cache(data_id, graphic_id, batch)
-    _shader.uniform_float("color", color)
-    batch.draw(_shader)
+        batch = batch_for_shader(shader, 'TRIS',
+                                 get_rect_uv_coords(node.rect_transform) if use_uv else get_rect_coords(node.rect_transform),
+                                 indices=tex_indices)
+        set_batch_to_cache(node.uuid, graphic_id, batch)
+    for key, value in uniforms.items():
+        shader.uniform_float(key, value)
+    batch.draw(shader)
+
+
+def draw_node_cage(node: object, graphic_id: str, shader: GPUShader, thickness: float = 1.0, **uniforms):
+    if not node.dirty and (batch := get_batch_from_cache(node.uuid, graphic_id)) is not None:
+        pass
+    else:
+        batch = batch_for_shader(shader, 'LINE_LOOP', get_rect_cage_coords(node.rect_transform))
+        set_batch_to_cache(node.uuid, graphic_id, batch)
+    for key, value in uniforms.items():
+        shader.uniform_float(key, value)
+    state.line_width_set(thickness)
+    batch.draw(shader)
+    state.line_width_set(1.0)
+
+
+# ----------------------------------------------------------------
+
+def rectangle(node: object, graphic_id: str, color: RGBA, _shader=SHADER_UNIFORM_COLOR) -> None:
+    if color[-1] != 1.0:
+        state.blend_set('ALPHA')
+    draw_node(node, graphic_id, _shader, color=color)
 
 
 def text(pos: Vector,
@@ -186,47 +203,71 @@ def text_cached(data_id: str,
         return
 
     if not dirty_text and (off := get_offscreen(data_id)) is not None:
-        offscreen(data_id, graphic_id, dirty, _pos, _label_dimensions, angle, off, origin=origin)
-        ## print("Drawing cached text")
+        # offscreen(data_id, graphic_id, dirty, _pos, _label_dimensions, angle, off, origin=origin)
+        
+        if not dirty and (batch := get_batch_from_cache(data_id, graphic_id)) is not None:
+            pass
+        else:
+            coords = get_tex_coords(_pos, _label_dimensions) if angle == 0 else get_rotated_tex_coords(_pos, _label_dimensions, origin if origin is not None else _pos+_label_dimensions*0.5, angle)
+            batch=batch_for_shader(SHADER_IMAGE, 'TRIS',
+            {'pos': coords,
+            'texCoord': tex_uv_indices},
+            indices=tex_indices)
+            set_batch_to_cache(data_id, graphic_id, batch)
+        state.blend_set('ALPHA')
+        SHADER_IMAGE.uniform_sampler('image', off.texture_color)
+        batch.draw(SHADER_IMAGE)
     else:
         draw_offscreen(data_id, partial(text, Vector((0, 0)), _text, _text_size*10*render_scale, (0, 0), 0, color, alpha, 0), *get_text_dim(_text, _text_size*render_scale))
         text(_text_pos, _text, _text_size, pivot, angle, color, alpha, width)
 
 
-def box(data_id: str, graphic_id: str, dirty: bool, pos: Vector, size: Vector, angle: float, line_thickness: float, color: RGBA, _shader=SHADER_UNIFORM_COLOR):
-    if not dirty and (batch := get_batch_from_cache(data_id, graphic_id)) is not None:
-        pass
-    else:
-        coords = get_cage_coords(pos, size) if angle == 0 else get_rotated_cage_coords(pos, size, pos+size*0.5, angle)
-        batch: GPUBatch = batch_for_shader(_shader, 'LINE_LOOP', {'pos': coords})
-        set_batch_to_cache(data_id, graphic_id, batch)
-    state.line_width_set(line_thickness)
-    _shader.uniform_float('color', color)
-    batch.draw(_shader)
-    state.line_width_set(1.0)
+def box(node: object, graphic_id: str, line_thickness: float, color: RGBA, _shader=SHADER_UNIFORM_COLOR):
+    draw_node_cage(node, graphic_id, _shader, thickness=line_thickness, color=color)
 
 
-def image(data_id: str, graphic_id: str, dirty: bool, pos: Vector, size: Vector, angle: float, image: Image | GPUTexture, origin: Vector | None = None, _shader=SHADER_IMAGE) -> None:
+def image(node: object, graphic_id: str, image: Image | GPUTexture, origin: Vector | None = None, _shader=SHADERS.IMA) -> None:
     if not isinstance(image, (Image, GPUTexture)):
         return
-    state.blend_set('ALPHA')
     t=get_gputex(image) if isinstance(image, Image) else image
+    if t is None:
+        return
+    state.blend_set('ALPHA')
+    _shader.uniform_sampler('image', t)
+    draw_node(node, graphic_id, _shader, use_uv=True)
 
+
+def offscreen(node: object, graphic_id: str, off: GPUOffScreen, origin: Vector | None = None) -> None:
+    if not isinstance(off, GPUOffScreen):
+        return
+    image(node, graphic_id, off.texture_color, origin=origin)
+
+
+# ----------------------------------------------------------------
+
+
+"""
+def wg(data_id: str, graphic_id: str, dirty: bool,
+       pos: Vector, size: Vector, rotation: float,
+       roundness: float, bg_color: RGBA, outline_color: RGBA, _sh=SHADERS.WG) -> None:
+    ''' Uniforms:
+        ---------------
+        - ``vec2`` u_dimensions;
+        - ``vec4`` u_color;
+        - ``float`` u_radius;
+        - ``float`` u_outline;
+    '''
+
+    if bg_color[-1] != 1.0:
+        state.blend_set('ALPHA')
     if not dirty and (batch := get_batch_from_cache(data_id, graphic_id)) is not None:
         pass
     else:
-        coords = get_tex_coords(pos, size) if angle == 0 else get_rotated_tex_coords(pos, size, origin if origin is not None else pos+size*0.5, angle)
-        batch=batch_for_shader(_shader, 'TRIS',
-        {'pos': coords,
-         'texCoord': tex_uv_indices},
-        indices=tex_indices)
+        batch: GPUBatch = batch_for_shader(_sh, 'TRIS',
+            {"pos": get_rect_coords(*pos, *size) if rotation == 0 else
+                    get_rotated_rect_coords(pos, size, origin if origin is not None else pos+size*0.5, rotation)},
+            indices=rect_indices)
         set_batch_to_cache(data_id, graphic_id, batch)
-
-    _shader.uniform_sampler('image', t)
-    batch.draw(_shader)
-
-
-def offscreen(data_id: str, graphic_id: str, dirty: bool, pos: Vector, size: Vector, angle: float, off: GPUOffScreen, origin: Vector | None = None) -> None:
-    if not isinstance(off, GPUOffScreen):
-        return
-    image(data_id, graphic_id, dirty, pos, size, angle, off.texture_color, origin=origin)
+    _sh.uniform_float("bg_color", bg_color)
+    batch.draw(_sh)
+"""
