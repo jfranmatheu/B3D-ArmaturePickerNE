@@ -173,16 +173,16 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
         if active or selected:
             draw.box(
                 self, 'BUTTON_BOX_ACTIVE',
-                line_thickness=(3 * scale) if active else 2.5 * scale,
-                color=(1.0, 1.0, .1, 1.0) if active else (.32, .64, 1.0, 1.0)
+                line_thickness=2 * scale,
+                color=(1.0, 1.0, .1, 1.0) if active else (1.0, .6, .1, 1.0)
             )
 
     def draw__pose(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
-        if active or selected:
+        if active:
             draw.box(
                 self, 'BUTTON_BOX_ACTIVE',
-                line_thickness=(3 * scale) if active else 2.5 * scale,
-                color=(1.0, 1.0, .1, 1.0) if active else (.32, .64, 1.0, 1.0)
+                line_thickness=(1.5 * scale),
+                color=(1.0, 1.0, .1, 1.0)
             )
 
     # ----- UI LAYOUT DRAWING -----------------------------------------------------------
