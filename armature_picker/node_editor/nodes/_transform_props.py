@@ -198,6 +198,6 @@ class NodeTransformProps:
         layout.prop(rect_transform, 'pivot')
         layout.prop(rect_transform, 'dimensions')
         layout.prop(rect_transform, 'rotation')
-        layout.prop(rect_transform, 'draw_depth')
+        layout.prop(self, 'draw_depth')
 
         # layout.prop(self, 'scale')

@@ -50,3 +50,5 @@ class APNODE_Label(APNODE_Label_NodeProps, APNODE_Label_StyleProps, AP_Node, Nod
         layout.row().prop(rect_transform, 'origin') # old location
         layout.row().prop(rect_transform, 'pivot')
         layout.prop(rect_transform, 'rotation')
+
+        layout.prop(self, 'draw_depth')

@@ -126,7 +126,9 @@ class AP_Node(NodeTransformProps):
     # Props to sort node elements by layers and depth for drawing and logic sorting.
     # draw_layer: IntProperty(default=0, min=0, max=100, options={'HIDDEN'}) # BUG: draw_layer should be a class property.
     draw_layer = 0
-    draw_depth: IntProperty(default=0, min=-1000, max=1000, options={'HIDDEN'})
+    draw_depth: IntProperty(name="Draw Depth",
+                            description="Defines the depth this element should be drawn. The greater the value, the more preference will have over the rest of elements",
+                            default=0, min=-1000, max=1000, options={'HIDDEN'})
 
 
     def update_graphics(self, context: Context) -> None:

@@ -181,3 +181,5 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
         else:
             _sub.row().prop(rect_transform, 'edit_dimensions', text='Size')
         layout.prop(rect_transform, 'rotation')
+        
+        layout.prop(self, 'draw_depth')

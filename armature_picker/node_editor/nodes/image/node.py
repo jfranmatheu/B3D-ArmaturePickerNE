@@ -67,3 +67,5 @@ class APNODE_Image(APNODE_Image_NodeProps, AP_Node, Node):
         _sub = layout.column()
         _sub.enabled = False
         _sub.row().prop(rect_transform, 'dimensions', text='Size')
+
+        layout.prop(self, 'draw_depth')
