@@ -12,7 +12,7 @@ class APNODE_PT_visibility(Panel):
     bl_region_type = 'UI'
     bl_category = 'Node'
     
-    bl_order = 2
+    bl_order = 3
 
     @classmethod
     def poll(cls, context: Context):

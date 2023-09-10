@@ -12,7 +12,7 @@ class APNODE_PT_transform(Panel):
     bl_region_type = 'UI'
     bl_category = 'Node'
     
-    bl_order = 3
+    bl_order = 4
 
     @classmethod
     def poll(cls, context: Context):
@@ -25,4 +25,4 @@ class APNODE_PT_transform(Panel):
         header, content = draw_section_h(layout, 'Transform', icon='ORIENTATION_VIEW')
         header.prop(node, 'locked', text="", icon='LOCKED' if node.locked else 'UNLOCKED')
         content.enabled = not node.locked
-        node.draw_transform(content)
+        node.draw_transform(content, node.rect_transform)

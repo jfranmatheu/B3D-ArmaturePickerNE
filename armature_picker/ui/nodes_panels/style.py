@@ -12,7 +12,7 @@ class APNODE_PT_style(Panel):
     bl_region_type = 'UI'
     bl_category = 'Node'
     
-    bl_order = 4
+    bl_order = 5
 
     @classmethod
     def poll(cls, context: Context):
