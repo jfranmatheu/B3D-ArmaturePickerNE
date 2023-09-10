@@ -13,7 +13,7 @@ def distance_between(_p1, _p2):
 def point_inside_circle(point, c, radius):
     return distance_between(point, c) < radius
 
-def point_inside_rect(_p, _pos, _size, _angle=0):
+def point_inside_rect(_p, _pos, _size, _angle=0, origin: Vector | None = None):
     ''' NOTE: '_angle' should be given in radians.
         '_p', '_pos' and '_size' should be Vector type.
         '_pos' should be the lower left corner of the rectangle.
@@ -23,7 +23,10 @@ def point_inside_rect(_p, _pos, _size, _angle=0):
         # rotate around rectangle center by -rectAngle
         s = sin(-_angle)
         c = cos(-_angle)
-        rect_center: Vector = _pos + _size * 0.5
+        if origin is not None:
+            rect_center: Vector = origin
+        else:
+            rect_center: Vector = _pos + _size * 0.5
         # set origin to rect center
         p -= rect_center
         # rotate
@@ -41,6 +44,8 @@ def get_center(pos: Vector, size: Vector) -> Vector:
 
 
 def rotate_point(p: Vector, o: Vector, angle: float) -> Vector:
+    if angle == 0:
+        return p
     qx = o.x + cos(angle) * (p.x - o.x) - sin(angle) * (p.y - o.y)
     qy = o.y + sin(angle) * (p.x - o.x) + cos(angle) * (p.y - o.y)
     return Vector((qx, qy))
