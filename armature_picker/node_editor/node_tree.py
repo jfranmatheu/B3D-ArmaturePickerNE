@@ -250,7 +250,7 @@ class AP_NodeTree(NodeTree):
             hovered_node: Node = self.nodes.get(G_hovered_node, None)
             
         sel_nodes = self.get_selected_nodes(context, include_active=True)
-        print("Selected nodes", sel_nodes)
+        # print("Selected nodes", sel_nodes)
 
         if self.nodes.active is not None:
             if (event.type == 'G' and event.value == 'RELEASE') or\
