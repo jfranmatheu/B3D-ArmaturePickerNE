@@ -24,7 +24,7 @@ class APNODE_Image(APNODE_Image_NodeProps, AP_Node, Node):
         
         image = bpy.data.images.get('Sav Martin es Muy Cool')
         if not image:
-            image = bpy.data.images.load(str(Paths.IMAGES.joinpath('default_image.jpg')))
+            image = bpy.data.images.load(Paths.LIB_IMAGES('default_image.jpg'))
             image.name = 'Sav Martin es Muy Cool'
         self.image = image
 
