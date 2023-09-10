@@ -114,7 +114,7 @@ class AP_NodeTree(NodeTree):
 
     def _test_select(self, context: Context, region_loc) -> int:
         if self.dirty:
-            context.region.tag_redraw()
+            context.area.tag_redraw()
 
         # FIX SCROLLBARS.
         ui_scale = context.preferences.system.ui_scale
@@ -224,6 +224,7 @@ class AP_NodeTree(NodeTree):
             # context.window_manager.popup_menu_pie(event, MT_insert_keyframe.draw)
             with context.temp_override(window=context.window, area=context.area, bone=context.active_bone):
                 bpy.ops.wm.call_menu_pie('INVOKE_DEFAULT', name=MT_insert_keyframe.bl_idname)
+            self.dirty = True
             return {'FINISHED'}
 
         global G_hovered_node
