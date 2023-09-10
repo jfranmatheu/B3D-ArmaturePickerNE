@@ -249,7 +249,7 @@ def offscreen(node: object, graphic_id: str, off: GPUOffScreen, origin: Vector |
 # ----------------------------------------------------------------
 
 
-def wg(node: object, graphic_id: str, roundness: float, outline_thickness: float, bg_color: RGBA, ol_color: RGBA, _shader=SHADERS.WG) -> None:
+def wg(node: object, graphic_id: str, roundness: float, outline_thickness: float, bg_color: RGBA, _shader=SHADERS.WG) -> None:
     ''' Uniforms:
         ---------------
         - ``vec2`` u_dimensions;
@@ -263,4 +263,4 @@ def wg(node: object, graphic_id: str, roundness: float, outline_thickness: float
     value = rgb_to_hsv(bg_color[0], bg_color[1], bg_color[2])[-1]
     outline_color_factor = 1 + pow(value, 2)
     draw_node(node, graphic_id, _shader, use_uv=True, wg=True,
-              u_color=bg_color, u_radius=rad, u_outline=outline_thickness, u_outline_color_factor=outline_color_factor) #, u_outline_color=ol_color)
+              u_color=bg_color, u_radius=rad, u_outline=outline_thickness, u_outline_color_factor=outline_color_factor)
