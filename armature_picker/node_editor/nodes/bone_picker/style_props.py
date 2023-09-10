@@ -60,7 +60,7 @@ class APNODE_BonePicker_StyleProps:
         description="Roundness of the button",
         min=0,
         max=1,
-        default=.1,
+        default=.5,
         precision=2
     )
 
