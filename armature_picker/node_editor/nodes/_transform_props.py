@@ -183,6 +183,15 @@ class RectTransform(PropertyGroup):
 
     def resize(self, w, h) -> None:
         self.dimensions = (int(w), int(h))
+    
+    
+    def get_point_relative(self, rel_x: float, rel_y: float, apply_rotation: bool = True) -> Vector:
+        p = self.bottom_left
+        p.x += self.size.x * rel_x
+        p.y += self.size.y * rel_y
+        if apply_rotation and self.rotation != 0:
+            p = rotate_point(p, self.bottom_left, self.rotation)
+        return p
 
 
 class NodeTransformProps:
