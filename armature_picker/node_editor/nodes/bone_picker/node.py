@@ -115,8 +115,8 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
                 self, 'IKFK_BASE',
                 ikfk_pos, ikfk_size, rect.rotation,
                 origin=Vector(rect.origin),
-                roundness=1 if ikfk_hovered else self.roundness,
-                outline_thickness=self.outline_thickness,
+                roundness=1, # if ikfk_hovered else self.roundness,
+                outline_thickness=1.5,
                 bg_color=(.05, .05, .05, .95) if ikfk_hovered else (.05, .05, .05, .8),
             )
 
@@ -129,8 +129,8 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
                 ikfk_pos-ikfk_size*0.5, ikfk_size, rect.rotation,
                 origin=Vector(rect.origin),
                 roundness=1,
-                outline_thickness=10 if ikfk_state else 0,
-                bg_color=(.1, .5, 1.0, .9),
+                outline_thickness=0,
+                bg_color=(.1, .5, 1.0, .9) if ikfk_state else (.5, .5, .5, .9),
             )
 
 
