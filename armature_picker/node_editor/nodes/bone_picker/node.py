@@ -61,12 +61,12 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
             bones.active = bone
 
     def on_hover(self, context: Context, rect: RectTransform, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
-        if point_inside_rect(view_loc, rect.bottom_left, rect.size, rect.rotation):
+        if point_inside_rect(view_loc, rect.bottom_left, rect.size, rect.rotation, origin=Vector(rect.origin)):
             self.set_state('ik_fk_hovered', False)
             return True
         elif self.use_ik_fk:
             size = Vector((rect.dimensions[1], 0)) + rect.size
-            if point_inside_rect(view_loc, rect.bottom_left, size, rect.rotation):
+            if point_inside_rect(view_loc, rect.bottom_left, size, rect.rotation, origin=Vector(rect.origin)):
                 self.set_state('ik_fk_hovered', True)
                 return True
         return False
@@ -97,7 +97,7 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
         #     ol_color = (1.0, 1.0, .1, 1.0) if active else (.32, .64, 1.0, 1.0)
 
 
-        draw.wg(
+        draw.wg_ui(
             self, 'BUTTON_BASE',
             roundness=self.roundness,
             outline_thickness=self.outline_thickness,
@@ -106,24 +106,33 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
         )
 
         if self.use_ik_fk:
-            ikfk_pos = pos + Vector((size.x, 0))
             ikfk_size = Vector((rect.dimensions[1], rect.dimensions[1]))
+            ikfk_hovered = self.get_state('ik_fk_hovered', False)
+            ikfk_pos = rect.get_point_relative(1.0, 0.0, apply_rotation=False)
+            ikfk_state = self.get_ik_fk_state(context)
 
-            draw.rectangle(
+            draw.wg(
                 self, 'IKFK_BASE',
-                color=(.05, .05, .05, .95) if self.get_state('ik_fk_hovered', False) else (.05, .05, .05, .8),
+                ikfk_pos, ikfk_size, rect.rotation,
+                origin=Vector(rect.origin),
+                roundness=1 if ikfk_hovered else self.roundness,
+                outline_thickness=self.outline_thickness,
+                bg_color=(.05, .05, .05, .95) if ikfk_hovered else (.05, .05, .05, .8),
             )
 
             ikfk_pos = get_center(ikfk_pos, ikfk_size)
-            text = '•' if self.get_ik_fk_state(context) else 'o'
+            # rotate_point(ikfk_pos, rect.bottom_left, rect.rotation)
+            ikfk_size *= 0.5
 
-            draw.text(
-                ikfk_pos,
-                text,
-                self.text_size,
-                pivot=(0.5, 0.5),
-                color=(.92, .92, .92, 1)
+            draw.wg(
+                self, 'IKFK_TOGGLE',
+                ikfk_pos-ikfk_size*0.5, ikfk_size, rect.rotation,
+                origin=Vector(rect.origin),
+                roundness=1,
+                outline_thickness=10 if ikfk_state else 0,
+                bg_color=(.1, .5, 1.0, .9),
             )
+
 
         if self.label != '':
             padding = 4 * scale
@@ -188,5 +197,5 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
         else:
             _sub.row().prop(rect_transform, 'edit_dimensions', text='Size')
         layout.prop(rect_transform, 'rotation')
-        
+
         layout.prop(self, 'draw_depth')
