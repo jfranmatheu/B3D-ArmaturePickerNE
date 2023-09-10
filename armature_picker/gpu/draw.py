@@ -28,6 +28,7 @@ RGBA = Tuple[float, float, float, float]
 
 SHADER_UNIFORM_COLOR: GPUShader = gpu.shader.from_builtin('UNIFORM_COLOR')
 SHADER_IMAGE: GPUShader = gpu.shader.from_builtin('IMAGE')
+SHADER_POLYLINE_UNIFORM_COLOR: GPUShader = gpu.shader.from_builtin('POLYLINE_UNIFORM_COLOR')
 
 
 # ----------------------------------------------------------------
@@ -132,7 +133,7 @@ def draw_node(node: object, graphic_id: str, shader: GPUShader, use_uv: bool = F
     batch.draw(shader)
 
 
-def draw_node_cage(node: object, graphic_id: str, shader: GPUShader, thickness: float = 1.0, **uniforms):
+def draw_node_cage(node: object, graphic_id: str, shader: GPUShader, thickness: float | None = None, **uniforms):
     if not node.dirty and (batch := get_batch_from_cache(node.uuid, graphic_id)) is not None:
         pass
     else:
@@ -140,9 +141,9 @@ def draw_node_cage(node: object, graphic_id: str, shader: GPUShader, thickness: 
         set_batch_to_cache(node.uuid, graphic_id, batch)
     for key, value in uniforms.items():
         shader.uniform_float(key, value)
-    state.line_width_set(thickness)
+    if thickness: state.line_width_set(thickness)
     batch.draw(shader)
-    state.line_width_set(1.0)
+    if thickness: state.line_width_set(1.0)
 
 
 # ----------------------------------------------------------------
@@ -245,8 +246,16 @@ def text_cached(data_id: str,
         text(_text_pos, _text, _text_size, pivot, angle, color, alpha, width)
 
 
-def box(node: object, graphic_id: str, line_thickness: float, color: RGBA, _shader=SHADER_UNIFORM_COLOR):
+def _box(node: object, graphic_id: str, line_thickness: float, color: RGBA, _shader=SHADER_UNIFORM_COLOR):
     draw_node_cage(node, graphic_id, _shader, thickness=line_thickness, color=color)
+
+
+def box(node: object, graphic_id: str, line_thickness: float, color: RGBA, _shader=SHADER_POLYLINE_UNIFORM_COLOR):
+    state.blend_set('ALPHA')
+    fb = gpu.state.active_framebuffer_get()
+    x, y, w, h = fb.viewport_get()
+    draw_node_cage(node, graphic_id, _shader, lineWidth=line_thickness, color=color, viewportSize=(w, h))
+
 
 
 def image(node: object, graphic_id: str, image: Image | GPUTexture, origin: Vector | None = None, _shader=SHADERS.IMA) -> None:
