@@ -18,7 +18,7 @@ class APNODE_BonePicker_StyleProps:
     color: FloatVectorProperty(
         name="Background Color",
         description="Background Color of the button",
-        default=(1, .8, .4, 1.0),
+        default=(.9, .52, .41, 1.0),
         size=4,
         min=0.0,
         max=1.0,
@@ -54,7 +54,40 @@ class APNODE_BonePicker_StyleProps:
         subtype='COLOR',
         update=lambda node, ctx: node.update_label(ctx)
     )
+    
+    roundness: FloatProperty(
+        name="Roundness",
+        description="Roundness of the button",
+        min=0,
+        max=1,
+        default=.1,
+        precision=2
+    )
+
+    outline_thickness: FloatProperty(
+        name="Outline Thickness",
+        description="Ouline thickness of the button",
+        min=0,
+        max=20,
+        default=1.5,
+        precision=1
+    )
+
+    outline_color: FloatVectorProperty(
+        name="Outline Color",
+        description="Outline Color of the button",
+        default=(.8, .6, .2, .9),
+        size=4,
+        min=0.0,
+        max=1.0,
+        subtype='COLOR'
+    )
 
     def draw_styles(self, layout: UILayout) -> None:
+        layout.prop(self, 'roundness')
+        layout.prop(self, 'outline_thickness')
+        
+        layout.separator()
+        
         layout.prop(self, 'color')
         layout.prop(self, 'text_color')

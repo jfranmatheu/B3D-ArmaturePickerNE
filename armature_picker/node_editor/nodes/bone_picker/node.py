@@ -92,9 +92,17 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
         pos: Vector = rect.position
         size: Vector = rect.size
 
-        draw.rectangle(
+        # ol_color = self.outline_color
+        # if (active or selected) and context.mode == 'POSE':
+        #     ol_color = (1.0, 1.0, .1, 1.0) if active else (.32, .64, 1.0, 1.0)
+
+
+        draw.wg(
             self, 'BUTTON_BASE',
-            color=self.color if not hovered else Vector(self.color) * 0.8 # STYLE.
+            roundness=self.roundness,
+            outline_thickness=self.outline_thickness,
+            bg_color=self.color if not hovered else Vector(self.color) * 1.2, # STYLE.
+            # ol_color=ol_color
         )
 
         if self.use_ik_fk:
@@ -161,13 +169,12 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
             )
 
     def draw__pose(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
-        if active:
+        if active or selected:
             draw.box(
                 self, 'BUTTON_BOX_ACTIVE',
                 line_thickness=(3 * scale) if active else 2.5 * scale,
-                color=(1.0, 1.0, .1, 1.0)
+                color=(1.0, 1.0, .1, 1.0) if active else (.32, .64, 1.0, 1.0)
             )
-
 
     # ----- UI LAYOUT DRAWING -----------------------------------------------------------
 

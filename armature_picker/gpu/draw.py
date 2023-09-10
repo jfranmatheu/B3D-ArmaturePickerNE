@@ -8,6 +8,7 @@ from gpu_extras.batch import batch_for_shader
 from mathutils import Vector
 from gpu.texture import from_image as get_gputex_from_image
 
+from colorsys import rgb_to_hsv
 from uuid import uuid4
 from math import cos, sin
 import textwrap
@@ -96,7 +97,7 @@ tex_indices = ((0,1,2),(2,3,0))
 
 # ----------------------------------------------------------------
 
-def draw_node(node: object, graphic_id: str, shader: GPUShader, use_uv: bool = False, **uniforms):
+def draw_node(node: object, graphic_id: str, shader: GPUShader, use_uv: bool = False, wg: bool = False, **uniforms):
     if not node.dirty and (batch := get_batch_from_cache(node.uuid, graphic_id)) is not None:
         pass
     else:
@@ -106,6 +107,8 @@ def draw_node(node: object, graphic_id: str, shader: GPUShader, use_uv: bool = F
         set_batch_to_cache(node.uuid, graphic_id, batch)
     for key, value in uniforms.items():
         shader.uniform_float(key, value)
+    if wg:
+        shader.uniform_float('u_dimensions', node.rect_transform.dimensions)
     batch.draw(shader)
 
 
@@ -246,10 +249,7 @@ def offscreen(node: object, graphic_id: str, off: GPUOffScreen, origin: Vector |
 # ----------------------------------------------------------------
 
 
-"""
-def wg(data_id: str, graphic_id: str, dirty: bool,
-       pos: Vector, size: Vector, rotation: float,
-       roundness: float, bg_color: RGBA, outline_color: RGBA, _sh=SHADERS.WG) -> None:
+def wg(node: object, graphic_id: str, roundness: float, outline_thickness: float, bg_color: RGBA, ol_color: RGBA, _shader=SHADERS.WG) -> None:
     ''' Uniforms:
         ---------------
         - ``vec2`` u_dimensions;
@@ -257,17 +257,10 @@ def wg(data_id: str, graphic_id: str, dirty: bool,
         - ``float`` u_radius;
         - ``float`` u_outline;
     '''
-
     if bg_color[-1] != 1.0:
         state.blend_set('ALPHA')
-    if not dirty and (batch := get_batch_from_cache(data_id, graphic_id)) is not None:
-        pass
-    else:
-        batch: GPUBatch = batch_for_shader(_sh, 'TRIS',
-            {"pos": get_rect_coords(*pos, *size) if rotation == 0 else
-                    get_rotated_rect_coords(pos, size, origin if origin is not None else pos+size*0.5, rotation)},
-            indices=rect_indices)
-        set_batch_to_cache(data_id, graphic_id, batch)
-    _sh.uniform_float("bg_color", bg_color)
-    batch.draw(_sh)
-"""
+    rad = min(*node.rect_transform.dimensions) * 0.5 * roundness
+    value = rgb_to_hsv(bg_color[0], bg_color[1], bg_color[2])[-1]
+    outline_color_factor = 1 + pow(value, 2)
+    draw_node(node, graphic_id, _shader, use_uv=True, wg=True,
+              u_color=bg_color, u_radius=rad, u_outline=outline_thickness, u_outline_color_factor=outline_color_factor) #, u_outline_color=ol_color)
