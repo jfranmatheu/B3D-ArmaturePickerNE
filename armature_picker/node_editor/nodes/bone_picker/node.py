@@ -176,5 +176,8 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
         layout.row().prop(rect_transform, 'pivot')
         _sub = layout.column()
         _sub.enabled = not self.fit_to_text
-        _sub.row().prop(rect_transform, 'dimensions', text='Size')
+        if self.fit_to_text:
+            _sub.row().prop(rect_transform, 'dimensions', text='Size')
+        else:
+            _sub.row().prop(rect_transform, 'edit_dimensions', text='Size')
         layout.prop(rect_transform, 'rotation')

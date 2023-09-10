@@ -39,8 +39,8 @@ class APNODE_BonePicker_NodeProps:
             # USER-EDITED-DIMENSIONS: self.edit_dimensions
             # INTERNAL DIMENSIONS: self.dimensions
             self.rect_transform.dimensions = (
-                int(max(self.edit_dimensions[0] * self.scale[0], 10)),
-                int(max(self.edit_dimensions[1] * self.scale[1], 10))
+                int(max(self.rect_transform.edit_dimensions[0], 10)),
+                int(max(self.rect_transform.edit_dimensions[1], 10))
             )
 
 

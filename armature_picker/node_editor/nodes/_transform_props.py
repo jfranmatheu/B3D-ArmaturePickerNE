@@ -19,6 +19,12 @@ class RectTransform(PropertyGroup):
     node_idname: StringProperty(name="Node Name")
 
     # ----- Updates --------------------------------
+    
+    def update_dimensions(self, context: Context) -> None:
+        if node := self.node:
+            if hasattr(node, 'update_dimensions'):
+                node.update_dimensions(context)
+
 
     def update(self, context: Context) -> None:
         if self.block_updates:
@@ -50,7 +56,7 @@ class RectTransform(PropertyGroup):
                 rotate_point(co, origin, self.rotation) for co in coords
             ]
         else:
-            self.coords_rotated = self.coords
+            self.coords_rotated = coords
 
         self.coords = coords
 
@@ -129,7 +135,7 @@ class RectTransform(PropertyGroup):
         default=(20, 20),
         min=20,
         size=2,
-        update=update
+        update=update_dimensions
     )
 
     @property
@@ -192,4 +198,6 @@ class NodeTransformProps:
         layout.prop(rect_transform, 'pivot')
         layout.prop(rect_transform, 'dimensions')
         layout.prop(rect_transform, 'rotation')
+        layout.prop(rect_transform, 'draw_depth')
+
         # layout.prop(self, 'scale')
