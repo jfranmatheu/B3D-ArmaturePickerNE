@@ -17,7 +17,7 @@ class APNODE_PT_label(Panel):
 
     @classmethod
     def poll(cls, context: Context):
-        return poll_node(context) and\
+        return poll_node(context)  and context.mode == 'EDIT_ARMATURE' and\
             isinstance(context.space_data.node_tree.nodes.active, APNODE_BonePicker_StyleProps)
 
     def draw(self, context: Context):
