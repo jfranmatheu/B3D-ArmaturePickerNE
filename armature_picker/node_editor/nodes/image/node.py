@@ -66,4 +66,4 @@ class APNODE_Image(APNODE_Image_NodeProps, AP_Node, Node):
 
         _sub = layout.column()
         _sub.enabled = False
-        _sub.row().prop(self, 'dimensions', text='Size')
+        _sub.row().prop(rect_transform, 'dimensions', text='Size')
