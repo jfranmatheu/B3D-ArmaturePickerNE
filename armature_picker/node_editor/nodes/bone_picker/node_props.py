@@ -84,9 +84,10 @@ class APNODE_BonePicker_NodeProps:
         options={'TEXTEDIT_UPDATE'}
     )
 
-    bone_name: StringProperty(
+    bone_name: EnumProperty(
         name="Bone Name",
         description="Name of the bone to control",
+        items=lambda node, ctx: tuple((bone.name, bone.name, "") for bone in ctx.active_object.data.bones),
         update=update_bone_name
     )
 
@@ -115,7 +116,7 @@ class APNODE_BonePicker_NodeProps:
                 #     print(keyframe.co) #coordinates x,y
 
     def draw_ui__edit(self, context: Context, layout: UILayout) -> None:
-        layout.prop(self, 'bone_name', text='Bone')
+        layout.prop_search(self, 'bone_name', context.active_object.pose, 'bones', text='', icon='BONE_DATA')
 
         row = layout.row(align=True, heading='IK/FK')
         row.prop(self, 'use_ik_fk', text='', expand=False)
