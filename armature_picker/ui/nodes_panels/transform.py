@@ -11,6 +11,7 @@ class APNODE_PT_transform(Panel):
     bl_space_type = 'NODE_EDITOR'
     bl_region_type = 'UI'
     bl_category = 'Node'
+    bl_options = {'DEFAULT_CLOSED'}
     
     bl_order = 4
 
