@@ -25,4 +25,6 @@ class APNODE_PT_label(Panel):
         node = context.space_data.node_tree.nodes.active
 
         section_style = draw_section(layout, 'Label', icon='FILE_TEXT')
+        if node.use_image:
+            section_style.enabled = False
         node.draw_label_props(section_style)

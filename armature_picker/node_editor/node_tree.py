@@ -128,6 +128,8 @@ class AP_NodeTree(NodeTree):
         if region_loc[1] < scroll_bar_thickness:
             return -1
 
+        region_loc = Vector(region_loc)
+
         global G_active_node
         active_node = self.nodes.active
         if active_node is not None and G_active_node != active_node.uuid:
@@ -316,12 +318,12 @@ class AP_NodeTree(NodeTree):
         in_edit = context.mode == 'EDIT_ARMATURE'
         active_node: AP_Node = self.nodes.active
         sel_nodes: set[AP_Node] = self.get_selected_nodes(context)
-        
-        
-        
+
+
+
         mat = gpu.matrix.get_model_view_matrix()
         mat_pj = gpu.matrix.get_projection_matrix()
-        
+
 
         with gpu.matrix.push_pop():
             gpu.matrix.translate(offset)
@@ -334,8 +336,8 @@ class AP_NodeTree(NodeTree):
                     if node.dirty:
                         refresh = True
                     node._draw(context, ui_scale, active=node==active_node, selected=node in sel_nodes, in_edit=in_edit)
-                    
-            
+
+
             if self.inject_modal_draw is not None:
                 self.inject_modal_draw(context, ui_scale, sel_nodes, in_edit=in_edit)
 

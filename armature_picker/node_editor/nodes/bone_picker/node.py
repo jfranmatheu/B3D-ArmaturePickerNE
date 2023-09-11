@@ -6,11 +6,14 @@ from .style_props import APNODE_BonePicker_StyleProps
 import bpy
 from bpy.types import Context, Armature, Bone, Event, UILayout
 from mathutils import Vector
+import gpu
 
 from ....gpu import draw
 from ....utils.geometry import rotate_point, point_inside_rect, get_center
 from ....utils.armature import deselect_all_bones_from_active
 
+
+pick_color_buffer = gpu.types.Buffer('FLOAT', 4, (0, 0, 0, 0))
 
 
 class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProps, AP_Node, Node):
@@ -67,6 +70,15 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
     def on_hover(self, context: Context, rect: RectTransform, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
         if point_inside_rect(view_loc, rect.bottom_left, rect.size, rect.rotation, origin=Vector(rect.origin)):
             self.set_state('ik_fk_hovered', False)
+            if self.use_image and self.image is not None and context.mode == 'POSE':
+                fb: gpu.types.GPUFrameBuffer = gpu.state.active_framebuffer_get()
+                # x, y, w, h = fb.viewport_get()
+                region_offset = Vector((context.region.x, context.region.y))
+                #print(x, y, w, h, region_loc, pick_color_buffer, region_offset, region_loc)
+                px = tuple(int(v) for v in (region_loc + region_offset))
+                fb.read_color(*px, 1, 1, 4, 0, 'FLOAT', data=pick_color_buffer)
+                if pick_color_buffer[-1] <= 0.01:
+                    return False
             return True
         elif self.use_ik_fk:
             size = Vector((rect.dimensions[1], 0)) + rect.size
@@ -100,15 +112,6 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
         # if (active or selected) and context.mode == 'POSE':
         #     ol_color = (1.0, 1.0, .1, 1.0) if active else (.32, .64, 1.0, 1.0)
 
-
-        draw.wg_ui(
-            self, 'BUTTON_BASE',
-            roundness=self.roundness,
-            outline_thickness=self.outline_thickness,
-            bg_color=self.color if not hovered else Vector(self.color) * 1.2, # STYLE.
-            # ol_color=ol_color
-        )
-
         if self.use_ik_fk:
             ikfk_size = Vector((rect.dimensions[1], rect.dimensions[1]))
             ikfk_hovered = self.get_state('ik_fk_hovered', False)
@@ -136,6 +139,23 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
                 outline_thickness=0,
                 bg_color=(.1, .5, 1.0, .9) if ikfk_state else (.5, .5, .5, .9),
             )
+
+
+        if self.use_image and self.image is not None:
+            draw.image(
+                self, 'BUTTON_IMAGE',
+                image=self.image
+            )
+            return
+
+
+        draw.wg_ui(
+            self, 'BUTTON_BASE',
+            roundness=self.roundness,
+            outline_thickness=self.outline_thickness,
+            bg_color=self.color if not hovered else Vector(self.color) * 1.2, # STYLE.
+            # ol_color=ol_color
+        )
 
 
         if self.label != '':
@@ -192,14 +212,17 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
     # ----- UI LAYOUT DRAWING -----------------------------------------------------------
 
     def draw_transform(self, layout: UILayout, rect_transform: RectTransform) -> None:
-        layout.prop(self, 'fit_to_text')
+        row = layout.row()
+        row.enabled = not self.use_image
+        row.prop(self, 'fit_to_text')
+
         layout.separator()
 
         layout.row().prop(rect_transform, 'origin')
         layout.row().prop(rect_transform, 'pivot')
         _sub = layout.column()
         _sub.enabled = not self.fit_to_text
-        if self.fit_to_text:
+        if self.fit_to_text and not self.use_image:
             _sub.row().prop(rect_transform, 'dimensions', text='Size')
         else:
             _sub.row().prop(rect_transform, 'edit_dimensions', text='Size')

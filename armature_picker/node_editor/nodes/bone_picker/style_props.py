@@ -1,5 +1,5 @@
-from bpy.types import Context, UILayout
-from bpy.props import StringProperty, IntProperty, FloatProperty, BoolProperty, FloatVectorProperty, EnumProperty
+from bpy.types import Context, UILayout, Image
+from bpy.props import StringProperty, IntProperty, FloatProperty, BoolProperty, FloatVectorProperty, EnumProperty, PointerProperty
 
 from ....utils.ui_layout import draw_section
 
@@ -32,7 +32,7 @@ class APNODE_BonePicker_StyleProps:
         min=10,
         update=lambda node, ctx: node.update_label(ctx)
     )
-    
+
     text_alignment: EnumProperty(
         name="Text Alignment",
         items=(
@@ -54,7 +54,7 @@ class APNODE_BonePicker_StyleProps:
         subtype='COLOR',
         update=lambda node, ctx: node.update_label(ctx)
     )
-    
+
     roundness: FloatProperty(
         name="Roundness",
         description="Roundness of the button",
@@ -83,11 +83,34 @@ class APNODE_BonePicker_StyleProps:
         subtype='COLOR'
     )
 
+    use_image: BoolProperty(
+        name="Use Image",
+        description="Use Image graphics instead",
+        default=False,
+        update=lambda node, ctx: node.update_graphics(ctx)
+    )
+
+    image: PointerProperty(
+        name="Image",
+        description="When using image graphic, the rest of styles are not used. The picker will ignore transparent pixels ;-)",
+        type=Image,
+        update=lambda node, ctx: node.update_graphics(ctx)
+    )
+
     def draw_styles(self, layout: UILayout) -> None:
-        layout.prop(self, 'roundness')
-        layout.prop(self, 'outline_thickness')
-        
-        layout.separator()
-        
-        layout.prop(self, 'color')
-        layout.prop(self, 'text_color')
+        row = layout.row(align=True, heading='Image')
+        row.prop(self, 'use_image', text="")
+        _row = row.row(align=True)
+        _row.enabled = self.use_image
+        _row.prop(self, 'image', text="")
+
+        col = layout.column()
+        if self.use_image:
+            col.enabled = False
+        col.prop(self, 'roundness')
+        col.prop(self, 'outline_thickness')
+
+        col.separator()
+
+        col.prop(self, 'color')
+        col.prop(self, 'text_color')
