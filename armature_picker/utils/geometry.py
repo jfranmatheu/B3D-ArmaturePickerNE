@@ -82,6 +82,7 @@ def angle_signed(vector1, vector2):
         np.stack((v1_u[-2:], v2_u[-2:]))
     )
     if minor == 0:
+        return 0
         raise NotImplementedError('Too odd vectors =(')
     return np.sign(minor) * np.arccos(np.clip(np.dot(v1_u, v2_u), -1.0, 1.0))
 
