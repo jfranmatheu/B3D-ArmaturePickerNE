@@ -3,17 +3,22 @@ from .._transform_props import RectTransform
 from .node_props import APNODE_BonePicker_NodeProps
 from .style_props import APNODE_BonePicker_StyleProps
 
+import numpy as np
+
 import bpy
-from bpy.types import Context, Armature, Bone, Event, UILayout
+from bpy.types import Context, Armature, Bone, Event, UILayout, Image
 from mathutils import Vector
 import gpu
 
 from ....gpu import draw
-from ....utils.geometry import rotate_point, point_inside_rect, get_center
+from ....utils.geometry import rotate_point, point_inside_rect, get_center, get_point_in_rect_space
+from ....utils.math import clamp, rotate_vector
 from ....utils.armature import deselect_all_bones_from_active
+from ....utils.node_editor import get_node_editor_view_point
 
 
 pick_color_buffer = gpu.types.Buffer('FLOAT', 4, (0, 0, 0, 0))
+# pick_depth_buffer = gpu.types.Buffer('FLOAT', 1, (0,))
 
 
 class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProps, AP_Node, Node):
@@ -70,15 +75,52 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
     def on_hover(self, context: Context, rect: RectTransform, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
         if point_inside_rect(view_loc, rect.bottom_left, rect.size, rect.rotation, origin=Vector(rect.origin)):
             self.set_state('ik_fk_hovered', False)
-            if self.use_image and self.image is not None and context.mode == 'POSE':
+            if self.use_image and self.image is not None and context.mode == 'POSE' and rect.rotation == 0:
+                '''
                 fb: gpu.types.GPUFrameBuffer = gpu.state.active_framebuffer_get()
                 # x, y, w, h = fb.viewport_get()
                 region_offset = Vector((context.region.x, context.region.y))
-                #print(x, y, w, h, region_loc, pick_color_buffer, region_offset, region_loc)
                 px = tuple(int(v) for v in (region_loc + region_offset))
                 fb.read_color(*px, 1, 1, 4, 0, 'FLOAT', data=pick_color_buffer)
+                # fb.read_depth(*px, 1, 1, data=pick_depth_buffer)
+                #print(x, y, w, h, region_loc, pick_color_buffer, region_offset, region_loc)
+                print(pick_color_buffer)
                 if pick_color_buffer[-1] <= 0.01:
                     return False
+                '''
+
+                view_loc_t = view_loc.copy()
+
+                image: Image = self.image
+                real_width, real_height = image.size
+                draw_width, draw_height = rect.size
+
+                scale_x = real_width / draw_width
+                scale_y = real_height / draw_height
+
+                view_loc_t -= rect.bottom_left
+                # view_loc_t.normalize()
+                # min_co = min(*view_loc_t)
+                # view_loc_t.x += min_co
+                # view_loc_t.y += min_co
+
+                px_x = int(clamp(view_loc_t.x * scale_x, 0, real_width-1))
+                px_y = int(clamp(view_loc_t.y * scale_y, 0, real_height-1))
+
+                # print(image.pixels[px_x*px_y*4:px_x*px_y*4+4])
+
+                resolution = real_width * real_height
+                colors = np.zeros(resolution * 4, dtype=np.float32)
+                image.pixels.foreach_get(colors)
+                colors = colors.reshape((real_width, real_height, 4))
+
+                # px_alpha_value = image.pixels[-px_x*px_y*4+3] # colors[px_x][px_y][-1] # image.pixels[px_x*px_y*4+3] # arr[px_x][px_y][-1] # image.pixels[px_x*px_y*4]
+                px_alpha_value = colors[px_x][px_y][-1]
+
+                # print(view_loc_t, (px_x, px_y), px_alpha_value)
+                if px_alpha_value <= 0.01:
+                    return False
+
             return True
         elif self.use_ik_fk:
             size = Vector((rect.dimensions[1], 0)) + rect.size

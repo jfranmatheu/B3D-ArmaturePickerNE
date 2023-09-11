@@ -18,12 +18,12 @@ def point_inside_circle(point, c, radius):
     return distance_between(point, c) < radius
 
 
-def get_point_in_rect_space(p: Vector, rect) -> Vector:
+def get_point_in_rect_space(p: Vector, rect, invert: bool = False) -> Vector:
     if rect.rotation != 0:
         _p = p.copy()
         # rotate around rectangle center by -rectAngle
-        s = sin(-rect.rotation)
-        c = cos(-rect.rotation)
+        s = sin(rect.rotation) if invert else sin(-rect.rotation)
+        c = cos(rect.rotation) if invert else cos(-rect.rotation)
         rect_center: Vector = Vector(rect.origin)
         # set origin to rect center
         _p -= rect_center

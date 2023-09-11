@@ -2,6 +2,12 @@ from math import hypot, acos, sqrt, cos, pi, sin
 from typing import Tuple
 
 
+def rotate_vector(vector: list[float, float], angle: float) -> list[float, float]:
+    x = vector[0] * cos(angle) - vector[1] * sin(angle)
+    y = vector[0] * sin(angle) + vector[1] * cos(angle)
+    return [x, y]
+
+
 def clamp(value: float or int, min_value: float or int = 0.0, max_value: float or int = 1.0) -> float or int:
     return min(max(value, min_value), max_value)
 
