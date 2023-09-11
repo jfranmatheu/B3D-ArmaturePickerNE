@@ -11,6 +11,7 @@ import functools
 from .nodes._base import AP_Node
 from ..utils.node_editor import get_node_editor_zoom, get_node_editor_view_point, get_node_editor_offset, get_node_editor_region_coord, deselect_all_nodes
 from ..utils.armature import deselect_all_bones_from_active
+from ..utils.geometry import angle_signed
 
 
 # ----------------------------------------------------------------
@@ -94,7 +95,7 @@ class AP_NodeTree(NodeTree):
     modal_nodes: Union[List[AP_Node], List[Node]]
     inject_modal: callable = None
     inject_modal_exit: callable = None
-    
+
     dirty: bool
 
 
@@ -250,7 +251,7 @@ class AP_NodeTree(NodeTree):
 
         if G_hovered_node is not None:
             hovered_node: Node = self.nodes.get(G_hovered_node, None)
-            
+
         sel_nodes = self.get_selected_nodes(context, include_active=True)
         # print("Selected nodes", sel_nodes)
 
@@ -262,6 +263,14 @@ class AP_NodeTree(NodeTree):
                                       modal_callback=self.modal__move_node__update,
                                       modal_enter_callback=self.modal__move_node__enter,
                                       modal_exit_callback=self.modal__move_node__exit)
+                return {'RUNNING_MODAL'}
+
+            if (event.type == 'R' and event.value == 'RELEASE'): # and self.active_node is not None:
+                self.modal_nodes = sel_nodes
+                self.set_inject_modal(context, event,
+                                      modal_callback=self.modal__rotate_node__update,
+                                      modal_enter_callback=self.modal__rotate_node__enter,
+                                      modal_exit_callback=self.modal__rotate_node__exit)
                 return {'RUNNING_MODAL'}
 
 
@@ -318,10 +327,12 @@ class AP_NodeTree(NodeTree):
                 context.region.tag_redraw()
 
 
+    # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
+    # MODAL: Move Selected Nodes.
     # ----------------------------------------------------------------
 
-
-    # MODAL: Move Node.
     def modal__move_node__enter(self, context: Context, event: Event, mouse_pos: Vector) -> None:
         self.prev_node_location = [get_node_editor_region_coord(context, node.rect_transform.origin) for node in self.modal_nodes]
         self.node_location_offset = [prev_node_loc - mouse_pos for prev_node_loc in self.prev_node_location]
@@ -347,6 +358,49 @@ class AP_NodeTree(NodeTree):
                 node.rect_transform.move_to(prev_node_loc)
             del self.prev_node_location
             del self.node_location_offset
+
+        self.modal_nodes = None
+
+
+    # MODAL: Rotate Selected Nodes.
+    # ----------------------------------------------------------------
+
+    def modal__rotate_node__enter(self, context: Context, event: Event, mouse_pos: Vector) -> None:
+        self.prev_node_rotation = [node.rect_transform.rotation for node in self.modal_nodes]
+        # self.start_mouse_pos = mouse_pos
+        orig = Vector((0, 0))
+        for node in self.modal_nodes:
+            orig += Vector(node.rect_transform.origin)
+        orig /= len(self.modal_nodes)
+        orig = get_node_editor_region_coord(context, orig)
+        self.modal_rotation_origin = orig
+        self.modal_rotation_start_vec = (orig - mouse_pos)#.normalized()
+
+    def modal__rotate_node__update(self, context: Context, event: Event, mouse_pos: Vector) -> int:
+        if self.modal_nodes is None or (event.type == 'LEFTMOUSE' and event.value == 'RELEASE'):
+            return -1
+
+        curr_rotation_vec = (self.modal_rotation_origin - mouse_pos)#.normalized()
+        angle_offset = angle_signed(self.modal_rotation_start_vec, curr_rotation_vec)
+
+        print(angle_offset)
+
+        def rotate_node(_node: Node, _rot: float):
+            if _node.locked:
+                return
+            _node.rect_transform.rotation = _rot
+
+        {rotate_node(node, orig_rot + angle_offset) for (node, orig_rot) in zip(self.modal_nodes, self.prev_node_rotation)}
+        return 1
+
+    def modal__rotate_node__exit(self, context: Context, mouse_pos: Vector, cancel: bool) -> None:
+        if cancel:
+            for (node, prev_node_rot) in zip(self.modal_nodes, self.prev_node_rotation):
+                node.rect_transform.rotation = prev_node_rot
+
+        del self.prev_node_rotation
+        del self.modal_rotation_origin
+        del self.modal_rotation_start_vec
 
         self.modal_nodes = None
 
