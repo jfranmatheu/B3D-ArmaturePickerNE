@@ -275,6 +275,14 @@ def offscreen(node: object, graphic_id: str, off: GPUOffScreen, origin: Vector |
     image(node, graphic_id, off.texture_color, origin=origin)
 
 
+def just_a_point(pos: Vector, radius: int, color: RGBA, _shader=SHADER_UNIFORM_COLOR) -> None:
+    batch: GPUBatch = batch_for_shader(_shader, 'POINTS', {'pos': pos})
+    _shader.uniform_float('color', color)
+    state.point_size_set(int(radius*2))
+    batch.draw(_shader)
+    state.point_size_set(1.0)
+
+
 # ----------------------------------------------------------------
 
 
