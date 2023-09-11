@@ -113,8 +113,10 @@ class RectTransform(PropertyGroup):
         name="Rotation",
         description="Picker button rotation in the NodeGraph 2D view",
         default=0,
-        min=-pi/2,
-        max=pi/2,
+        soft_min=-pi/2,
+        soft_max=pi/2,
+        min=-pi*2,
+        max=pi*2,
         subtype='ANGLE',
         unit='ROTATION',
         update=update
