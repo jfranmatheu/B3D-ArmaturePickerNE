@@ -8,6 +8,7 @@ from typing import List, Tuple, Type, Dict, Set, Union
 from collections import defaultdict
 import functools
 
+from ..gpu import draw
 from .nodes._base import AP_Node
 from ..utils.node_editor import get_node_editor_zoom, get_node_editor_view_point, get_node_editor_offset, get_node_editor_region_coord, deselect_all_nodes
 from ..utils.armature import deselect_all_bones_from_active
@@ -95,6 +96,7 @@ class AP_NodeTree(NodeTree):
     modal_nodes: Union[List[AP_Node], List[Node]]
     inject_modal: callable = None
     inject_modal_exit: callable = None
+    inject_modal_draw: callable = None
 
     dirty: bool
 
@@ -160,9 +162,10 @@ class AP_NodeTree(NodeTree):
     # ----------------------------------------------------------------
 
 
-    def set_inject_modal(self, context: Context, event: Event, modal_callback: callable, modal_enter_callback: callable = None, modal_exit_callback: callable = None) -> None:
+    def set_inject_modal(self, context: Context, event: Event, modal_callback: callable, modal_enter_callback: callable = None, modal_exit_callback: callable = None, modal_draw_callback: callable = None) -> None:
         self.inject_modal = modal_callback
         self.inject_modal_exit = modal_exit_callback
+        self.inject_modal_draw = modal_draw_callback
         if modal_enter_callback is not None:
             modal_enter_callback(context, event, self.mouse_pos)
 
@@ -270,7 +273,8 @@ class AP_NodeTree(NodeTree):
                 self.set_inject_modal(context, event,
                                       modal_callback=self.modal__rotate_node__update,
                                       modal_enter_callback=self.modal__rotate_node__enter,
-                                      modal_exit_callback=self.modal__rotate_node__exit)
+                                      modal_exit_callback=self.modal__rotate_node__exit,
+                                      modal_draw_callback=self.modal__rotate_node__draw)
                 return {'RUNNING_MODAL'}
 
 
@@ -292,6 +296,8 @@ class AP_NodeTree(NodeTree):
         return {'FINISHED'}
 
     def _exit(self, context: Context, cancel: bool) -> None:
+        if self.inject_modal_draw is not None:
+            self.inject_modal_draw = None
         if self.inject_modal_exit is not None:
             self.inject_modal_exit(context, self.mouse_pos, cancel)
         elif self.active_node is not None and self.active_node.in_modal:
@@ -310,6 +316,12 @@ class AP_NodeTree(NodeTree):
         in_edit = context.mode == 'EDIT_ARMATURE'
         active_node: AP_Node = self.nodes.active
         sel_nodes: set[AP_Node] = self.get_selected_nodes(context)
+        
+        
+        
+        mat = gpu.matrix.get_model_view_matrix()
+        mat_pj = gpu.matrix.get_projection_matrix()
+        
 
         with gpu.matrix.push_pop():
             gpu.matrix.translate(offset)
@@ -322,6 +334,11 @@ class AP_NodeTree(NodeTree):
                     if node.dirty:
                         refresh = True
                     node._draw(context, ui_scale, active=node==active_node, selected=node in sel_nodes, in_edit=in_edit)
+                    
+            
+            if self.inject_modal_draw is not None:
+                self.inject_modal_draw(context, ui_scale, sel_nodes, in_edit=in_edit)
+
 
             if refresh:
                 context.region.tag_redraw()
@@ -372,18 +389,17 @@ class AP_NodeTree(NodeTree):
         for node in self.modal_nodes:
             orig += Vector(node.rect_transform.origin)
         orig /= len(self.modal_nodes)
+        self.modal_rotation_origin_view = orig
         orig = get_node_editor_region_coord(context, orig)
-        self.modal_rotation_origin = orig
+        self.modal_rotation_origin_region = orig
         self.modal_rotation_start_vec = (orig - mouse_pos)#.normalized()
 
     def modal__rotate_node__update(self, context: Context, event: Event, mouse_pos: Vector) -> int:
         if self.modal_nodes is None or (event.type == 'LEFTMOUSE' and event.value == 'RELEASE'):
             return -1
 
-        curr_rotation_vec = (self.modal_rotation_origin - mouse_pos)#.normalized()
+        curr_rotation_vec = (self.modal_rotation_origin_region - mouse_pos)#.normalized()
         angle_offset = angle_signed(self.modal_rotation_start_vec, curr_rotation_vec)
-
-        print(angle_offset)
 
         def rotate_node(_node: Node, _rot: float):
             if _node.locked:
@@ -399,10 +415,22 @@ class AP_NodeTree(NodeTree):
                 node.rect_transform.rotation = prev_node_rot
 
         del self.prev_node_rotation
-        del self.modal_rotation_origin
+        del self.modal_rotation_origin_region
+        del self.modal_rotation_origin_view
         del self.modal_rotation_start_vec
 
         self.modal_nodes = None
+
+
+    def modal__rotate_node__draw(self, context: Context, ui_scale: float, sel_nodes: list[Node], in_edit: bool) -> None:
+        draw.text(self.modal_rotation_origin_view.copy(), 'o', 12, (0.5, 0.5), color=(1, 0, 0, 1))
+        return
+        print(self.modal_rotation_origin_region)
+        draw.just_a_point(
+            self.modal_rotation_origin_region,
+            5 * ui_scale,
+            color=(1, 0, 0, 1.0)
+        )
 
 
 
