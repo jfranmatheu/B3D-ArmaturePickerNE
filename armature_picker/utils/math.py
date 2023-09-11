@@ -46,16 +46,3 @@ def dotproduct(v1, v2):
 
 def length(v):
     return sqrt(dotproduct(v, v))
-
-def angle_between(v1, v2):
-    return acos(dotproduct(v1, v2) / (length(v1) * length(v2)))
-
-def distance_between(_p1, _p2):
-    return hypot(_p1[0] - _p2[0], _p1[1] - _p2[1])
-    #return math.sqrt((_p1[1] - _p1[0])**2 + (_p2[1] - _p2[0])**2)
-
-def direction_from_to(_p1, _p2, _norm=True):
-    if _norm:
-        return (_p1 - _p2).normalized()
-    else:
-        return _p1 - _p2

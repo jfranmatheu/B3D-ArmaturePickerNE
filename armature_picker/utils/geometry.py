@@ -1,9 +1,11 @@
-from math import hypot, dist, cos, sin
+from math import hypot, dist, cos, sin, acos
 from mathutils import Vector, Matrix
 from dataclasses import dataclass
 from bpy.types import Object
 import bmesh
 from bmesh.types import BMesh, BMFace
+
+from .math import dotproduct, length
 
 
 def distance_between(_p1, _p2):
@@ -49,6 +51,21 @@ def rotate_point(p: Vector, o: Vector, angle: float) -> Vector:
     qx = o.x + cos(angle) * (p.x - o.x) - sin(angle) * (p.y - o.y)
     qy = o.y + sin(angle) * (p.x - o.x) + cos(angle) * (p.y - o.y)
     return Vector((qx, qy))
+
+
+def angle_between(v1: Vector, v2: Vector) -> float:
+    return acos(dotproduct(v1, v2) / (length(v1) * length(v2)))
+
+
+def distance_between(_p1, _p2) -> float:
+    return hypot(_p1[0] - _p2[0], _p1[1] - _p2[1])
+    #return math.sqrt((_p1[1] - _p1[0])**2 + (_p2[1] - _p2[0])**2)
+
+def direction_from_to(_p1: Vector, _p2: Vector, _norm=True) -> Vector:
+    if _norm:
+        return (_p1 - _p2).normalized()
+    else:
+        return _p1 - _p2
 
 
 @dataclass
