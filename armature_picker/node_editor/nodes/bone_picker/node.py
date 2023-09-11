@@ -192,6 +192,9 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
     # ----- UI LAYOUT DRAWING -----------------------------------------------------------
 
     def draw_transform(self, layout: UILayout, rect_transform: RectTransform) -> None:
+        layout.prop(self, 'fit_to_text')
+        layout.separator()
+
         layout.row().prop(rect_transform, 'origin')
         layout.row().prop(rect_transform, 'pivot')
         _sub = layout.column()
