@@ -129,5 +129,6 @@ class APNODE_BonePicker_NodeProps:
         layout.separator()
 
         layout.prop(self, 'text_size')
-        layout.prop(self, 'text_alignment')
-        layout.prop(self, 'fit_to_text')
+        _sub = layout.row()
+        _sub.enabled = not self.fit_to_text
+        _sub.prop(self, 'text_alignment')
