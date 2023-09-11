@@ -4,7 +4,7 @@ from bpy.types import Context, Menu
 keyset = (
     'Location',
     'Rotation',
-    'Scale',
+    'Scaling',
     'Available'
 )
 
