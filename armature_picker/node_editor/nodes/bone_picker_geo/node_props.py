@@ -6,6 +6,8 @@ from math import ceil
 
 from ....utils.math import clamp
 
+from ....gpu import draw_geo
+
 
 
 class APNODE_BonePickerGeo_NodeProps:
@@ -14,7 +16,40 @@ class APNODE_BonePickerGeo_NodeProps:
     # ----------------------------------------------------------------
 
     def update_dimensions(self, context: Context) -> None:
-        pass
+        if self.object is None:
+            return
+
+        self.dirty = True
+        draw_geo.Geometry.get(self)
+
+        context.area.tag_redraw()
+
+    def update_object(self, context: Context) -> None:
+        if self.object is None:
+            return
+
+        if self.object.dimensions[-1] != 0:
+            self.object = None
+            raise RuntimeError("Object dimensions in Z axis must be 0. Trace your mesh in the X/Y coordinates and ensure there is no loose parts")
+
+        self.color = context.object.color
+
+        self.dirty_geo = True
+        self.update_dimensions(context)
+        self.dirty_geo = False
+
+    def update_scale(self, context: Context) -> None:
+        if self.object is None:
+            return
+
+        scale = self.geo_scale
+        dim = self.object.dimensions
+        self.rect_transform.dimensions = (
+            int(dim[0] * scale),
+            int(dim[1] * scale)
+        )
+
+        self.update_object(context)
 
 
     # PROPERTIES
@@ -22,8 +57,34 @@ class APNODE_BonePickerGeo_NodeProps:
 
     object: PointerProperty(
         name="Mesh Object",
-        description="Object that will be used to render the bone picker button graphics",
+        description="Object that will be used to render the bone picker button graphics.\nTrace your mesh in the X/Y coordinates and ensure there is no loose parts",
         type=Object,
         poll=lambda node, ob: ob.type == 'MESH',
-        update=lambda node, ctx: node.update_graphics(ctx)
+        update=update_object
     )
+
+    geo_scale: FloatProperty(
+        name="Geometry Scale",
+        default=10,
+        min=1.0,
+        max=1000,
+        update=update_scale
+    )
+
+    geo_precision: EnumProperty(
+        name="Precision",
+        description="Method to use to determine if the cursor is hovering the geometry",
+        items=(
+            ('FAST', 'Fast', "Use bounding box of the geometry"),
+            ('CONVEX', "Convex Hull", "Creates a convex hull from the given geometry object"),
+            ('PRECISE', "Precise", "The most precise but slower method. Good for complex geometry with holes and multiple parts")
+        ),
+        default='PRECISE'
+    )
+
+
+    def draw_object_props(self, layout: UILayout) -> None:
+        layout.prop(self, 'object')
+        layout.alert = True
+        layout.prop(self, 'geo_precision')
+        layout.alert = False

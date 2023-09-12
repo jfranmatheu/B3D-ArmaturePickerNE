@@ -5,11 +5,13 @@ from .._bone_picker_common import APNODE_BonePicker_Common
 from .node_props import APNODE_BonePickerGeo_NodeProps
 from .style_props import APNODE_BonePickerGeo_StyleProps
 
-from bpy.types import Context, Armature, Bone, Event, UILayout
+from bpy.types import Context, Armature, Bone, Event, UILayout, Object, Mesh
 from mathutils import Vector, Matrix
 import gpu
 
-from ....gpu import draw
+import numpy as np
+
+from ....gpu import draw, draw_geo
 from ....utils.geometry import rotate_point, point_inside_rect, get_center
 from ....utils.armature import deselect_all_bones_from_active
 
@@ -21,12 +23,30 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePickerGeo_
     bl_icon = 'CONSTRAINT_BONE'
 
 
+    def init(self, context):
+        super().init(context)
+
+        self.dirty_geo = True
+
+
+    @property
+    def dirty_geo(self) -> bool:
+        return self.get_state('dirty_geo', False)
+
+    @dirty_geo.setter
+    def dirty_geo(self, state: bool) -> bool:
+        self.set_state('dirty_geo', state)
+
+
     # ----- ON HOVER --------------------------------
 
     def on_hover(self, context: Context, rect: RectTransform, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
         if point_inside_rect(view_loc, rect.bottom_left, rect.size, rect.rotation, origin=Vector(rect.origin)):
             # CHECK point_inside_circle with center in rect.origin and the user specified radius (a default of over 12).
-            return True
+            if self.geo_precision == 'FAST':
+                return True
+            if geo := draw_geo.Geometry.get(self, safe_context=False):
+                return geo.on_hover(view_loc)
         return False
 
 
@@ -38,6 +58,14 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePickerGeo_
     def draw_common(self, context: Context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         pos: Vector = rect.position
         size: Vector = rect.size
+
+        if self.object is not None and (geo := draw_geo.Geometry.get(self)) is not None:
+            geo.draw(self)
+        else:
+            draw.rectangle(
+                self, 'NO_OBJECT',
+                color=(1.0, 0.0, 1.0, 1.0)
+            )
 
         if self.use_ik_fk:
             ikfk_size = Vector((rect.dimensions[1], rect.dimensions[1]))
@@ -72,5 +100,7 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePickerGeo_
     # ----- UI LAYOUT DRAWING -----------------------------------------------------------
 
     def draw_transform(self, layout: UILayout, rect_transform: RectTransform) -> None:
-        layout.row().prop(rect_transform, 'origin')
+        layout.prop(rect_transform, 'origin')
+        layout.prop(self, 'geo_scale')
+        layout.separator()
         layout.prop(self, 'draw_depth')

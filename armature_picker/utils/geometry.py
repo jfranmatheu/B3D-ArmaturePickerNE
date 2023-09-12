@@ -37,6 +37,34 @@ def get_point_in_rect_space(p: Vector, rect, invert: bool = False) -> Vector:
     return _p
 
 
+# A utility function to calculate area
+# of triangle formed by (x1, y1),
+# (x2, y2) and (x3, y3)
+def triangle_area(x1, y1, x2, y2, x3, y3):
+    return abs((x1 * (y2 - y3) + x2 * (y3 - y1)
+                + x3 * (y1 - y2)) / 2.0)
+
+# A function to check whether point P(x, y)
+# lies inside the triangle formed by
+# A(x1, y1), B(x2, y2) and C(x3, y3)
+def is_inside_triangle(x1, y1, x2, y2, x3, y3, x, y):
+    # Calculate area of triangle ABC
+    A = triangle_area(x1, y1, x2, y2, x3, y3)
+    # Calculate area of triangle PBC
+    A1 = triangle_area(x, y, x2, y2, x3, y3)
+    # Calculate area of triangle PAC
+    A2 = triangle_area(x1, y1, x, y, x3, y3)
+    # Calculate area of triangle PAB
+    A3 = triangle_area(x1, y1, x2, y2, x, y)
+    # Check if sum of A1, A2 and A3
+    # is same as A
+    if (A == A1 + A2 + A3):
+        return True
+    else:
+        return False
+
+
+
 def point_inside_rect(_p, _pos, _size, _angle=0, origin: Vector | None = None):
     ''' NOTE: '_angle' should be given in radians.
         '_p', '_pos' and '_size' should be Vector type.
