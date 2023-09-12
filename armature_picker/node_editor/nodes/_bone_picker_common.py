@@ -117,12 +117,16 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps, APNODE_BonePicker_
 
 
     def get_ik_fk_state(self, context: Context) -> bool:
+        if not isinstance(context.active_object, Armature):
+            return False
         if bone := self.get_bone(context, from_pose_data = True):
             if self.ik_fk_prop_idname in bone:
                 return bool(bone[self.ik_fk_prop_idname])
         return False
 
     def toggle_ik_fk(self, context: Context) -> bool:
+        if not isinstance(context.active_object, Armature):
+            return False
         if bone := context.active_pose_bone:
             if bone.name != self.bone_name:
                 bone = context.active_object.pose.bones.get(self.bone_name, None)
@@ -136,6 +140,8 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps, APNODE_BonePicker_
     # ----- SELECT METHODS --------------------------------
 
     def get_bone(self, context: Context, from_pose_data: bool = False) -> Bone:
+        if not isinstance(context.active_object, Armature):
+            return None
         armature: Armature = context.active_object.data
         if from_pose_data:
             bones = context.active_object.pose.bones
@@ -144,6 +150,8 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps, APNODE_BonePicker_
         return bones.get(self.bone_name, None)
 
     def select_bone(self, context: Context, deselect_all: bool = True) -> None:
+        if not isinstance(context.active_object, Armature):
+            return
         armature: Armature = context.active_object.data
         bones = armature.bones if context.mode == 'POSE' else armature.edit_bones
         bone: Bone
