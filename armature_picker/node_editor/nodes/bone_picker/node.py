@@ -228,7 +228,7 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
 
 
         if self.use_image and self.image is not None:
-            if active or selected:
+            if active or (selected and context.mode != 'POSE'):
                 draw.image_ui_outline(
                     self, 'BUTTON_IMAGE',
                     image=self.image,
