@@ -60,18 +60,19 @@ class APNODE_BonePicker_CommonProps:
         items=get_bone_custom_properties,
         update=update_ik_fk_idname
     )
-    
+
     ik_fk_size: FloatProperty(
         name="IK/FK Size",
         description="Size of the IK/FK toggle",
-        default=24,
+        default=20,
         min=12,
-        max=64
+        max=64,
+        update=lambda node, ctx: node.update_graphics(ctx)
     )
 
 
     # ----- DRAW UI LAYOUT --------------------------------
-    
+
     def draw_ui__pose(self, context: Context, layout: UILayout) -> None:
         if context.active_object.animation_data is None:
             layout.label(text="No animation data")
