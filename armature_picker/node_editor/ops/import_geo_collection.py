@@ -5,6 +5,7 @@ import bpy
 
 from ...ops.poll import poll_node_editor
 from ...utils.operator import OpsReturn
+from .add_node.op import AP_OT_add_node
 
 
 
@@ -33,11 +34,12 @@ class AP_OT_import_geo_collection(Operator):
         if coll is None:
             return OpsReturn.CANCEL
 
-        from ..node_tree import AP_NodeTree
+        # from ..node_tree import AP_NodeTree
         from ..nodes import APNODE_BonePickerGeo
-        node_tree: AP_NodeTree = context.space_data.node_tree
+        # node_tree: AP_NodeTree = context.space_data.node_tree
 
         pose_bones = context.active_object.pose.bones
+        add_node = AP_OT_add_node.new_node
 
         for ob in coll.objects:
             if ob.type != 'MESH':
@@ -47,9 +49,7 @@ class AP_OT_import_geo_collection(Operator):
             if len(ob.data.vertices) < 3:
                 continue
 
-            geo_node: APNODE_BonePickerGeo = node_tree.nodes.new(APNODE_BonePickerGeo.bl_idname)
-            geo_node.rect_transform.origin = Vector((ob.location.x, ob.location.y)) * geo_node.geo_scale
-            geo_node.color = ob.color
+            geo_node: APNODE_BonePickerGeo = add_node(self, context, APNODE_BonePickerGeo.bl_idname, Vector((ob.location.x, ob.location.y)) * 10)
             geo_node.object = ob
 
             if bone := pose_bones.get(ob.name):
