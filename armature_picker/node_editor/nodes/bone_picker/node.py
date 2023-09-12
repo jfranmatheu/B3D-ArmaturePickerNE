@@ -228,10 +228,17 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
 
 
         if self.use_image and self.image is not None:
-            draw.image_ui(
-                self, 'BUTTON_IMAGE',
-                image=self.image
-            )
+            if active or selected:
+                draw.image_ui_outline(
+                    self, 'BUTTON_IMAGE',
+                    image=self.image,
+                    outline_color=(1.0, 1.0, .1, 1.0) if active else (1.0, .6, .1, 1.0)
+                )
+            else:
+                draw.image_ui(
+                    self, 'BUTTON_IMAGE',
+                    image=self.image
+                )
             return
 
 
@@ -281,6 +288,8 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
 
     def draw__edit(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         if active or selected:
+            if self.use_image and self.image is not None:
+                return
             draw.box(
                 self, 'BUTTON_BOX_ACTIVE',
                 line_thickness=2 * scale,
@@ -289,6 +298,8 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
 
     def draw__pose(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         if active:
+            if self.use_image and self.image is not None:
+                return
             draw.box(
                 self, 'BUTTON_BOX_ACTIVE',
                 line_thickness=(1.5 * scale),
