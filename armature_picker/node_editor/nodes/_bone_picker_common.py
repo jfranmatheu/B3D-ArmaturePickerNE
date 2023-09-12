@@ -60,6 +60,14 @@ class APNODE_BonePicker_CommonProps:
         items=get_bone_custom_properties,
         update=update_ik_fk_idname
     )
+    
+    ik_fk_size: FloatProperty(
+        name="IK/FK Size",
+        description="Size of the IK/FK toggle",
+        default=24,
+        min=12,
+        max=64
+    )
 
 
     # ----- DRAW UI LAYOUT --------------------------------
@@ -91,7 +99,7 @@ class APNODE_BonePicker_CommonProps:
         row = layout.row(align=True, heading='IK/FK')
         row.prop(self, 'use_ik_fk', text='', expand=False)
         row.prop(self, 'ik_fk_prop_idname', text='')
-
+        row.prop(self, 'ik_fk_size', text='Size')
 
 
 
