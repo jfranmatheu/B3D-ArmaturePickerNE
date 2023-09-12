@@ -28,10 +28,6 @@ class APNODE_BonePickerGeo_NodeProps:
         if self.object is None:
             return
 
-        if self.object.dimensions[-1] != 0:
-            self.object = None
-            raise RuntimeError("Object dimensions in Z axis must be 0. Trace your mesh in the X/Y coordinates and ensure there is no loose parts")
-
         self.color = context.object.color
 
         self.dirty_geo = True
@@ -59,7 +55,7 @@ class APNODE_BonePickerGeo_NodeProps:
         name="Mesh Object",
         description="Object that will be used to render the bone picker button graphics.\nTrace your mesh in the X/Y coordinates and ensure there is no loose parts",
         type=Object,
-        poll=lambda node, ob: ob.type == 'MESH',
+        poll=lambda node, ob: ob.type == 'MESH' and ob.dimensions[-1] == 0,
         update=update_object
     )
 
