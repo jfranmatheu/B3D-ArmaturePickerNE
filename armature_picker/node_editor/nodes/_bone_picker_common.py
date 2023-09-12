@@ -1,12 +1,69 @@
 from bpy.types import Context, Armature, Bone, Event, UILayout
 from mathutils import Vector
+from bpy.props import StringProperty, IntProperty, FloatProperty, BoolProperty, FloatVectorProperty, EnumProperty, PointerProperty
 
 from ._transform_props import RectTransform
 from ...gpu import draw
 from ...utils.armature import deselect_all_bones_from_active
 
 
-class APNODE_BonePicker_Common:
+
+class APNODE_BonePicker_CommonProps:
+
+    def get_bone_custom_properties(self, context: Context) -> None:
+        pose = context.active_object.pose
+        if bone := pose.bones.get(self.bone_name, None):
+            return [
+                (key, key, "") for key in bone.keys() if not key.startswith('_RNA')
+            ]
+        else:
+            return ((
+                'NONE', "None", "",
+            ),)
+
+    # ----- UPDATES -----------------------------------
+
+    def update_bone_name(self, context: Context) -> None:
+        if self.label == '':
+            self.label = self.bone_name.replace('_', ' ').replace('.', ' ').title()
+
+    def update_ik_fk_idname(self, context: Context) -> None:
+        if self.use_ik_fk and self.ik_fk_prop_idname == 'NONE':
+            self.use_ik_fk = False
+        self.update_dimensions(context)
+
+
+    # ----- PROPERTIES --------------------------------
+
+    bone_name: EnumProperty(
+        name="Bone Name",
+        description="Name of the bone to control",
+        items=lambda node, ctx: tuple((bone.name, bone.name, "") for bone in ctx.active_object.data.bones),
+        update=update_bone_name
+    )
+
+    use_ik_fk: BoolProperty(default=False, name="Use IK/FK", description="This button picker controls a bone that has a IK/FK toggle")
+    ik_fk_prop_idname: EnumProperty(
+        name="IK/FK Property",
+        description="Identifier of the Custom Property that controls the IK/FK for the bone",
+        items=get_bone_custom_properties,
+        update=update_ik_fk_idname
+    )
+
+
+    # ----- DRAW UI LAYOUT --------------------------------
+
+    def draw_ui__edit(self, context: Context, layout: UILayout) -> None:
+        layout.prop_search(self, 'bone_name', context.active_object.pose, 'bones', text='', icon='BONE_DATA')
+
+        row = layout.row(align=True, heading='IK/FK')
+        row.prop(self, 'use_ik_fk', text='', expand=False)
+        row.prop(self, 'ik_fk_prop_idname', text='')
+
+
+
+
+class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps):
     draw_layer = 10
 
 
@@ -69,9 +126,9 @@ class APNODE_BonePicker_Common:
             self.select_node(context, deselect_all=not event.shift)
             self.select_bone(context, deselect_all=not event.shift)
 
-    
+
     # ------ DRAWING --------------------------------
-    
+
     def draw__edit(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         if active or selected:
             draw.box(
