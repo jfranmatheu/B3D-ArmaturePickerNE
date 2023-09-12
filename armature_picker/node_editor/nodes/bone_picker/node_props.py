@@ -1,5 +1,5 @@
-from bpy.types import Context, UILayout, Armature
-from bpy.props import StringProperty, IntProperty, FloatProperty, BoolProperty, FloatVectorProperty, EnumProperty
+from bpy.types import Context, UILayout, Armature, Image
+from bpy.props import StringProperty, IntProperty, FloatProperty, BoolProperty, FloatVectorProperty, EnumProperty, PointerProperty
 from blf import size as set_text_size, dimensions as get_text_dimensions
 
 from math import ceil
