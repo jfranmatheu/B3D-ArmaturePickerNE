@@ -32,6 +32,8 @@ class Geometry:
 
     @classmethod
     def get(cls, node, safe_context: bool = True) -> 'Geometry':
+        if node.object is None:
+            return None
         if (geo := _geo_cache.get(node.uuid, None)) is not None:
             if safe_context:
                 if node.dirty_geo:
