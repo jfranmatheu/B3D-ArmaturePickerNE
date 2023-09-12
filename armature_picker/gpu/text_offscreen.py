@@ -21,6 +21,9 @@ def draw_offscreen(data_id: str, draw_callback: callable, _width: int, _height: 
     width = ceil(_width)
     height = ceil(_height)
 
+    wnd = bpy.context.window
+    wnd_size = wnd.width, wnd.height
+
     def _wrapper():
         offscreen = GPUOffScreen(width, height)
 
@@ -30,11 +33,11 @@ def draw_offscreen(data_id: str, draw_callback: callable, _width: int, _height: 
             with gpu.matrix.push_pop():
                 # reset matrices -> use normalized device coordinates [-1, 1]
                 gpu.matrix.load_matrix(Matrix.Identity(4))
-                gpu.matrix.load_projection_matrix(Matrix.Identity(4))
+                ## gpu.matrix.load_projection_matrix(Matrix.Identity(4))
+                ## gpu.matrix.translate(Vector((-1, -1)))
+                ## gpu.matrix.scale(Vector((0.00394/(width/50), 0.018/(height/10))))
 
-                gpu.matrix.translate(Vector((-1, -1)))
-                # gpu.matrix.scale(Vector((0.00385, 0.0135)))
-                gpu.matrix.scale(Vector((0.00394/(width/50), 0.018/(height/10))))
+                gpu.matrix.scale((wnd_size[0] / _width * 1 / 10.25, wnd_size[1] / _height * 1 / 10.25))
 
                 # blf.size(0, 20*10)
 
