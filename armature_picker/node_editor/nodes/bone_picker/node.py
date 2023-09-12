@@ -1,76 +1,28 @@
 from .._base import AP_Node, Node
 from .._transform_props import RectTransform
+from .._bone_picker_common import APNODE_BonePicker_Common
 from .node_props import APNODE_BonePicker_NodeProps
 from .style_props import APNODE_BonePicker_StyleProps
 
-import numpy as np
-
-import bpy
-from bpy.types import Context, Armature, Bone, Event, UILayout, Image
+from bpy.types import Context, UILayout
 from mathutils import Vector, Matrix
 import gpu
 
 from ....gpu import draw
-from ....utils.geometry import rotate_point, point_inside_rect, get_center, get_point_in_rect_space
-from ....utils.math import clamp, rotate_vector
-from ....utils.armature import deselect_all_bones_from_active
-from ....utils.node_editor import get_node_editor_view_point
+from ....utils.geometry import rotate_point, point_inside_rect, get_center
 
 
 pick_color_buffer = gpu.types.Buffer('FLOAT', 4, (0, 0, 0, 0))
-# pick_depth_buffer = gpu.types.Buffer('FLOAT', 1, (0,))
 
 
-class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProps, AP_Node, Node):
+
+class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProps, APNODE_BonePicker_Common, AP_Node, Node):
     bl_idname = 'AP_NODE_bone_picker'
     bl_label = 'Bone Picker'
     bl_icon = 'CONSTRAINT_BONE'
 
-    draw_layer = 10
 
-
-    def init(self, context):
-        super().init(context)
-
-        self.set_state('ik_fk_hovered', False)
-
-
-    def get_ik_fk_state(self, context: Context) -> bool:
-        if bone := self.get_bone(context, from_pose_data = True):
-            if self.ik_fk_prop_idname in bone:
-                return bool(bone[self.ik_fk_prop_idname])
-        return False
-
-    def toggle_ik_fk(self, context: Context) -> bool:
-        if bone := context.active_pose_bone:
-            if bone.name != self.bone_name:
-                bone = context.active_object.pose.bones.get(self.bone_name, None)
-                if bone is None:
-                    return False
-            if self.ik_fk_prop_idname in bone:
-                bone[self.ik_fk_prop_idname] = not bool(bone[self.ik_fk_prop_idname])
-        return False
-
-
-    # ----- SELECT METHODS --------------------------------
-
-    def get_bone(self, context: Context, from_pose_data: bool = False) -> Bone:
-        armature: Armature = context.active_object.data
-        if from_pose_data:
-            bones = context.active_object.pose.bones
-        else:
-            bones = armature.bones if context.mode == 'POSE' else armature.edit_bones
-        return bones.get(self.bone_name, None)
-
-    def select_bone(self, context: Context, deselect_all: bool = True) -> None:
-        armature: Armature = context.active_object.data
-        bones = armature.bones if context.mode == 'POSE' else armature.edit_bones
-        bone: Bone
-        if bone := self.get_bone(context):
-            if deselect_all:
-                deselect_all_bones_from_active(context)
-            bone.select = True
-            bones.active = bone
+    # ----- ON HOVER --------------------------------
 
     def on_hover(self, context: Context, rect: RectTransform, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
         if point_inside_rect(view_loc, rect.bottom_left, rect.size, rect.rotation, origin=Vector(rect.origin)):
@@ -123,45 +75,6 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
 
                 px_alpha_value = pick_color_buffer[-1]
 
-                ## print("ALPHA:", px_alpha_value)
-
-                ## def put_fucking_pixels_puto_blender_de_mierda():
-                ##     image = bpy.data.images.get('tmp', None)
-                ##     if image is None:
-                ##         image = bpy.data.images.new('tmp', *bbox_size, alpha=True)
-                ##     else:
-                ##         image.scale(*bbox_size)
-                ##     image.pixels = [v for v in buffer]
-                ## if not bpy.app.timers.is_registered(put_fucking_pixels_puto_blender_de_mierda):
-                ##     bpy.app.timers.register(put_fucking_pixels_puto_blender_de_mierda)
-
-                '''
-                view_loc_t = view_loc.copy()
-
-                image: Image = self.image
-                real_width, real_height = image.size
-                draw_width, draw_height = rect.size
-
-                scale_x = real_width / draw_width
-                scale_y = real_height / draw_height
-
-                view_loc_t -= rect.bottom_left
-                # view_loc_t.normalize()
-                # min_co = min(*view_loc_t)
-                # view_loc_t.x += min_co
-                # view_loc_t.y += min_co
-
-                px_x = int(clamp(view_loc_t.x * scale_x, 0, real_width-1))
-                px_y = int(clamp(view_loc_t.y * scale_y, 0, real_height-1))
-
-                resolution = real_width * real_height
-                colors = np.zeros(resolution * 4, dtype=np.float32)
-                image.pixels.foreach_get(colors)
-                colors = colors.reshape((real_width, real_height, 4))
-                # px_alpha_value = image.pixels[-px_x*px_y*4+3] # colors[px_x][px_y][-1] # image.pixels[px_x*px_y*4+3] # arr[px_x][px_y][-1] # image.pixels[px_x*px_y*4]
-                px_alpha_value = colors[px_x][px_y][-1]
-                '''
-
                 if px_alpha_value <= 0.01:
                     return False
 
@@ -173,19 +86,8 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
                 return True
         return False
 
-    def on_hover_exit(self, context: Context | None = None) -> None:
-        self.set_state('ik_fk_hovered', False)
-
 
     # ----- INVOKE --------------------------------
-
-    def invoke__pose(self, context: Context, event: Event, mouse_pos: Vector) -> set[str] | None:
-        if event.type == 'LEFTMOUSE' and event.value == 'CLICK':
-            if self.get_state('ik_fk_hovered'):
-                self.toggle_ik_fk(context)
-                return
-            self.select_node(context, deselect_all=not event.shift)
-            self.select_bone(context, deselect_all=not event.shift)
 
 
     # ----- DRAWING --------------------------------
@@ -193,10 +95,6 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
     def draw_common(self, context: Context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         pos: Vector = rect.position
         size: Vector = rect.size
-
-        # ol_color = self.outline_color
-        # if (active or selected) and context.mode == 'POSE':
-        #     ol_color = (1.0, 1.0, .1, 1.0) if active else (.32, .64, 1.0, 1.0)
 
         if self.use_ik_fk:
             ikfk_size = Vector((rect.dimensions[1], rect.dimensions[1]))
@@ -246,8 +144,7 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
             self, 'BUTTON_BASE',
             roundness=self.roundness,
             outline_thickness=self.outline_thickness,
-            bg_color=self.color if not hovered else Vector(self.color) * 1.2, # STYLE.
-            # ol_color=ol_color
+            bg_color=self.color if not hovered else Vector(self.color) * 1.2
         )
 
 
@@ -287,24 +184,15 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
             )
 
     def draw__edit(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
-        if active or selected:
-            if self.use_image and self.image is not None:
-                return
-            draw.box(
-                self, 'BUTTON_BOX_ACTIVE',
-                line_thickness=2 * scale,
-                color=(1.0, 1.0, .1, 1.0) if active else (1.0, .6, .1, 1.0)
-            )
+        if self.use_image and self.image is not None:
+            return
+        super().draw__edit(context, rect, scale, active, selected, hovered)
 
     def draw__pose(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
-        if active:
-            if self.use_image and self.image is not None:
-                return
-            draw.box(
-                self, 'BUTTON_BOX_ACTIVE',
-                line_thickness=(1.5 * scale),
-                color=(1.0, 1.0, .1, 1.0)
-            )
+        if self.use_image and self.image is not None:
+            return
+        super().draw__pose(context, rect, scale, active, selected, hovered)
+
 
     # ----- UI LAYOUT DRAWING -----------------------------------------------------------
 

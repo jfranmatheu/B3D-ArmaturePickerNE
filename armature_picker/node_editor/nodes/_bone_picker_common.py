@@ -1,0 +1,89 @@
+from bpy.types import Context, Armature, Bone, Event, UILayout
+from mathutils import Vector
+
+from ._transform_props import RectTransform
+from ...gpu import draw
+from ...utils.armature import deselect_all_bones_from_active
+
+
+class APNODE_BonePicker_Common:
+    draw_layer = 10
+
+
+    def init(self, context):
+        super().init(context)
+
+        self.set_state('ik_fk_hovered', False)
+
+
+    def get_ik_fk_state(self, context: Context) -> bool:
+        if bone := self.get_bone(context, from_pose_data = True):
+            if self.ik_fk_prop_idname in bone:
+                return bool(bone[self.ik_fk_prop_idname])
+        return False
+
+    def toggle_ik_fk(self, context: Context) -> bool:
+        if bone := context.active_pose_bone:
+            if bone.name != self.bone_name:
+                bone = context.active_object.pose.bones.get(self.bone_name, None)
+                if bone is None:
+                    return False
+            if self.ik_fk_prop_idname in bone:
+                bone[self.ik_fk_prop_idname] = not bool(bone[self.ik_fk_prop_idname])
+        return False
+
+
+    # ----- SELECT METHODS --------------------------------
+
+    def get_bone(self, context: Context, from_pose_data: bool = False) -> Bone:
+        armature: Armature = context.active_object.data
+        if from_pose_data:
+            bones = context.active_object.pose.bones
+        else:
+            bones = armature.bones if context.mode == 'POSE' else armature.edit_bones
+        return bones.get(self.bone_name, None)
+
+    def select_bone(self, context: Context, deselect_all: bool = True) -> None:
+        armature: Armature = context.active_object.data
+        bones = armature.bones if context.mode == 'POSE' else armature.edit_bones
+        bone: Bone
+        if bone := self.get_bone(context):
+            if deselect_all:
+                deselect_all_bones_from_active(context)
+            bone.select = True
+            bones.active = bone
+
+    # ------ ON HOVER --------------------------------
+
+    def on_hover_exit(self, context: Context | None = None) -> None:
+        self.set_state('ik_fk_hovered', False)
+
+
+    # ----- INVOKE --------------------------------
+
+    def invoke__pose(self, context: Context, event: Event, mouse_pos: Vector) -> set[str] | None:
+        if event.type == 'LEFTMOUSE' and event.value == 'CLICK':
+            if self.get_state('ik_fk_hovered'):
+                self.toggle_ik_fk(context)
+                return
+            self.select_node(context, deselect_all=not event.shift)
+            self.select_bone(context, deselect_all=not event.shift)
+
+    
+    # ------ DRAWING --------------------------------
+    
+    def draw__edit(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+        if active or selected:
+            draw.box(
+                self, 'BUTTON_BOX_ACTIVE',
+                line_thickness=2 * scale,
+                color=(1.0, 1.0, .1, 1.0) if active else (1.0, .6, .1, 1.0)
+            )
+
+    def draw__pose(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+        if active:
+            draw.box(
+                self, 'BUTTON_BOX_ACTIVE',
+                line_thickness=(1.5 * scale),
+                color=(1.0, 1.0, .1, 1.0)
+            )

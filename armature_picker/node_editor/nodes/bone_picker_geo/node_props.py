@@ -1,0 +1,195 @@
+from bpy.types import Context, UILayout, Armature, Image
+from bpy.props import StringProperty, IntProperty, FloatProperty, BoolProperty, FloatVectorProperty, EnumProperty, PointerProperty
+from blf import size as set_text_size, dimensions as get_text_dimensions
+
+from math import ceil
+
+from ....utils.math import clamp
+
+
+
+class APNODE_BonePickerGeo_NodeProps:
+    def get_bone_custom_properties(self, context: Context) -> None:
+        pose = context.active_object.pose
+        if bone := pose.bones.get(self.bone_name, None):
+            return [
+                (key, key, "") for key in bone.keys() if not key.startswith('_RNA')
+            ]
+        else:
+            return ((
+                'NONE', "None", "",
+            ),)
+
+    def update_ik_fk_idname(self, context: Context) -> None:
+        if self.use_ik_fk and self.ik_fk_prop_idname == 'NONE':
+            self.use_ik_fk = False
+        self.update_dimensions(context)
+
+    def update_dimensions(self, context: Context) -> None:
+        if self.use_image and self.image is not None:
+            self.image: Image
+            w, h = self.image.size
+            self.rect_transform.dimensions = (
+                int(w * self.image_scale[0]),
+                int(h * (self.image_scale[0] if self.keep_aspect_ratio else self.image_scale[1]))
+            )
+            return
+
+        if self.fit_to_text and self.label == '':
+            return
+
+        ui_scale = context.preferences.system.ui_scale
+        padding = 4 * ui_scale
+        padding *= 2
+
+        if self.fit_to_text:
+            self.rect_transform.dimensions = (
+                ceil(self.label_dimensions[0] + padding),
+                ceil(self.label_dimensions[1] + padding)
+            )
+
+        else:
+            # USER-EDITED-DIMENSIONS: self.edit_dimensions
+            # INTERNAL DIMENSIONS: self.dimensions
+            self.rect_transform.dimensions = (
+                ceil(clamp(max(self.rect_transform.edit_dimensions[0], 10), self.label_dimensions[0] + padding, 500)),
+                ceil(clamp(max(self.rect_transform.edit_dimensions[1], 10), self.label_dimensions[1] + padding, 500))
+            )
+
+    def update_fit_to_text(self, context: Context) -> None:
+        ui_scale = context.preferences.system.ui_scale
+        padding = 4 * ui_scale
+        padding *= 2
+
+        self.rect_transform.edit_dimensions = (
+            ceil(clamp(max(self.rect_transform.edit_dimensions[0], 10), self.label_dimensions[0] + padding, 500)),
+            ceil(clamp(max(self.rect_transform.edit_dimensions[1], 10), self.label_dimensions[1] + padding, 500))
+        )
+
+
+    # UPDATE FUNCTIONS
+    # ----------------------------------------------------------------
+    def update_label(self, context: Context) -> None:
+        set_text_size(0, self.text_size)
+        self.label_dimensions = get_text_dimensions(0, self.label)
+
+        self.update_dimensions(context)
+        self.dirty_label = True
+        self.update_graphics(context)
+
+    def update_bone_name(self, context: Context) -> None:
+        if self.label == '':
+            self.label = self.bone_name.replace('_', ' ').replace('.', ' ').title()
+
+
+    # BUTTON PROPERTIES
+    # ----------------------------------------------------------------
+    fit_to_text: BoolProperty(
+        name="Fit To Text",
+        description="Whether to fit button dimensions to label text box size",
+        default=True,
+        update=update_fit_to_text
+    )
+
+    use_ik_fk: BoolProperty(default=False, name="Use IK/FK", description="This button picker controls a bone that has a IK/FK toggle")
+    ik_fk_prop_idname: EnumProperty(
+        name="IK/FK Property",
+        description="Identifier of the Custom Property that controls the IK/FK for the bone",
+        items=get_bone_custom_properties,
+        update=update_ik_fk_idname
+    )
+
+    label_dimensions: FloatVectorProperty(
+        name="Label Dimensions",
+        min=0,
+        size=2,
+        subtype='XYZ',
+        options={'HIDDEN'}
+    )
+
+    label: StringProperty(
+        name="Label",
+        description="Button label",
+        update=update_label,
+        options={'TEXTEDIT_UPDATE'}
+    )
+
+    bone_name: EnumProperty(
+        name="Bone Name",
+        description="Name of the bone to control",
+        items=lambda node, ctx: tuple((bone.name, bone.name, "") for bone in ctx.active_object.data.bones),
+        update=update_bone_name
+    )
+
+
+    use_image: BoolProperty(
+        name="Use Image",
+        description="Use Image graphics instead",
+        default=False,
+        update=lambda node, ctx: node.update_graphics(ctx)
+    )
+
+    image: PointerProperty(
+        name="Image",
+        description="When using image graphic, the rest of styles are not used. The picker will ignore transparent pixels ;-)",
+        type=Image,
+        update=lambda node, ctx: node.update_graphics(ctx)
+    )
+
+    image_scale: FloatVectorProperty(
+        name="Image Scale",
+        default=(1, 1),
+        min=0.1,
+        max=10,
+        size=2,
+        subtype='XYZ',
+        update=update_dimensions
+    )
+
+    keep_aspect_ratio: BoolProperty(
+        name="Keep aspect ratio",
+        default=True,
+        update=update_dimensions
+    )
+
+
+    def draw_ui__pose(self, context: Context, layout: UILayout) -> None:
+        if context.active_object.animation_data is None:
+            layout.label(text="No animation data")
+            return
+
+        col = layout.column(align=False)
+        col.use_property_decorate = True
+        col.use_property_split = True
+        if action := context.active_object.animation_data.action:
+            drawn_attr = set()
+            for fcu in action.fcurves:
+                data_path: str = fcu.data_path
+                if data_path.startswith('pose.bones'):
+                    if self.bone_name == data_path.split('"')[1]:
+                        attr = data_path.split('.')[-1]
+                        if attr in drawn_attr:
+                            continue
+                        drawn_attr.add(attr)
+                        col.prop(self.get_bone(context, from_pose_data=True), attr)
+                # print(fcu.data_path + " channel " + str(fcu.array_index))
+                # for keyframe in fcu.keyframe_points:
+                #     print(keyframe.co) #coordinates x,y
+
+    def draw_ui__edit(self, context: Context, layout: UILayout) -> None:
+        layout.prop_search(self, 'bone_name', context.active_object.pose, 'bones', text='', icon='BONE_DATA')
+
+        row = layout.row(align=True, heading='IK/FK')
+        row.prop(self, 'use_ik_fk', text='', expand=False)
+        row.prop(self, 'ik_fk_prop_idname', text='')
+
+
+    def draw_label_props(self, layout: UILayout) -> None:
+        layout.prop(self, 'label', text="Text")
+
+        layout.separator()
+
+        layout.prop(self, 'text_size')
+        _sub = layout.row()
+        _sub.enabled = not self.fit_to_text
+        _sub.prop(self, 'text_alignment')
