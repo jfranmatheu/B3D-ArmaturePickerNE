@@ -237,12 +237,14 @@ class RectTransform(PropertyGroup):
         self.dimensions = (int(w), int(h))
 
 
-    def get_point_relative(self, rel_x: float, rel_y: float, apply_rotation: bool = True) -> Vector:
+    def get_point_relative(self, rel_x: float, rel_y: float, offset: Vector | None = None, apply_rotation: bool = True, rotate_from_origin: bool = False) -> Vector:
         p = self.bottom_left
         p.x += self.size.x * rel_x
         p.y += self.size.y * rel_y
+        if offset is not None:
+            p += offset
         if apply_rotation and self.rotation != 0:
-            p = rotate_point(p, self.bottom_left, self.rotation)
+            p = rotate_point(p, Vector(self.origin) if rotate_from_origin else self.bottom_left, self.rotation)
         return p
 
     def point_inside_rect(self, point: Vector) -> bool:
