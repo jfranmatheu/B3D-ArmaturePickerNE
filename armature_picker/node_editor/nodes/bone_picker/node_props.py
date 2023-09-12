@@ -25,7 +25,14 @@ class APNODE_BonePicker_NodeProps:
             self.use_ik_fk = False
         self.update_dimensions(context)
 
-    def update_dimensions(self, context: Context) -> None:
+    def update_dimensions(self, context: Context) -> None:        
+        if self.use_image and self.image is not None:
+            self.rect_transform.dimensions = (
+                ceil(max(self.rect_transform.edit_dimensions[0], 10)),
+                ceil(max(self.rect_transform.edit_dimensions[1], 10))
+            )
+            return
+
         if self.fit_to_text and self.label == '':
             return
 
