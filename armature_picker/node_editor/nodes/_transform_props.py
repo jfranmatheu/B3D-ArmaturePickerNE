@@ -5,6 +5,7 @@ from mathutils import Vector
 from math import pi
 
 from ...utils.geometry import rotate_point, point_inside_rect
+from ...utils.node_editor import get_node_editor_region_coord, get_node_editor_zoom
 
 
 class RectTransform(PropertyGroup):
@@ -247,16 +248,25 @@ class RectTransform(PropertyGroup):
     def point_inside_rect(self, point: Vector) -> bool:
         return point_inside_rect(point, self.position, self.size, self.rotation, self.origin)
 
-    def convert_abs_coord_to_rel_coord(self, point: Vector) -> Vector:
+    def convert_abs_coord_to_rel_coord(self, point: Vector, context: Context | None = None) -> Vector:
         ''' Point should be inside rect.
             Returned coords will be between 0 and 1.
             By default it uses its BoundingBox. '''
         bbox = self.bound_box
+
+        if context:
+            bbox = [get_node_editor_region_coord(context, co) for co in bbox]
+            scale = 1 / get_node_editor_zoom(context)
+        else:
+            scale = 1
+
+        ## print(point, bbox)
+
         bbox_size = self.bound_box_size
         p = point - bbox[1] # left bottom corner of the bounding box.
         return Vector((
-            p.x / bbox_size.x,
-            p.y / bbox_size.y
+            p.x / bbox_size.x * scale,
+            p.y / bbox_size.y * scale
         ))
 
 
