@@ -2,6 +2,10 @@ from bpy.types import Context, UILayout, Armature
 from bpy.props import StringProperty, IntProperty, FloatProperty, BoolProperty, FloatVectorProperty, EnumProperty
 from blf import size as set_text_size, dimensions as get_text_dimensions
 
+from math import ceil
+
+from ....utils.math import clamp
+
 
 
 class APNODE_BonePicker_NodeProps:
@@ -25,23 +29,33 @@ class APNODE_BonePicker_NodeProps:
         if self.fit_to_text and self.label == '':
             return
 
-        if self.fit_to_text:
-            ui_scale = context.preferences.system.ui_scale
-            padding = 4 * ui_scale
-            padding *= 2
+        ui_scale = context.preferences.system.ui_scale
+        padding = 4 * ui_scale
+        padding *= 2
 
+        if self.fit_to_text:
             self.rect_transform.dimensions = (
-                int(self.label_dimensions[0] + padding),
-                int(self.label_dimensions[1] + padding)
+                ceil(self.label_dimensions[0] + padding),
+                ceil(self.label_dimensions[1] + padding)
             )
 
         else:
             # USER-EDITED-DIMENSIONS: self.edit_dimensions
             # INTERNAL DIMENSIONS: self.dimensions
             self.rect_transform.dimensions = (
-                int(max(self.rect_transform.edit_dimensions[0], 10)),
-                int(max(self.rect_transform.edit_dimensions[1], 10))
+                ceil(clamp(max(self.rect_transform.edit_dimensions[0], 10), self.label_dimensions[0] + padding, 500)),
+                ceil(clamp(max(self.rect_transform.edit_dimensions[1], 10), self.label_dimensions[1] + padding, 500))
             )
+
+    def update_fit_to_text(self, context: Context) -> None:
+        ui_scale = context.preferences.system.ui_scale
+        padding = 4 * ui_scale
+        padding *= 2
+
+        self.rect_transform.edit_dimensions = (
+            ceil(clamp(max(self.rect_transform.edit_dimensions[0], 10), self.label_dimensions[0] + padding, 500)),
+            ceil(clamp(max(self.rect_transform.edit_dimensions[1], 10), self.label_dimensions[1] + padding, 500))
+        )
 
 
     # UPDATE FUNCTIONS
@@ -65,7 +79,7 @@ class APNODE_BonePicker_NodeProps:
         name="Fit To Text",
         description="Whether to fit button dimensions to label text box size",
         default=True,
-        update=lambda node, ctx: node.update_dimensions(ctx)
+        update=update_fit_to_text
     )
 
     use_ik_fk: BoolProperty(default=False, name="Use IK/FK", description="This button picker controls a bone that has a IK/FK toggle")
