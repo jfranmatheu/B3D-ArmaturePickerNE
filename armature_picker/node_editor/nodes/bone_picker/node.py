@@ -7,7 +7,7 @@ import numpy as np
 
 import bpy
 from bpy.types import Context, Armature, Bone, Event, UILayout, Image
-from mathutils import Vector
+from mathutils import Vector, Matrix
 import gpu
 
 from ....gpu import draw
@@ -75,20 +75,67 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
     def on_hover(self, context: Context, rect: RectTransform, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
         if point_inside_rect(view_loc, rect.bottom_left, rect.size, rect.rotation, origin=Vector(rect.origin)):
             self.set_state('ik_fk_hovered', False)
-            if self.use_image and self.image is not None and context.mode == 'POSE' and rect.rotation == 0:
-                '''
-                fb: gpu.types.GPUFrameBuffer = gpu.state.active_framebuffer_get()
-                # x, y, w, h = fb.viewport_get()
-                region_offset = Vector((context.region.x, context.region.y))
-                px = tuple(int(v) for v in (region_loc + region_offset))
-                fb.read_color(*px, 1, 1, 4, 0, 'FLOAT', data=pick_color_buffer)
-                # fb.read_depth(*px, 1, 1, data=pick_depth_buffer)
-                #print(x, y, w, h, region_loc, pick_color_buffer, region_offset, region_loc)
-                print(pick_color_buffer)
-                if pick_color_buffer[-1] <= 0.01:
-                    return False
-                '''
+            if self.use_image and self.image is not None and context.mode == 'POSE':
 
+                ## bbox_n = rect.bound_box_norm
+                bbox_size = tuple(int(v) for v in (rect.bound_box_size))
+                ## coords_rot_n = rect.coords_rotated_norm
+                mpos_in_bbox_space = rect.convert_abs_coord_to_rel_coord(region_loc, context)
+
+                offscreen = gpu.types.GPUOffScreen(*bbox_size, format ='RGBA16F')
+
+                ## print("BBOX Norm:", coords_rot_n, bbox_size)
+                ## print("Bottom-Left:", bbox_n, " --> ", coords_rot_n)
+                ## print("MousePos:", region_loc, " --> ", mpos_in_bbox_space)
+
+                from gpu_extras.presets import draw_texture_2d
+
+                wnd_size = context.window.width, context.window.height
+
+                with offscreen.bind():
+                    fb = gpu.state.active_framebuffer_get()
+                    fb.clear(color=(0.0, 0.0, 0.0, 0.0))
+                    with gpu.matrix.push_pop():
+                        gpu.matrix.load_matrix(Matrix.Identity(4))
+                        gpu.matrix.scale((wnd_size[0] / bbox_size[0], wnd_size[1] / bbox_size[1]))
+
+                        draw_texture_2d(draw.get_gputex(self.image), Vector((0, 0)), *bbox_size)
+
+                    x, y, w, h = fb.viewport_get()
+                    px = (
+                        mpos_in_bbox_space.x * bbox_size[0],
+                        mpos_in_bbox_space.y * bbox_size[1]
+                    )
+                    
+                    ## print(px)
+
+                    if rect.rotation != 0:
+                        px = rotate_point(Vector(px), Vector((0, 0)), -rect.rotation)
+                        
+                    px = tuple(int(v) for v in px)
+
+                    ## print("PX:", px)
+
+                    fb.read_color(*px, 1, 1, 4, 0, 'FLOAT', data=pick_color_buffer)
+
+                    buffer = fb.read_color(x, y, w, h, 4, 0, 'FLOAT')
+                    buffer.dimensions = bbox_size[0] * bbox_size[1] * 4
+
+                px_alpha_value = pick_color_buffer[-1]
+
+                ## print("ALPHA:", px_alpha_value)
+
+                ## def put_fucking_pixels_puto_blender_de_mierda():
+                ##     image = bpy.data.images.get('tmp', None)
+                ##     if image is None:
+                ##         image = bpy.data.images.new('tmp', *bbox_size, alpha=True)
+                ##     else:
+                ##         image.scale(*bbox_size)
+                ##     image.pixels = [v for v in buffer]
+                ## if not bpy.app.timers.is_registered(put_fucking_pixels_puto_blender_de_mierda):
+                ##     bpy.app.timers.register(put_fucking_pixels_puto_blender_de_mierda)
+
+                '''
                 view_loc_t = view_loc.copy()
 
                 image: Image = self.image
@@ -107,17 +154,14 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
                 px_x = int(clamp(view_loc_t.x * scale_x, 0, real_width-1))
                 px_y = int(clamp(view_loc_t.y * scale_y, 0, real_height-1))
 
-                # print(image.pixels[px_x*px_y*4:px_x*px_y*4+4])
-
                 resolution = real_width * real_height
                 colors = np.zeros(resolution * 4, dtype=np.float32)
                 image.pixels.foreach_get(colors)
                 colors = colors.reshape((real_width, real_height, 4))
-
                 # px_alpha_value = image.pixels[-px_x*px_y*4+3] # colors[px_x][px_y][-1] # image.pixels[px_x*px_y*4+3] # arr[px_x][px_y][-1] # image.pixels[px_x*px_y*4]
                 px_alpha_value = colors[px_x][px_y][-1]
+                '''
 
-                # print(view_loc_t, (px_x, px_y), px_alpha_value)
                 if px_alpha_value <= 0.01:
                     return False
 
@@ -184,7 +228,7 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
 
 
         if self.use_image and self.image is not None:
-            draw.image(
+            draw.image_ui(
                 self, 'BUTTON_IMAGE',
                 image=self.image
             )
