@@ -1,7 +1,7 @@
 from rna_prop_ui import draw, rna_idprop_context_value
 from bpy.types import Context, Panel
 
-from ...node_editor.nodes.bone_picker.node import APNODE_BonePicker_StyleProps
+from ...node_editor.nodes._bone_picker_common import APNODE_BonePicker_Common
 from ...utils.ui_layout import draw_section
 from ..poll import poll_node
 
@@ -113,7 +113,7 @@ class APNODE_PT_custom_properties(Panel):
     @classmethod
     def poll(cls, context: Context):    
         return poll_node(context) and context.mode == 'POSE' and\
-            isinstance(context.space_data.node_tree.nodes.active, APNODE_BonePicker_StyleProps)
+            isinstance(context.space_data.node_tree.nodes.active, APNODE_BonePicker_Common)
 
     def draw(self, context: Context):
         layout = self.layout
