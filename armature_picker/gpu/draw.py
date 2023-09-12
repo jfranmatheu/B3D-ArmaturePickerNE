@@ -180,6 +180,12 @@ def rectangle(node: object, graphic_id: str, color: RGBA, _shader=SHADER_UNIFORM
     draw_node(node, graphic_id, _shader, color=color)
 
 
+def rectangle_bbox(node: object, graphic_id: str, bbox, color: RGBA, _shader=SHADER_UNIFORM_COLOR) -> None:
+    if color[-1] != 1.0:
+        state.blend_set('ALPHA')
+    draw_bb(node, graphic_id, bbox, _shader, color=color)
+
+
 def text(pos: Vector,
          text: str,
          size: int,
