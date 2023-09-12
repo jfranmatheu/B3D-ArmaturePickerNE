@@ -9,7 +9,7 @@ from mathutils import Vector, Matrix
 import gpu
 
 from ....gpu import draw
-from ....utils.geometry import rotate_point, point_inside_rect, get_center
+from ....utils.geometry import rotate_point, point_inside_rect, get_center, point_inside_circle
 
 
 pick_color_buffer = gpu.types.Buffer('FLOAT', 4, (0, 0, 0, 0))
@@ -20,6 +20,24 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
     bl_idname = 'AP_NODE_bone_picker'
     bl_label = 'Bone Picker'
     bl_icon = 'CONSTRAINT_BONE'
+
+
+    def get_ikfk_pos_size(self, apply_rotation: bool = False, center: bool = False):
+        rect: RectTransform = self.rect_transform
+        if self.fit_to_text:
+            ikfk_size = Vector((rect.dimensions[1], rect.dimensions[1]))
+            if center:
+                ikfk_pos = rect.get_point_relative(1.0, 0.5, offset=Vector((ikfk_size.x * 0.5, 0)), apply_rotation=True, rotate_from_origin=True)
+            else:
+                ikfk_pos = rect.get_point_relative(1.0, 0.0, apply_rotation=apply_rotation)
+        else:
+            size = min(rect.dimensions[1], self.ik_fk_size)
+            ikfk_size = Vector((size, size))
+            if center:
+                ikfk_pos = rect.get_point_relative(1.0, 0.5, offset=Vector((size*.7, 0)), apply_rotation=True, rotate_from_origin=True)
+            else:
+                ikfk_pos = rect.get_point_relative(1.0, 0.5, offset=Vector((size*0.2, -size*0.5)), apply_rotation=apply_rotation)
+        return ikfk_pos, ikfk_size
 
 
     # ----- ON HOVER --------------------------------
@@ -80,8 +98,8 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
 
             return True
         elif self.use_ik_fk:
-            size = Vector((rect.dimensions[1], 0)) + rect.size
-            if point_inside_rect(view_loc, rect.bottom_left, size, rect.rotation, origin=Vector(rect.origin)):
+            ikfk_pos, ikfk_size = self.get_ikfk_pos_size(center=True)
+            if point_inside_circle(view_loc, ikfk_pos, ikfk_size.x * 0.5):
                 self.set_state('ik_fk_hovered', True)
                 return True
         return False
@@ -97,9 +115,9 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
         size: Vector = rect.size
 
         if self.use_ik_fk:
-            ikfk_size = Vector((rect.dimensions[1], rect.dimensions[1]))
+            ikfk_pos, ikfk_size = self.get_ikfk_pos_size(apply_rotation=False)
+
             ikfk_hovered = self.get_state('ik_fk_hovered', False)
-            ikfk_pos = rect.get_point_relative(1.0, 0.0, apply_rotation=False)
             ikfk_state = self.get_ik_fk_state(context)
 
             draw.wg(
@@ -108,11 +126,10 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
                 origin=Vector(rect.origin),
                 roundness=1, # if ikfk_hovered else self.roundness,
                 outline_thickness=1.5,
-                bg_color=(.05, .05, .05, .95) if ikfk_hovered else (.05, .05, .05, .8),
+                bg_color=(.1, .1, .1, .9) if ikfk_hovered else (.05, .05, .05, .8),
             )
 
             ikfk_pos = get_center(ikfk_pos, ikfk_size)
-            # rotate_point(ikfk_pos, rect.bottom_left, rect.rotation)
             ikfk_size *= 0.5
 
             draw.wg(
