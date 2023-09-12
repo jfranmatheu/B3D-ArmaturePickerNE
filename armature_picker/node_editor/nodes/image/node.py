@@ -33,7 +33,7 @@ class APNODE_Image(APNODE_Image_NodeProps, AP_Node, Node):
 
     def draw_common(self, context: Context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         if self.image is not None:
-            draw.image(
+            draw.image_ui(
                 self, 'IMAGE',
                 image=self.image
             )
