@@ -18,8 +18,8 @@ def cross(point_o: Vector, point_a: Vector, point_b: Vector) -> int:
     positive if OAB makes a counter-clockwise turn,
     negative for clockwise turn, and zero if the points are collinear
     """
-    return (point_a.x - point_o.x) * (point_b.y - point_o.y) - (
-            point_a.y - point_o.y) * (point_b.x - point_o.x)
+    return (point_a[0] - point_o[0]) * (point_b[1] - point_o[1]) - (
+            point_a[1] - point_o[1]) * (point_b[0] - point_o[0])
 
 def clamp(value: float or int, min_value: float or int = 0.0, max_value: float or int = 1.0) -> float or int:
     return min(max(value, min_value), max_value)
