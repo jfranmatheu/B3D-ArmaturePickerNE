@@ -175,6 +175,15 @@ class RectTransform(PropertyGroup):
     @property
     def size(self) -> Vector:
         return Vector(Vector(self.dimensions))
+    
+    @property
+    def coords_rotated_norm(self) -> list[Vector]:
+        ''' Order: ``Bottom-Left``, ``Bottom-Right``, ``Top-Left``, ``Top-Right``. '''
+        coords = self.coords_rotated
+        min_x = min(coords, key=lambda v: v[0])
+        min_y = min(coords, key=lambda v: v[1])
+        min_off = Vector((min_x, min_y))
+        return [Vector(co) - min_off for co in coords]
 
     @property
     def bound_box(self) -> list[Vector]:
@@ -200,6 +209,7 @@ class RectTransform(PropertyGroup):
 
     @property
     def bound_box_norm(self) -> list[Vector]:
+        ''' Order: ``Bottom-Left``, ``Bottom-Right``, ``Top-Left``, ``Top-Right``. '''
         bbox = self.bound_box
         bottom_left = bbox[0]
         return [co - bottom_left for co in bbox]
