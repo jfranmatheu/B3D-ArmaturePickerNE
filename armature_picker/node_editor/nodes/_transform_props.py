@@ -204,6 +204,18 @@ class RectTransform(PropertyGroup):
         bottom_left = bbox[0]
         return [co - bottom_left for co in bbox]
 
+    @property
+    def bound_box_size(self) -> Vector:
+        coords = self.coords_rotated
+        min_x = min(coords, key=lambda v: v[0])
+        max_x = max(coords, key=lambda v: v[0])
+        min_y = min(coords, key=lambda v: v[1])
+        max_y = max(coords, key=lambda v: v[1])
+        return Vector((
+            max_x - min_x,
+            max_y, min_y
+        ))
+
     def move(self, off_x, off_y) -> None:
         self.origin = (int(self.origin.x + off_x), int(self.origin.y + off_y))
 
