@@ -70,7 +70,7 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePickerGeo_
         else:
             draw.rectangle(
                 self, 'NO_OBJECT',
-                color=(1.0, 0.0, 1.0, 1.0) if ikfk_hovered else (1, .4, .0, 1.0),
+                color=(1.0, 0.0, 1.0, 1.0) if hovered else (1, .4, .0, 1.0),
             )
 
         if self.use_ik_fk and geo:
