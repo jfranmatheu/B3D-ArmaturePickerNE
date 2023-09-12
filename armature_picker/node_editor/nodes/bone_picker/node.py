@@ -106,12 +106,12 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
                         mpos_in_bbox_space.x * bbox_size[0],
                         mpos_in_bbox_space.y * bbox_size[1]
                     )
-                    
+
                     ## print(px)
 
                     if rect.rotation != 0:
                         px = rotate_point(Vector(px), Vector((0, 0)), -rect.rotation)
-                        
+
                     px = tuple(int(v) for v in px)
 
                     ## print("PX:", px)
@@ -317,12 +317,18 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
 
         layout.row().prop(rect_transform, 'origin')
         layout.row().prop(rect_transform, 'pivot')
-        _sub = layout.column()
-        _sub.enabled = not self.fit_to_text
-        if self.fit_to_text and not self.use_image:
-            _sub.row().prop(rect_transform, 'dimensions', text='Size')
+
+        if self.use_image:
+            layout.prop(self, 'keep_aspect_ratio')
+            layout.prop(self, 'image_scale')
         else:
-            _sub.row().prop(rect_transform, 'edit_dimensions', text='Size')
+            _sub = layout.column()
+            _sub.enabled = not self.fit_to_text
+            if self.fit_to_text and not self.use_image:
+                _sub.row().prop(rect_transform, 'dimensions', text='Size')
+            else:
+                _sub.row().prop(rect_transform, 'edit_dimensions', text='Size')
+
         layout.prop(rect_transform, 'rotation')
 
         layout.prop(self, 'draw_depth')

@@ -25,11 +25,13 @@ class APNODE_BonePicker_NodeProps:
             self.use_ik_fk = False
         self.update_dimensions(context)
 
-    def update_dimensions(self, context: Context) -> None:        
+    def update_dimensions(self, context: Context) -> None:
         if self.use_image and self.image is not None:
+            self.image: Image
+            w, h = self.image.size
             self.rect_transform.dimensions = (
-                ceil(max(self.rect_transform.edit_dimensions[0], 10)),
-                ceil(max(self.rect_transform.edit_dimensions[1], 10))
+                int(w * self.image_scale[0]),
+                int(h * (self.image_scale[0] if self.keep_aspect_ratio else self.image_scale[1]))
             )
             return
 
@@ -118,8 +120,8 @@ class APNODE_BonePicker_NodeProps:
         items=lambda node, ctx: tuple((bone.name, bone.name, "") for bone in ctx.active_object.data.bones),
         update=update_bone_name
     )
-    
-    
+
+
     use_image: BoolProperty(
         name="Use Image",
         description="Use Image graphics instead",
@@ -133,7 +135,7 @@ class APNODE_BonePicker_NodeProps:
         type=Image,
         update=lambda node, ctx: node.update_graphics(ctx)
     )
-    
+
     image_scale: FloatVectorProperty(
         name="Image Scale",
         default=(1, 1),
