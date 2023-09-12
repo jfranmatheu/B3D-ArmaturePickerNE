@@ -8,4 +8,4 @@ class APNODE_BonePickerGeo_StyleProps:
     # ----------------------------------------------------------------
 
     def draw_styles(self, layout: UILayout) -> None:
-        pass
+        layout.prop(self, 'color')

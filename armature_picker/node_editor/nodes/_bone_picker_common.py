@@ -7,6 +7,17 @@ from ...gpu import draw
 from ...utils.armature import deselect_all_bones_from_active
 
 
+class APNODE_BonePicker_CommonStyle:
+    color: FloatVectorProperty(
+        name="Background Color",
+        description="Background Color of the button",
+        default=(.9, .52, .41, 1.0),
+        size=4,
+        min=0.0,
+        max=1.0,
+        subtype='COLOR'
+    )
+
 
 class APNODE_BonePicker_CommonProps:
 
@@ -84,7 +95,7 @@ class APNODE_BonePicker_CommonProps:
 
 
 
-class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps):
+class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps, APNODE_BonePicker_CommonStyle):
     draw_layer = 10
 
 

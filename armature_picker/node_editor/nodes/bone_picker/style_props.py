@@ -8,15 +8,6 @@ class APNODE_BonePicker_StyleProps:
 
     # STYLE PROPERTIES
     # ----------------------------------------------------------------
-    color: FloatVectorProperty(
-        name="Background Color",
-        description="Background Color of the button",
-        default=(.9, .52, .41, 1.0),
-        size=4,
-        min=0.0,
-        max=1.0,
-        subtype='COLOR'
-    )
 
     text_size: IntProperty(
         name='Text Size',
