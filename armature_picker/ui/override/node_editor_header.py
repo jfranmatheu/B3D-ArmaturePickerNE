@@ -16,6 +16,8 @@ def draw(self, context: Context):
     layout: UILayout = self.layout
     layout.template_header()
 
+    layout.menu('AP_MT_utils', text='Utils')
+
     layout.separator_spacer()
 
     layout.template_ID(snode, "node_tree", new="node.new_node_tree")
