@@ -95,12 +95,14 @@ class APNODE_BonePicker_CommonProps:
 
 
     def draw_ui__edit(self, context: Context, layout: UILayout) -> None:
+        layout.use_property_split = True
+        layout.use_property_decorate = False
         layout.prop_search(self, 'bone_name', context.active_object.pose, 'bones', text='', icon='BONE_DATA')
 
         row = layout.row(align=True, heading='IK/FK')
         row.prop(self, 'use_ik_fk', text='', expand=False)
         row.prop(self, 'ik_fk_prop_idname', text='')
-        row.prop(self, 'ik_fk_size', text='Size')
+        layout.prop(self, 'ik_fk_size', text='Toggle Size')
 
 
 
