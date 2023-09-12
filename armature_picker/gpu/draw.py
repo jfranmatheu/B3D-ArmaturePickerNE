@@ -303,10 +303,14 @@ def image_bbox(owner: object, graphic_id: str,
     draw_bb(owner, graphic_id, bbox_coords, _shader, use_uv=True)
 
 
-def image_ui(node: object, graphic_id: str, image: Image | GPUTexture, origin: Vector | None = None, _shader=SHADERS.IMA) -> None:
+def image_ui(node: object, graphic_id: str, image: Image | GPUTexture, origin: Vector | None = None, _shader=SHADERS.IMA, **extra_uniforms) -> None:
     if not isinstance(image, (Image, GPUTexture)): return
     if not set_image(image, _shader): return
-    draw_node(node, graphic_id, _shader, use_uv=True)
+    draw_node(node, graphic_id, _shader, use_uv=True, **extra_uniforms)
+
+
+def image_ui_outline(node: object, graphic_id: str, image: Image | GPUTexture, outline_color: RGBA, origin: Vector | None = None, _shader=SHADERS.IMA_OUTLINE) -> None:
+    image_ui(node, graphic_id, image, origin, _shader, u_outline_color=outline_color)
 
 
 def offscreen(node: object, graphic_id: str, off: GPUOffScreen, origin: Vector | None = None) -> None:

@@ -5,6 +5,7 @@ class SHADERS:
     COLOR_UNIFORM = new_sh('BASIC', 'COLOR_UNIFORM')
     IMA = new_sh('IMA', 'IMA')
     IMA_OPA = new_sh('IMA', 'IMA_OPA')
+    IMA_OUTLINE = new_sh('IMA', 'IMA_OUTLINE')
     WG = new_sh('UV', 'WG')
     WG_SLD = new_sh('UV', 'WG_SLD')
     WG_SLD_RNG = new_sh('UV', 'WG_SLD_RNG')
