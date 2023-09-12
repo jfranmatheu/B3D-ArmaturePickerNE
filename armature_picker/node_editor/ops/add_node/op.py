@@ -26,7 +26,7 @@ class AP_OT_add_node(Operator):
         self.modal__move_node__enter(context, event, mouse_pos)
         return add_modal_handler(context, self)
 
-    def new_node(self, context: Context, type: str, event: Event | None = None) -> Node:
+    def new_node(self, context: Context, type: str, event: Event | Vector | None = None) -> Node:
         ''' Pass Event type if the addition should be interactive (performed inside an invoke to run modal).
             Pass a Vector in the event place to indicate the node element final-location manually. '''
 
@@ -46,14 +46,17 @@ class AP_OT_add_node(Operator):
                 new_node.bone_name = context.active_bone.name
 
         if event is not None:
-            mouse_pos = get_mouse_pos(event)
+            if isinstance(event, Event):
+                mouse_pos = get_mouse_pos(event)
 
-            zoom = get_node_editor_zoom(context)
-            inv_zoom = 1/zoom
-            offset = get_node_editor_offset(context)
+                zoom = get_node_editor_zoom(context)
+                inv_zoom = 1/zoom
+                offset = get_node_editor_offset(context)
 
-            new_node.rect_transform.move_to((mouse_pos - offset) * inv_zoom)
-        
+                new_node.rect_transform.move_to((mouse_pos - offset) * inv_zoom)
+            elif isinstance(event, Vector):
+                new_node.rect_transform.move_to(event)
+
         new_node.location = (-100000, -100000)
 
         return new_node
