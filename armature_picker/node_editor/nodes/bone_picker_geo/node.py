@@ -12,7 +12,7 @@ import gpu
 import numpy as np
 
 from ....gpu import draw, draw_geo
-from ....utils.geometry import rotate_point, point_inside_rect, get_center
+from ....utils.geometry import rotate_point, point_inside_rect, get_center, point_inside_circle
 from ....utils.armature import deselect_all_bones_from_active
 
 
@@ -43,6 +43,10 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePickerGeo_
     def on_hover(self, context: Context, rect: RectTransform, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
         if point_inside_rect(view_loc, rect.bottom_left, rect.size, rect.rotation, origin=Vector(rect.origin)):
             # CHECK point_inside_circle with center in rect.origin and the user specified radius (a default of over 12).
+            if point_inside_circle(view_loc, Vector(rect.origin), self.ik_fk_size * 0.5):
+                self.set_state('ik_fk_hovered', True)
+                return True
+            self.set_state('ik_fk_hovered', False)
             if self.geo_precision == 'FAST':
                 return True
             if geo := draw_geo.Geometry.get(self, safe_context=False):
@@ -58,8 +62,10 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePickerGeo_
     def draw_common(self, context: Context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         pos: Vector = rect.position
         size: Vector = rect.size
+        
+        geo = draw_geo.Geometry.get(self)
 
-        if self.object is not None and (geo := draw_geo.Geometry.get(self)) is not None:
+        if self.object is not None and geo is not None:
             geo.draw(self)
         else:
             draw.rectangle(
@@ -67,29 +73,26 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePickerGeo_
                 color=(1.0, 0.0, 1.0, 1.0)
             )
 
-        if self.use_ik_fk:
-            ikfk_size = Vector((rect.dimensions[1], rect.dimensions[1]))
+        if self.use_ik_fk and geo:
+            ikfk_size = Vector((self.ik_fk_size, self.ik_fk_size))
             ikfk_hovered = self.get_state('ik_fk_hovered', False)
-            ikfk_pos = rect.get_point_relative(1.0, 0.0, apply_rotation=False)
+            ikfk_pos = Vector(rect.origin) - ikfk_size * 0.5
             ikfk_state = self.get_ik_fk_state(context)
 
             draw.wg(
                 self, 'IKFK_BASE',
-                ikfk_pos, ikfk_size, rect.rotation,
-                origin=Vector(rect.origin),
+                ikfk_pos, ikfk_size, 0,
                 roundness=1, # if ikfk_hovered else self.roundness,
                 outline_thickness=1.5,
-                bg_color=(.05, .05, .05, .95) if ikfk_hovered else (.05, .05, .05, .8),
+                bg_color=(.1, .1, .1, .9) if ikfk_hovered else (.05, .05, .05, .8),
             )
 
             ikfk_pos = get_center(ikfk_pos, ikfk_size)
-            # rotate_point(ikfk_pos, rect.bottom_left, rect.rotation)
             ikfk_size *= 0.5
 
             draw.wg(
                 self, 'IKFK_TOGGLE',
-                ikfk_pos-ikfk_size*0.5, ikfk_size, rect.rotation,
-                origin=Vector(rect.origin),
+                ikfk_pos-ikfk_size*0.5, ikfk_size, 0,
                 roundness=1,
                 outline_thickness=0,
                 bg_color=(.1, .5, 1.0, .9) if ikfk_state else (.5, .5, .5, .9),
