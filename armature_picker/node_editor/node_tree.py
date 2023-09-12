@@ -320,11 +320,6 @@ class AP_NodeTree(NodeTree):
         sel_nodes: set[AP_Node] = self.get_selected_nodes(context)
 
 
-
-        mat = gpu.matrix.get_model_view_matrix()
-        mat_pj = gpu.matrix.get_projection_matrix()
-
-
         with gpu.matrix.push_pop():
             gpu.matrix.translate(offset)
             gpu.matrix.scale_uniform(zoom)
