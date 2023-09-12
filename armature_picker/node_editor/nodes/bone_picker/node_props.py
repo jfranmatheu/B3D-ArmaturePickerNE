@@ -61,6 +61,13 @@ class APNODE_BonePicker_NodeProps:
 
     # BUTTON PROPERTIES
     # ----------------------------------------------------------------
+    fit_to_text: BoolProperty(
+        name="Fit To Text",
+        description="Whether to fit button dimensions to label text box size",
+        default=True,
+        update=lambda node, ctx: node.update_dimensions(ctx)
+    )
+
     use_ik_fk: BoolProperty(default=False, name="Use IK/FK", description="This button picker controls a bone that has a IK/FK toggle")
     ik_fk_prop_idname: EnumProperty(
         name="IK/FK Property",
