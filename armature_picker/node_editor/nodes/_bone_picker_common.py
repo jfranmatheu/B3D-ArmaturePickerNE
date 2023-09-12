@@ -52,6 +52,27 @@ class APNODE_BonePicker_CommonProps:
 
 
     # ----- DRAW UI LAYOUT --------------------------------
+    
+    def draw_ui__pose(self, context: Context, layout: UILayout) -> None:
+        if context.active_object.animation_data is None:
+            layout.label(text="No animation data")
+            return
+
+        col = layout.column(align=False)
+        col.use_property_decorate = True
+        col.use_property_split = True
+        if action := context.active_object.animation_data.action:
+            drawn_attr = set()
+            for fcu in action.fcurves:
+                data_path: str = fcu.data_path
+                if data_path.startswith('pose.bones'):
+                    if self.bone_name == data_path.split('"')[1]:
+                        attr = data_path.split('.')[-1]
+                        if attr in drawn_attr:
+                            continue
+                        drawn_attr.add(attr)
+                        col.prop(self.get_bone(context, from_pose_data=True), attr)
+
 
     def draw_ui__edit(self, context: Context, layout: UILayout) -> None:
         layout.prop_search(self, 'bone_name', context.active_object.pose, 'bones', text='', icon='BONE_DATA')
