@@ -28,7 +28,7 @@ class APNODE_BonePickerGeo_NodeProps:
         if self.object is None:
             return
 
-        self.color = context.object.color
+        self.color = self.object.color
 
         self.dirty_geo = True
         self.update_dimensions(context)
