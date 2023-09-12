@@ -19,7 +19,7 @@ class RectTransform(PropertyGroup):
     node_idname: StringProperty(name="Node Name")
 
     # ----- Updates --------------------------------
-    
+
     def update_dimensions(self, context: Context) -> None:
         if node := self.node:
             if hasattr(node, 'update_dimensions'):
@@ -176,6 +176,33 @@ class RectTransform(PropertyGroup):
     def size(self) -> Vector:
         return Vector(Vector(self.dimensions))
 
+    @property
+    def bound_box(self) -> list[Vector]:
+        ''' Order: ``Bottom-Left``, ``Bottom-Right``, ``Top-Left``, ``Top-Right``. '''
+        if self.rotation == 0:
+            return [
+                self.bottom_left,
+                self.bottom_right,
+                self.top_left,
+                self.top_right
+            ]
+        coords = self.coords_rotated
+        min_x = min(coords, key=lambda v: v[0])
+        max_x = max(coords, key=lambda v: v[0])
+        min_y = min(coords, key=lambda v: v[1])
+        max_y = max(coords, key=lambda v: v[1])
+        return [
+            Vector((min_x, min_y)),
+            Vector((max_x, min_y)),
+            Vector((min_x, max_y)),
+            Vector((max_x, max_y))
+        ]
+
+    @property
+    def bound_box_norm(self) -> list[Vector]:
+        bbox = self.bound_box
+        bottom_left = bbox[0]
+        return [co - bottom_left for co in bbox]
 
     def move(self, off_x, off_y) -> None:
         self.origin = (int(self.origin.x + off_x), int(self.origin.y + off_y))
@@ -185,8 +212,8 @@ class RectTransform(PropertyGroup):
 
     def resize(self, w, h) -> None:
         self.dimensions = (int(w), int(h))
-    
-    
+
+
     def get_point_relative(self, rel_x: float, rel_y: float, apply_rotation: bool = True) -> Vector:
         p = self.bottom_left
         p.x += self.size.x * rel_x
