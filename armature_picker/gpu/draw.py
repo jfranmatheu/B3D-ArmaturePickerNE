@@ -64,6 +64,15 @@ def get_gputex(bl_image: Image) -> GPUBatch | None:
     return _gputex_cache[bl_image['uuid']]
 
 
+def set_image(image: Image, _shader: SHADERS.IMA) -> bool:
+    t=get_gputex(image) if isinstance(image, Image) else image
+    if t is None:
+        return False
+    state.blend_set('ALPHA')
+    _shader.uniform_sampler('image', t)
+    return True
+
+
 # ----------------------------------------------------------------
 
 def get_rect_coords(rect) -> dict:
@@ -98,6 +107,27 @@ tex_indices = ((0,1,2),(2,3,0))
 
 # ----------------------------------------------------------------
 
+def _draw_batch(batch: GPUBatch, shader: GPUShader, **uniforms) -> None:
+    for key, value in uniforms.items():
+        shader.uniform_float(key, value)
+    batch.draw(shader)
+
+
+def draw_bb(owner: object, graphic_id: str, bbox: list[Vector], shader: GPUShader, use_uv: bool = False, **uniforms):
+    if not owner.dirty and (batch := get_batch_from_cache(owner.uuid, graphic_id)) is not None:
+        pass
+    else:
+        if use_uv:
+            _input = {'pos': bbox, 'texco': tex_uv_indices}
+        else:
+            _input = {'pos': bbox}
+        batch = batch_for_shader(shader, 'TRIS',
+                                    _input,
+                                    indices=tex_indices)
+        set_batch_to_cache(owner.uuid, graphic_id, batch)
+    _draw_batch(batch, shader, **uniforms)
+
+
 def draw(owner: object, graphic_id: str, pos: Vector, size: Vector, angle: float, shader: GPUShader, origin: Vector | None = None, use_uv: bool = False, wg: bool = False, **uniforms):
     if not owner.dirty and (batch := get_batch_from_cache(owner.uuid, graphic_id)) is not None:
         pass
@@ -111,11 +141,9 @@ def draw(owner: object, graphic_id: str, pos: Vector, size: Vector, angle: float
                                  _input,
                                  indices=tex_indices)
         set_batch_to_cache(owner.uuid, graphic_id, batch)
-    for key, value in uniforms.items():
-        shader.uniform_float(key, value)
     if wg:
         shader.uniform_float('u_dimensions', size)
-    batch.draw(shader)
+    _draw_batch(batch, shader, **uniforms)
 
 
 def draw_node(node: object, graphic_id: str, shader: GPUShader, use_uv: bool = False, wg: bool = False, **uniforms):
@@ -126,11 +154,9 @@ def draw_node(node: object, graphic_id: str, shader: GPUShader, use_uv: bool = F
                                  get_rect_uv_coords(node.rect_transform) if use_uv else get_rect_coords(node.rect_transform),
                                  indices=tex_indices)
         set_batch_to_cache(node.uuid, graphic_id, batch)
-    for key, value in uniforms.items():
-        shader.uniform_float(key, value)
     if wg:
         shader.uniform_float('u_dimensions', node.rect_transform.dimensions)
-    batch.draw(shader)
+    _draw_batch(batch, shader, **uniforms)
 
 
 def draw_node_cage(node: object, graphic_id: str, shader: GPUShader, thickness: float | None = None, **uniforms):
@@ -257,22 +283,29 @@ def box(node: object, graphic_id: str, line_thickness: float, color: RGBA, _shad
     draw_node_cage(node, graphic_id, _shader, lineWidth=line_thickness, color=color, viewportSize=(w, h))
 
 
+def image(owner: object, graphic_id: str,
+       pos: Vector, size: Vector, rotation: float,
+       image: Image | GPUTexture,
+       origin: Vector | None = None, _shader=SHADERS.IMA) -> None:
+    if not set_image(image, _shader): return
+    draw(owner, graphic_id, pos, size, rotation, _shader, use_uv=True, wg=False, origin=origin)
 
-def image(node: object, graphic_id: str, image: Image | GPUTexture, origin: Vector | None = None, _shader=SHADERS.IMA) -> None:
-    if not isinstance(image, (Image, GPUTexture)):
-        return
-    t=get_gputex(image) if isinstance(image, Image) else image
-    if t is None:
-        return
-    state.blend_set('ALPHA')
-    _shader.uniform_sampler('image', t)
+
+def image_bbox(owner: object, graphic_id: str,
+               bbox_coords: Vector, image: Image | GPUTexture, _shader=SHADERS.IMA) -> None:
+    if not set_image(image, _shader): return
+    draw_bb(owner, graphic_id, bbox_coords, _shader, use_uv=True)
+
+
+def image_ui(node: object, graphic_id: str, image: Image | GPUTexture, origin: Vector | None = None, _shader=SHADERS.IMA) -> None:
+    if not isinstance(image, (Image, GPUTexture)): return
+    if not set_image(image, _shader): return
     draw_node(node, graphic_id, _shader, use_uv=True)
 
 
 def offscreen(node: object, graphic_id: str, off: GPUOffScreen, origin: Vector | None = None) -> None:
-    if not isinstance(off, GPUOffScreen):
-        return
-    image(node, graphic_id, off.texture_color, origin=origin)
+    if not isinstance(off, GPUOffScreen): return
+    image_ui(node, graphic_id, off.texture_color, origin=origin)
 
 
 def just_a_point(pos: Vector, radius: int, color: RGBA, _shader=SHADER_UNIFORM_COLOR) -> None:
