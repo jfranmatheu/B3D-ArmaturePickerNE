@@ -118,6 +118,37 @@ class APNODE_BonePicker_NodeProps:
         items=lambda node, ctx: tuple((bone.name, bone.name, "") for bone in ctx.active_object.data.bones),
         update=update_bone_name
     )
+    
+    
+    use_image: BoolProperty(
+        name="Use Image",
+        description="Use Image graphics instead",
+        default=False,
+        update=lambda node, ctx: node.update_graphics(ctx)
+    )
+
+    image: PointerProperty(
+        name="Image",
+        description="When using image graphic, the rest of styles are not used. The picker will ignore transparent pixels ;-)",
+        type=Image,
+        update=lambda node, ctx: node.update_graphics(ctx)
+    )
+    
+    image_scale: FloatVectorProperty(
+        name="Image Scale",
+        default=(1, 1),
+        min=0.1,
+        max=10,
+        size=2,
+        subtype='XYZ',
+        update=update_dimensions
+    )
+
+    keep_aspect_ratio: BoolProperty(
+        name="Keep aspect ratio",
+        default=True,
+        update=update_dimensions
+    )
 
 
     def draw_ui__pose(self, context: Context, layout: UILayout) -> None:

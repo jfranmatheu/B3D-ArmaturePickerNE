@@ -76,19 +76,6 @@ class APNODE_BonePicker_StyleProps:
         subtype='COLOR'
     )
 
-    use_image: BoolProperty(
-        name="Use Image",
-        description="Use Image graphics instead",
-        default=False,
-        update=lambda node, ctx: node.update_graphics(ctx)
-    )
-
-    image: PointerProperty(
-        name="Image",
-        description="When using image graphic, the rest of styles are not used. The picker will ignore transparent pixels ;-)",
-        type=Image,
-        update=lambda node, ctx: node.update_graphics(ctx)
-    )
 
     def draw_styles(self, layout: UILayout) -> None:
         row = layout.row(align=True, heading='Image')
