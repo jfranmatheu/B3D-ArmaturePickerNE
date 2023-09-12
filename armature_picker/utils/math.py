@@ -1,5 +1,6 @@
 from math import hypot, acos, sqrt, cos, pi, sin
 from typing import Tuple
+from mathutils import Vector
 
 
 def rotate_vector(vector: list[float, float], angle: float) -> list[float, float]:
@@ -7,6 +8,18 @@ def rotate_vector(vector: list[float, float], angle: float) -> list[float, float
     y = vector[0] * sin(angle) + vector[1] * cos(angle)
     return [x, y]
 
+def cross(point_o: Vector, point_a: Vector, point_b: Vector) -> int:
+    """ 2D cross product of OA and OB vectors,
+    i.e. z-component of their 3D cross product
+    :param point_o: point O
+    :param point_a: point A
+    :param point_b: point B
+    :return cross product of vectors OA and OB (OA x OB),
+    positive if OAB makes a counter-clockwise turn,
+    negative for clockwise turn, and zero if the points are collinear
+    """
+    return (point_a.x - point_o.x) * (point_b.y - point_o.y) - (
+            point_a.y - point_o.y) * (point_b.x - point_o.x)
 
 def clamp(value: float or int, min_value: float or int = 0.0, max_value: float or int = 1.0) -> float or int:
     return min(max(value, min_value), max_value)

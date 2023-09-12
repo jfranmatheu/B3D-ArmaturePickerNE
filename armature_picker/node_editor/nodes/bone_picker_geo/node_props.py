@@ -75,12 +75,11 @@ class APNODE_BonePickerGeo_NodeProps:
             ('CONVEX', "Convex Hull", "Creates a convex hull from the given geometry object"),
             ('PRECISE', "Precise", "The most precise but slower method. Good for complex geometry with holes and multiple parts")
         ),
-        default='PRECISE'
+        default='PRECISE',
+        update=update_dimensions
     )
 
 
     def draw_object_props(self, layout: UILayout) -> None:
         layout.prop(self, 'object')
-        layout.alert = True
         layout.prop(self, 'geo_precision')
-        layout.alert = False

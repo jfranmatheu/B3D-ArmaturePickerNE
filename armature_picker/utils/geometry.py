@@ -7,7 +7,7 @@ from bmesh.types import BMesh, BMFace
 
 import numpy as np
 
-from .math import dotproduct, length
+from .math import dotproduct, length, cross
 
 
 def distance_between(_p1, _p2):
@@ -89,6 +89,18 @@ def point_inside_rect(_p, _pos, _size, _angle=0, origin: Vector | None = None):
         p = _p
 
     return ((_pos[0] + _size[0]) > p[0] > _pos[0]) and ((_pos[1] + _size[1]) > p[1] > _pos[1])
+
+
+def check_point_in_convex_hull(convex_hull: list[Vector], point: Vector) -> bool:
+    def _is_inside() -> bool:
+        for idx in range(1, len(convex_hull)):
+            if cross(convex_hull[idx - 1], convex_hull[idx], point) < 0:
+                return False
+        return True
+
+    # visualize results
+    # draw_results(convex_hull, point, _is_inside())
+    return _is_inside()
 
 
 def get_center(pos: Vector, size: Vector) -> Vector:
