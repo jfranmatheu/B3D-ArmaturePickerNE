@@ -20,8 +20,8 @@ class AP_OT_import_geo_collection(Operator):
     )
     
     px_per_meter: IntProperty(
-        name="Pixels Per Meter",
-        description="Decide the number of pixels per meter. Will convert every meter on the view3d into the pixel count you specify",
+        name="Scale",
+        description="Equivalent to aprox. Pixels/Meter * 2 (when zoom-in to max).",
         default=50,
         min=10,
         max=256,

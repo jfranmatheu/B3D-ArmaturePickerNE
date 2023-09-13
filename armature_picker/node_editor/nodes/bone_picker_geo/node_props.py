@@ -55,7 +55,8 @@ class APNODE_BonePickerGeo_NodeProps:
 
     geo_scale: FloatProperty(
         name="Geometry Scale",
-        default=10,
+        description="Equivalent to aprox. Pixels/Meter * 2 (when zoom-in to max).",
+        default=20,
         min=1.0,
         max=1000,
         update=update_object
