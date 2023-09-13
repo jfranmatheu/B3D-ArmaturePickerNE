@@ -22,9 +22,9 @@ class AP_OT_import_geo_collection(Operator):
     px_per_meter: IntProperty(
         name="Pixels Per Meter",
         description="Decide the number of pixels per meter. Will convert every meter on the view3d into the pixel count you specify",
-        default=100,
+        default=50,
         min=10,
-        max=1000,
+        max=256,
     )
 
     @classmethod
