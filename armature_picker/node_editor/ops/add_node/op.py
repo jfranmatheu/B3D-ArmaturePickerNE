@@ -14,15 +14,20 @@ class AP_OT_add_node(Operator):
     bl_label = 'Add Node'
     bl_description = "Add new node, drag it and place it where you want"
 
-    node_idname: StringProperty()
+    node_idname: StringProperty(options={'HIDDEN', 'SKIP_SAVE'})
 
     @classmethod
     def poll(cls, context: Context):
         return poll_node_editor(context)
 
     def invoke(self, context: Context, event: Event) -> OpsReturn:
-        mouse_pos = get_mouse_pos(event)
-        self.modal_nodes = (self.new_node(context, self.node_idname, event), )
+        if not hasattr(self, 'modal_nodes'):
+            mouse_pos = get_mouse_pos(event)
+            self.modal_nodes = (self.new_node(context, self.node_idname, event), )
+        else:
+            mouse_pos = None
+            # When calling it externally... aka 'AP_OT_import_geo_collection'
+            pass
         self.modal__move_node__enter(context, event, mouse_pos)
         return add_modal_handler(context, self)
 
@@ -52,7 +57,7 @@ class AP_OT_add_node(Operator):
                 zoom = get_node_editor_zoom(context)
                 inv_zoom = 1/zoom
                 offset = get_node_editor_offset(context)
-
+                
                 new_node.rect_transform.move_to((mouse_pos - offset) * inv_zoom)
             elif isinstance(event, Vector):
                 new_node.rect_transform.move_to(event)
@@ -80,6 +85,11 @@ class AP_OT_add_node(Operator):
 
     def modal__move_node__enter(self, context: Context, event: Event, mouse_pos: Vector) -> None:
         self.prev_node_location = [get_node_editor_region_coord(context, node.rect_transform.origin) for node in self.modal_nodes]
+        if mouse_pos is None:
+            if hasattr(self, 'mouse_pos'):
+                mouse_pos = self.mouse_pos
+            else:
+                mouse_pos = Vector((context.area.width / 2, context.area.height / 2))
         self.node_location_offset = [prev_node_loc - mouse_pos for prev_node_loc in self.prev_node_location]
 
     def modal__move_node__update(self, context: Context, event: Event, mouse_pos: Vector) -> int:
