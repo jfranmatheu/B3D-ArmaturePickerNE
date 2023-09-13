@@ -82,6 +82,10 @@ class APNODE_BonePicker_CommonProps:
         col.use_property_decorate = True
         col.use_property_split = True
         if action := context.active_object.animation_data.action:
+            bone = self.get_bone(context, from_pose_data=True)
+            if bone is None:
+                return
+
             drawn_attr = set()
             for fcu in action.fcurves:
                 data_path: str = fcu.data_path
@@ -91,7 +95,7 @@ class APNODE_BonePicker_CommonProps:
                         if attr in drawn_attr:
                             continue
                         drawn_attr.add(attr)
-                        col.prop(self.get_bone(context, from_pose_data=True), attr)
+                        col.prop(bone, attr)
 
 
     def draw_ui__edit(self, context: Context, layout: UILayout) -> None:
