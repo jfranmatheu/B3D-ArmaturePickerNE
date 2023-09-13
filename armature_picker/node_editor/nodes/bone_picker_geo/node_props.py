@@ -27,17 +27,7 @@ class APNODE_BonePickerGeo_NodeProps:
     def update_object(self, context: Context) -> None:
         if self.object is None:
             return
-
-        self.color = self.object.color
-
-        self.dirty_geo = True
-        self.update_dimensions(context)
-        self.dirty_geo = False
-
-    def update_scale(self, context: Context) -> None:
-        if self.object is None:
-            return
-
+        
         scale = self.geo_scale
         dim = self.object.dimensions
         self.rect_transform.dimensions = (
@@ -45,7 +35,11 @@ class APNODE_BonePickerGeo_NodeProps:
             int(dim[1] * scale)
         )
 
-        self.update_object(context)
+        self.color = self.object.color
+
+        self.dirty_geo = True
+        self.update_dimensions(context)
+        self.dirty_geo = False
 
 
     # PROPERTIES
@@ -64,7 +58,7 @@ class APNODE_BonePickerGeo_NodeProps:
         default=10,
         min=1.0,
         max=1000,
-        update=update_scale
+        update=update_object
     )
 
     geo_precision: EnumProperty(
