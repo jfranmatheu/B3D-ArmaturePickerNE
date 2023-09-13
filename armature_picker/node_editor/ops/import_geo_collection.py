@@ -1,5 +1,5 @@
 from bpy.types import Context, Event, Operator, Node, Collection
-from bpy.props import EnumProperty
+from bpy.props import EnumProperty, IntProperty
 from mathutils import Vector
 import bpy
 
@@ -17,6 +17,14 @@ class AP_OT_import_geo_collection(Operator):
     collection: EnumProperty(
         name="Collection",
         items=lambda op, ctx: [(coll.name, coll.name_full, "") for coll in ctx.scene.collection.children]
+    )
+    
+    px_per_meter: IntProperty(
+        name="Pixels Per Meter",
+        description="Decide the number of pixels per meter. Will convert every meter on the view3d into the pixel count you specify",
+        default=100,
+        min=10,
+        max=1000,
     )
 
     @classmethod
@@ -49,7 +57,8 @@ class AP_OT_import_geo_collection(Operator):
             if len(ob.data.vertices) < 3:
                 continue
 
-            geo_node: APNODE_BonePickerGeo = add_node(self, context, APNODE_BonePickerGeo.bl_idname, Vector((ob.location.x, ob.location.y)) * 10)
+            geo_node: APNODE_BonePickerGeo = add_node(self, context, APNODE_BonePickerGeo.bl_idname, Vector((ob.location.x, ob.location.y)) * self.px_per_meter)
+            geo_node.geo_scale = self.px_per_meter
             geo_node.object = ob
 
             if bone := pose_bones.get(ob.name):
