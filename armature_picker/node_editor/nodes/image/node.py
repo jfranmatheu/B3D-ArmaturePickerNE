@@ -38,7 +38,7 @@ class APNODE_Image(APNODE_Image_NodeProps, AP_Node, Node):
                 image=self.image
             )
         else:
-            draw.rectangle(
+            draw.rectangle_ui(
                 self, 'IMAGE',
                 color=(1.0, 0.0, 1.0, 1.0)
             )

@@ -60,15 +60,12 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePickerGeo_
     # ----- DRAWING --------------------------------
 
     def draw_common(self, context: Context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
-        pos: Vector = rect.position
-        size: Vector = rect.size
-        
         geo = draw_geo.Geometry.get(self)
 
         if self.object is not None and geo is not None:
             geo.draw(self, hovered=hovered)
         else:
-            draw.rectangle(
+            draw.rectangle_ui(
                 self, 'NO_OBJECT',
                 color=(1.0, 0.0, 1.0, 1.0) if hovered else (1, .4, .0, 1.0),
             )
