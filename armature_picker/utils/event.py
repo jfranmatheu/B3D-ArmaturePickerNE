@@ -87,7 +87,7 @@ class Mouse:
         mouse = Mouse()
         mouse_region_pos = Vector((event.mouse_region_x, event.mouse_region_y))
         if local_space__rect is not None:
-            mouse.local_start = rotate_point(mouse_region_pos, local_space__rect.origin, -local_space__rect.rotation)
+            mouse.local_start = rotate_point(mouse_region_pos, Vector(local_space__rect.origin), -local_space__rect.rotation)
             mouse.local_current = mouse_region_pos.copy()
             mouse.local_prev = mouse_region_pos.copy()
             mouse.local_offset = Vector((0, 0))
@@ -124,7 +124,7 @@ class Mouse:
         if local_space__rect is not None:
             self.local_prev.x = self.local_current.x
             self.local_prev.y = self.local_current.y
-            self.local_current = rotate_point(self.current, local_space__rect.origin, -local_space__rect.rotation)
+            self.local_current = rotate_point(self.current, Vector(local_space__rect.origin), -local_space__rect.rotation)
             self.local_delta.x = self.local_current.x - self.local_prev.x
             self.local_delta.y = self.local_current.y - self.local_prev.y
             self.local_offset.x = self.local_current.x - self.local_start.x
