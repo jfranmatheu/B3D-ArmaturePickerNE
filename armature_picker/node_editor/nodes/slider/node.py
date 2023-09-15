@@ -92,17 +92,17 @@ class APNODE_Slider(APNODE_Slider_NodeProps, APNODE_Slider_StyleProps, APNODE_Sl
                 roundness = 0.2
                 outline_thickness = 0.0
 
-            handle_pos = rect.get_point_relative(factor, 0.5) # , apply_rotation=True, rotate_from_origin=True)
+            handle_pos = rect.get_point_relative(factor, 0.5, apply_rotation=True, rotate_from_origin=True) # , apply_rotation=True, rotate_from_origin=True)
             handle_pos -= handle_size * 0.5 # get_center(handle_pos, handle_size)
 
             dirty_handle_pos = self.dirty_handle_pos
             draw.wg(
                 self, 'SLIDER_HANDLE',
-                handle_pos, handle_size, rect.rotation,
+                handle_pos, handle_size, 0, # rect.rotation,
                 roundness=roundness,
                 outline_thickness=outline_thickness,
                 bg_color=self.handle_color,
-                origin=Vector(rect.origin),
+                # origin=Vector(rect.origin),
                 dirty=dirty_handle_pos
             )
 
