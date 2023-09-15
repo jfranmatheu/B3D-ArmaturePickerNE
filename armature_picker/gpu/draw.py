@@ -128,8 +128,9 @@ def draw_bb(owner: object, graphic_id: str, bbox: list[Vector], shader: GPUShade
     _draw_batch(batch, shader, **uniforms)
 
 
-def draw(owner: object, graphic_id: str, pos: Vector, size: Vector, angle: float, shader: GPUShader, origin: Vector | None = None, use_uv: bool = False, wg: bool = False, **uniforms):
-    if not owner.dirty and (batch := get_batch_from_cache(owner.uuid, graphic_id)) is not None:
+def draw(owner: object, graphic_id: str, pos: Vector, size: Vector, angle: float, shader: GPUShader, origin: Vector | None = None, dirty: bool | None = None, use_uv: bool = False, wg: bool = False, **uniforms):
+    is_dirty = dirty or owner.dirty if dirty is not None else owner.dirty
+    if not is_dirty and (batch := get_batch_from_cache(owner.uuid, graphic_id)) is not None:
         pass
     else:
         coords = get_tex_coords(pos, size) if angle == 0 else get_rotated_tex_coords(pos, size, origin if origin is not None else pos+size*0.5, angle)
@@ -332,7 +333,7 @@ def just_a_point(pos: Vector, radius: int, color: RGBA, _shader=SHADER_UNIFORM_C
 def wg(owner: object, graphic_id: str,
        pos: Vector, size: Vector, rotation: float,
        roundness: float, outline_thickness: float, bg_color: RGBA,
-       origin: Vector | None = None, _shader=SHADERS.WG) -> None:
+       origin: Vector | None = None, dirty: bool | None = None, _shader=SHADERS.WG) -> None:
     ''' Uniforms:
         ---------------
         - ``vec2`` u_dimensions;
@@ -345,7 +346,7 @@ def wg(owner: object, graphic_id: str,
     rad = min(*size) * 0.5 * roundness
     value = rgb_to_hsv(bg_color[0], bg_color[1], bg_color[2])[-1]
     outline_color_factor = 1 + pow(value, 2)
-    draw(owner, graphic_id, pos, size, rotation, _shader, use_uv=True, wg=True, origin=origin,
+    draw(owner, graphic_id, pos, size, rotation, _shader, use_uv=True, wg=True, origin=origin, dirty=dirty,
               u_color=bg_color, u_radius=rad, u_outline=outline_thickness, u_outline_color_factor=outline_color_factor)
 
 
@@ -364,3 +365,21 @@ def wg_ui(node: object, graphic_id: str, roundness: float, outline_thickness: fl
     outline_color_factor = 1 + pow(value, 2)
     draw_node(node, graphic_id, _shader, use_uv=True, wg=True,
               u_color=bg_color, u_radius=rad, u_outline=outline_thickness, u_outline_color_factor=outline_color_factor)
+
+
+def wg_sld_ui(node: object, graphic_id: str, factor: float, roundness: float, bg_color: RGBA, fill_color: RGBA, _shader=SHADERS.WG_SLD) -> None:
+    ''' Uniforms:
+        ---------------
+        - ``vec2`` u_dimensions;
+        - ``float`` u_factor;
+        - ``vec4`` u_color;
+        - ``vec4`` u_fill_color;
+        - ``float`` u_radius;
+    '''
+    if bg_color[-1] != 1.0:
+        state.blend_set('ALPHA')
+    rad = min(*node.rect_transform.dimensions) * 0.5 * roundness
+    draw_node(node, graphic_id, _shader, use_uv=True, wg=True,
+              u_factor=factor,
+              u_radius=rad, # u_outline=outline_thickness, 
+              u_color=bg_color, u_fill_color=fill_color)
