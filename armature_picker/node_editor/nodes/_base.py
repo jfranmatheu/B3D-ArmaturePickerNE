@@ -345,6 +345,8 @@ class AP_Node(NodeTransformProps):
 
     def _modal(self, context: Context, event: Event) -> set[str]:
         ''' Internal. '''
+        if event.type in {EventType.MOUSEMOVE, EventType.INBETWEEN_MOUSEMOVE}:
+            self.update_mouse(context, event)
         modal_ret = self.modal(context, event, self.mouse)
         if isinstance(modal_ret, int) and modal_ret < 1:
             # --- MODAL EXIT ---
@@ -368,10 +370,10 @@ class AP_Node(NodeTransformProps):
         ''' Modal method in EDIT mode context. Returns 0 for finish, 1 for continue and -1 for cancel. '''
         pass
 
-    def modal_exit__pose(self, context: Context, event: Event, mouse: Mouse, cancel: bool) -> None:
+    def modal_exit__pose(self, context: Context, cancel: bool) -> None:
         pass
 
-    def modal_exit__edit(self, context: Context, event: Event, mouse: Mouse, cancel: bool) -> None:
+    def modal_exit__edit(self, context: Context, cancel: bool) -> None:
         pass
 
     # ----- DRAWING --------------------------------
