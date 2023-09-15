@@ -11,12 +11,12 @@ class TheAPGZ(GZ):
     def setup(gz): print("TheAPGZ::setup")
     def test_select(gz,c,l): return get_tree(c)._test_select(c,l)
     def invoke(gz,c,e):
-        print("TheAPGZ::invoke", e.type, e.value)
+        # print("TheAPGZ::invoke", e.type, e.value)
         return get_tree(c)._invoke(c,e)
     def modal(gz,c,e,t):
-        print("TheAPGZ::modal", e.type, e.value)
+        # print("TheAPGZ::modal", e.type, e.value)
         return get_tree(c)._modal(c,e,t)
     def exit(gz,c,ca):
-        print("TheAPGZ::exit", ca)
+        # print("TheAPGZ::exit", ca)
         return get_tree(c)._exit(c,ca)
     def draw(gz,c): pass # get_tree(c)._draw(c)
