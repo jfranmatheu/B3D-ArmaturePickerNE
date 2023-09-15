@@ -33,18 +33,19 @@ class APNODE_Slider(APNODE_Slider_NodeProps, APNODE_Slider_StyleProps, APNODE_Sl
     # ----- MODAL --------------------------------
 
     def modal__pose(self, context: Context, event: Event, mouse: Mouse) -> int:
-        print(self, event.type, event.value)
         if event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
             return 0
 
-        if mouse.dir.x == 0:
+        if mouse.local_dir.x == 0:
             return OpsReturn.RUN
 
         if self.clamp_slider:
             rect: RectTransform = self.rect_transform
-            rel_mouse = rect.convert_abs_coord_to_rel_coord(mouse.current, context)
-            print("Relative Mouse Position:", rel_mouse)
+            rel_mouse = mouse.local_rel # rect.convert_abs_coord_to_rel_coord(mouse.current, context)
+
             value = map_value(rel_mouse.x, (0, 1), self.range)
+
+            # print("Relative Mouse Position:", rel_mouse, " ---> ", value)
             if value == self.value:
                 return 1
         else:
@@ -66,7 +67,7 @@ class APNODE_Slider(APNODE_Slider_NodeProps, APNODE_Slider_StyleProps, APNODE_Sl
                 factor = map_value(value, self.range, (0, 1))
         else:
             factor = 0
-        
+
         if self.clamp_slider and self.handle_type == 'CIRCLE':
             # Check which factor is the handle radius over the slider bar width.
             handle_rad_factor = (rect.dimensions[1] * 0.5) / rect.dimensions[0]

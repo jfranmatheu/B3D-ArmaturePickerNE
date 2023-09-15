@@ -202,9 +202,9 @@ class RectTransform(PropertyGroup):
         min_y = min(coords, key=lambda v: v[1])[1]
         max_y = max(coords, key=lambda v: v[1])[1]
         return [
+            Vector((min_x, max_y)),
             Vector((min_x, min_y)),
             Vector((max_x, min_y)),
-            Vector((min_x, max_y)),
             Vector((max_x, max_y))
         ]
 
@@ -250,13 +250,19 @@ class RectTransform(PropertyGroup):
     def point_inside_rect(self, point: Vector) -> bool:
         return point_inside_rect(point, self.position, self.size, self.rotation, self.origin)
 
-    def convert_abs_coord_to_rel_coord(self, point: Vector, context: Context | None = None) -> Vector:
-        ''' Point should be inside rect.
+    def convert_abs_coord_to_rel_coord(self, region_point: Vector, context: Context | None = None) -> Vector:
+        ''' Point should be inside rect
+            If passing context, point should be in region space coordinates, otherwise in view space.
             Returned coords will be between 0 and 1.
             By default it uses its BoundingBox. '''
         bbox = self.bound_box
+        p = region_point.copy()
 
         if context:
+            if self.rotation != 0:
+                o = get_node_editor_region_coord(context, Vector(self.origin))
+                p = rotate_point(p, o, -self.rotation)
+
             bbox = [get_node_editor_region_coord(context, co) for co in bbox]
             scale = 1 / get_node_editor_zoom(context)
         else:
@@ -264,12 +270,16 @@ class RectTransform(PropertyGroup):
 
         ## print(point, bbox)
 
-        bbox_size = self.bound_box_size
-        p = point - bbox[1] # left bottom corner of the bounding box.
-        return Vector((
-            p.x / bbox_size.x * scale,
-            p.y / bbox_size.y * scale
+        bbox_size = self.bound_box_size * scale
+        p = p - bbox[1] # left bottom corner of the bounding box.
+        p = Vector((
+            p.x / bbox_size.x,
+            p.y / bbox_size.y
         ))
+
+        # if self.rotation != 0:
+        #     p = rotate_point(p, Vector((0, 0)), self.rotation)
+        return p
 
 
 class NodeTransformProps:

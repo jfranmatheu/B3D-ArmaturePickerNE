@@ -284,9 +284,9 @@ class AP_Node(NodeTransformProps):
 
     def update_mouse(self, context: Context, event: Event) -> None:
         if hasattr(self, 'mouse'):
-            self.mouse.update(event, context.region.view2d, local_space__rect=self.rect_transform)
+            self.mouse.update(event, context, local_space__rect=self.rect_transform)
         else:
-            self.mouse = Mouse.init(event, context.region.view2d, local_space__rect=self.rect_transform)
+            self.mouse = Mouse.init(event, context, local_space__rect=self.rect_transform)
 
     # ----- INVOKE --------------------------------
 
