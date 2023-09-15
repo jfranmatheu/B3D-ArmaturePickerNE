@@ -97,7 +97,7 @@ class APNODE_Slider(APNODE_Slider_NodeProps, APNODE_Slider_StyleProps, APNODE_Sl
         if self.clamp_slider:
             if self.handle_type == 'CIRCLE':
                 handle_size = Vector((rect.dimensions[1], rect.dimensions[1])) # * 1.5
-                roundness = 1.0 if self.bar_type == 'FILL' else self.roundness
+                roundness = self.roundness
                 outline_thickness = 0.0 if self.bar_type == 'FILL' else self.outline_thickness
 
             elif self.handle_type == 'LINE':
