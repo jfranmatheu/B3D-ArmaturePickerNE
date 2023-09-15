@@ -102,7 +102,7 @@ class APNODE_Slider(APNODE_Slider_NodeProps, APNODE_Slider_StyleProps, APNODE_Sl
                 roundness=roundness,
                 outline_thickness=outline_thickness,
                 bg_color=self.handle_color,
-                origin=rect.origin,
+                origin=Vector(rect.origin),
                 dirty=dirty_handle_pos
             )
 
