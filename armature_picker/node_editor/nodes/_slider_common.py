@@ -34,6 +34,25 @@ class APNODE_Slider_CommonStyle:
         update=update_handle_pos
     )
 
+    bar_line_thickness: FloatProperty(
+        name="Bar Thickness",
+        description="Bar Line type thickness",
+        default=8,
+        min=1,
+        max=20,
+        update=lambda node, ctx: node.update_graphics(ctx)
+    )
+
+    bar_type: EnumProperty(
+        name="Bar Type",
+        items=(
+            ('FILL', "Fill", "Fill shape"),
+            ('LINE', "Line", "Line shape"),
+        ),
+        default='FILL',
+        update=lambda node, ctx: node.update_graphics(ctx)
+    )
+
     color: FloatVectorProperty(
         name="Color",
         description="Slider base color",
@@ -100,8 +119,12 @@ class APNODE_Slider_CommonStyle:
 
         col.separator()
 
+        col.prop(self, 'bar_type')
         col.prop(self, 'color')
-        col.prop(self, 'fill_color')
+        if self.bar_type == 'FILL':
+            col.prop(self, 'fill_color')
+        elif self.bar_type == 'LINE':
+            col.prop(self, 'bar_line_thickness')
 
         col.separator()
 
@@ -294,7 +317,7 @@ class APNODE_Slider_CommonProps:
         default=1.0,
         precision=2,
     )
-    
+
     min_angle: FloatProperty(
         name="Min Angle",
         default=0,
@@ -449,3 +472,34 @@ class APNODE_Slider_Common(APNODE_Slider_CommonProps, APNODE_Slider_CommonStyle)
     #             line_thickness=(1.5 * scale),
     #             color=(1.0, 1.0, .1, 1.0)
     #         )
+
+
+    # ----- TRANSFORM -----------------------------------------------------------
+
+    def update_dimensions(self, context: Context) -> None:
+        # on 'edit_dimensions' edit...
+        rect = self.rect_transform
+        w, h = rect.edit_dimensions
+
+        if self.bar_type == 'LINE':
+            if h > 15:
+                rect.edit_dimensions = (w, 15)
+                return
+
+        if w < 20:
+            rect.edit_dimensions = (20, 10)
+            return
+
+        t = w / h
+        if t < 2:
+            rect.edit_dimensions = (w, w * 0.5)
+            return
+
+        rect.dimensions = rect.edit_dimensions
+
+    def draw_transform(self, layout: UILayout, rect_transform: RectTransform) -> None:
+        layout.prop(rect_transform, 'origin')
+        layout.prop(rect_transform, 'pivot')
+        layout.prop(rect_transform, 'edit_dimensions', text='Size')
+        layout.prop(rect_transform, 'rotation')
+        layout.prop(self, 'draw_depth')

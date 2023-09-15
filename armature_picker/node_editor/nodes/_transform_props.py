@@ -137,7 +137,7 @@ class RectTransform(PropertyGroup):
         name="Dimensions",
         description="Picker button size in the NodeGraph 2D view",
         default=(20, 20),
-        min=20,
+        min=10,
         size=2,
         update=update_dimensions
     )

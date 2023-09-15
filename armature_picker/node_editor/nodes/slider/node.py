@@ -73,20 +73,32 @@ class APNODE_Slider(APNODE_Slider_NodeProps, APNODE_Slider_StyleProps, APNODE_Sl
             handle_rad_factor = (rect.dimensions[1] * 0.5) / rect.dimensions[0]
             factor = map_value(factor, (0, 1), (handle_rad_factor, 1 - handle_rad_factor))
 
-        draw.wg_sld_ui(
-            self, 'SLIDER',
-            factor=factor,
-            roundness=self.roundness,
-            # outline_thickness=self.outline_thickness,
-            bg_color=self.color if not hovered else Vector(self.color) * 1.2,
-            fill_color=self.fill_color if not hovered else Vector(self.fill_color) * 1.2,
-        )
+        if self.bar_type == 'FILL':
+            draw.wg_sld_ui(
+                self, 'SLIDER',
+                factor=factor,
+                roundness=self.roundness,
+                # outline_thickness=self.outline_thickness,
+                bg_color=self.color if not hovered else Vector(self.color) * 1.2,
+                fill_color=self.fill_color if not hovered else Vector(self.fill_color) * 1.2,
+            )
+        elif self.bar_type == 'LINE':
+            pos = rect.get_point_relative(0, 0.5)
+            size = Vector((rect.dimensions[0], self.bar_line_thickness * scale))
+            draw.rectangle(
+                self, 'SLIDER_LINE',
+                pos - Vector((0, size.y * 0.5)), size, rect.rotation,
+                # roundness=self.roundness,
+                # outline_thickness=self.outline_thickness,
+                color=self.color if not hovered else Vector(self.color) * 1.2,
+                origin=Vector(rect.origin)
+            )
 
         if self.clamp_slider:
             if self.handle_type == 'CIRCLE':
                 handle_size = Vector((rect.dimensions[1], rect.dimensions[1])) # * 1.5
-                roundness = 1.0
-                outline_thickness = 0.0 # 1.5
+                roundness = 1.0 if self.bar_type == 'FILL' else self.roundness
+                outline_thickness = 0.0 if self.bar_type == 'FILL' else self.outline_thickness
 
             elif self.handle_type == 'LINE':
                 handle_size = Vector((2, rect.dimensions[1]))
@@ -109,13 +121,3 @@ class APNODE_Slider(APNODE_Slider_NodeProps, APNODE_Slider_StyleProps, APNODE_Sl
 
             if dirty_handle_pos:
                 self.set_state('dirty_handle_pos', False)
-
-
-    # ----- UI LAYOUT DRAWING -----------------------------------------------------------
-
-    def draw_transform(self, layout: UILayout, rect_transform: RectTransform) -> None:
-        layout.prop(rect_transform, 'origin')
-        layout.prop(rect_transform, 'pivot')
-        layout.prop(rect_transform, 'edit_dimensions', text='Size')
-        layout.prop(rect_transform, 'rotation')
-        layout.prop(self, 'draw_depth')
