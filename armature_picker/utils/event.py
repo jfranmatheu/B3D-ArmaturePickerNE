@@ -1,6 +1,8 @@
 from bpy.types import Event, View2D
 from mathutils import Vector
 
+from .geometry import rotate_point
+
 
 class EventValue:
     ANY = 'ANY'
@@ -48,6 +50,13 @@ class EventType:
     NUM_THREE = 'THREE'
 
 
+class _RectTransform:
+    origin: Vector
+    size: Vector
+    rotation: float
+
+
+
 class Mouse:
     current: Vector   # current mouse position.
     prev: Vector      # previous mouse position.
@@ -56,7 +65,13 @@ class Mouse:
     delta: Vector     # difference of mouse position between prev and current.
 
     # local: Vector     # local space coordinates.
-    # local_rel: Vector # local space coordinates, relative factor between [0, 1].
+    local_rel: Vector # local space coordinates, relative factor between [0, 1].
+    local_current: Vector # current local space coordinates.
+    local_prev: Vector
+    local_start: Vector
+    local_offset: Vector
+    local_delta: Vector
+    local_dir: Vector
 
     view_current: Vector
     view_prev: Vector
@@ -68,11 +83,20 @@ class Mouse:
 
 
     @staticmethod
-    def init(event: Event, view2d: View2D | None = None) -> 'Mouse':
+    def init(event: Event, view2d: View2D | None = None, local_space__rect: _RectTransform | None = None) -> 'Mouse':
         mouse = Mouse()
-        mouse.start = Vector((event.mouse_region_x, event.mouse_region_y))
-        mouse.current = Vector((event.mouse_region_x, event.mouse_region_y))
-        mouse.prev = Vector((event.mouse_region_x, event.mouse_region_y))
+        mouse_region_pos = Vector((event.mouse_region_x, event.mouse_region_y))
+        if local_space__rect is not None:
+            mouse.local_start = rotate_point(mouse_region_pos, local_space__rect.origin, -local_space__rect.rotation)
+            mouse.local_current = mouse_region_pos.copy()
+            mouse.local_prev = mouse_region_pos.copy()
+            mouse.local_offset = Vector((0, 0))
+            mouse.local_delta = Vector((0, 0))
+            mouse.local_dir = Vector((0, 0))
+            # mouse.local_rel = local_space__rect.size
+        mouse.start = mouse_region_pos
+        mouse.current = mouse_region_pos.copy()
+        mouse.prev = mouse_region_pos.copy()
         mouse.offset = Vector((0, 0))
         mouse.delta = Vector((0, 0))
         mouse.dir = Vector((0, 0))
@@ -87,15 +111,24 @@ class Mouse:
 
         return mouse
 
-    def update(self, event: Event, view2d: View2D | None = None) -> None:
-        self.delta.x = self.current.x - self.prev.x
-        self.delta.y = self.current.y - self.prev.y
+    def update(self, event: Event, view2d: View2D | None = None, local_space__rect: _RectTransform | None = None) -> None:
         self.prev.x = self.current.x
         self.prev.y = self.current.y
         self.current.x = event.mouse_region_x
         self.current.y = event.mouse_region_y
+        self.delta.x = self.current.x - self.prev.x
+        self.delta.y = self.current.y - self.prev.y
         self.offset.x = self.current.x - self.start.x
         self.offset.y = self.current.y - self.start.y
+
+        if local_space__rect is not None:
+            self.local_prev.x = self.local_current.x
+            self.local_prev.y = self.local_current.y
+            self.local_current = rotate_point(self.current, local_space__rect.origin, -local_space__rect.rotation)
+            self.local_delta.x = self.local_current.x - self.local_prev.x
+            self.local_delta.y = self.local_current.y - self.local_prev.y
+            self.local_offset.x = self.local_current.x - self.local_start.x
+            self.local_offset.y = self.local_current.y - self.local_start.y
 
         if view2d is not None:
             view_pos = view2d.region_to_view(event.mouse_region_x, event.mouse_region_y)
