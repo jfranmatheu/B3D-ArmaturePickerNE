@@ -5,12 +5,12 @@ import bpy
 
 from ...ops.poll import poll_node_editor
 from ...utils.operator import OpsReturn
-from .add_node.op import AP_OT_add_node, get_mouse_pos, get_node_editor_offset, get_node_editor_zoom
+from .add_node.op import ARMATURE_PICKER_OT_add_node, get_mouse_pos, get_node_editor_offset, get_node_editor_zoom
 from ...utils.node_editor import get_node_editor_view_point, get_node_editor_offset
 
 
 
-class AP_OT_import_geo_collection(AP_OT_add_node, Operator):
+class AP_OT_import_geo_collection(ARMATURE_PICKER_OT_add_node, Operator):
     bl_idname = 'armature_picker.import_geo_collection'
     bl_label = 'Import Geo Collection'
     bl_description = "Import all geometry from collection and turn it into a cool picker"
@@ -49,7 +49,7 @@ class AP_OT_import_geo_collection(AP_OT_add_node, Operator):
         # node_tree: AP_NodeTree = context.space_data.node_tree
 
         pose_bones = context.active_object.pose.bones
-        new_node = AP_OT_add_node.new_node
+        new_node = ARMATURE_PICKER_OT_add_node.new_node
 
         nodes = []
         valid_objects = []
@@ -99,6 +99,6 @@ class AP_OT_import_geo_collection(AP_OT_add_node, Operator):
             node.select = True
 
         self.modal_nodes = nodes
-        return AP_OT_add_node.invoke(self, context, self.event)
+        return ARMATURE_PICKER_OT_add_node.invoke(self, context, self.event)
 
         return OpsReturn.FINISH
