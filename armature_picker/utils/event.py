@@ -129,6 +129,9 @@ class Mouse:
             self.local_delta.y = self.local_current.y - self.local_prev.y
             self.local_offset.x = self.local_current.x - self.local_start.x
             self.local_offset.y = self.local_current.y - self.local_start.y
+            
+            self.local_dir.x = 0 if self.local_delta.x==0 else 1 if self.local_delta.x > 0 else -1
+            self.local_dir.y = 0 if self.local_delta.y==0 else 1 if self.local_delta.y > 0 else -1
 
         if view2d is not None:
             view_pos = view2d.region_to_view(event.mouse_region_x, event.mouse_region_y)
