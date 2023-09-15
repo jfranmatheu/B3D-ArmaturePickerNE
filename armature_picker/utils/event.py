@@ -1,5 +1,5 @@
 from bpy.types import Event, View2D, Context
-from mathutils import Vector
+from mathutils import Vector, Matrix
 
 from .geometry import rotate_point
 from .node_editor import get_node_editor_zoom, get_node_editor_region_coord
@@ -157,7 +157,41 @@ class Mouse:
 
 
     def update_local_space(self, context: Context, local_space__rect: _RectTransform, first_time: bool = False) -> None:
+        # Get projected size.
+        view_size = local_space__rect.size
+        view_zoom = get_node_editor_zoom(context)
 
+        reg_size = view_size * view_zoom
+
+        # Project from View2D to Region.
+        top_left, bottom_left, bottom_right, top_right = local_space__rect.coords_rotated
+        top_left = get_node_editor_region_coord(context, top_left)
+        bottom_left = get_node_editor_region_coord(context, bottom_left)
+        bottom_right = get_node_editor_region_coord(context, bottom_right)
+        # top_right = get_node_editor_region_coord(context, top_right)
+
+        # Change from region to local coordinates.
+        l_co = bottom_left
+        l_hor = bottom_right - l_co
+        l_ver = top_left - l_co
+
+        A = Matrix((
+            (l_hor.x, l_ver.x),
+            (l_hor.y, l_ver.y)
+        ))
+        A.invert()
+
+        Q = self.current - l_co
+
+        local_rel_mouse = A @ Q
+
+        local_abs_mouse = Vector((
+            local_rel_mouse.x * reg_size.x,
+            local_rel_mouse.y * reg_size.y
+        ))
+
+
+        '''
         rotation = local_space__rect.rotation
 
         view_bbox = local_space__rect.bound_box
@@ -192,11 +226,12 @@ class Mouse:
 
         # reg_mouse_norm_t === LOCAL COORDINATES... But with error if rotation is present...
         # rel_mouse === RELATIVE LOCAL COORDINATES... Mapped between [0, 1].
+        '''
 
-        self.local_rel = rel_mouse
+        self.local_rel = local_rel_mouse
 
         if first_time:
-            self.local_start = reg_mouse_norm_t
+            self.local_start = local_abs_mouse
             self.local_current = self.local_start.copy()
             self.local_prev = self.local_start.copy()
             self.local_offset = Vector((0, 0))
@@ -205,7 +240,7 @@ class Mouse:
         else:
             self.local_prev.x = self.local_current.x
             self.local_prev.y = self.local_current.y
-            self.local_current = reg_mouse_norm_t
+            self.local_current = local_abs_mouse
             self.local_delta.x = self.local_current.x - self.local_prev.x
             self.local_delta.y = self.local_current.y - self.local_prev.y
             # self.local_delta = rotate_point(self.local_delta, Vector((0, 0)), local_space__rect.rotation)
@@ -215,7 +250,7 @@ class Mouse:
             self.local_dir.x = 0 if self.local_delta.x==0 else 1 if self.local_delta.x > 0 else -1
             self.local_dir.y = 0 if self.local_delta.y==0 else 1 if self.local_delta.y > 0 else -1
 
-        print(self.local_current, " ----- ", self.local_rel, " ----- ", reg_bbox_size)
+        # print(self.local_current, " ----- ", self.local_rel) # " ----- ", reg_size)
         # print("Region Dimensions:", reg_bbox_size)
 
 
