@@ -42,7 +42,7 @@ class APNODE_BonePicker_StyleProps:
     roundness: FloatProperty(
         name="Roundness",
         description="Roundness of the button",
-        min=0,
+        min=0.2,
         max=1,
         default=.5,
         precision=2

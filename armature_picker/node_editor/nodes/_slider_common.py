@@ -86,7 +86,7 @@ class APNODE_Slider_CommonStyle:
     roundness: FloatProperty(
         name="Roundness",
         description="Roundness of the button",
-        min=0,
+        min=0.2,
         max=1,
         default=1,
         precision=2
