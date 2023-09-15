@@ -174,7 +174,7 @@ class APNODE_Slider_CommonProps:
             print(e)
             return None
 
-        print(value)
+        ## print(value)
         return value
 
 
@@ -411,10 +411,10 @@ class APNODE_Slider_Common(APNODE_Slider_CommonProps, APNODE_Slider_CommonStyle)
 
     def invoke__pose(self, context: Context, event: Event, mouse_pos: Vector) -> set[str] | None:
         if event.type == 'LEFTMOUSE' and event.value == 'PRESS':
-            print("PRESS!")
+            ## print("PRESS!")
             value = self.get_value(context)
             if value is None:
-                print("KK VALUE")
+                ## print("KK VALUE")
                 return OpsReturn.CANCEL
             self.value = value
             self.backup_value = value
