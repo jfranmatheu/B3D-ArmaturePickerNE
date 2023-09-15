@@ -73,17 +73,17 @@ class Mouse:
         mouse.start = Vector((event.mouse_region_x, event.mouse_region_y))
         mouse.current = Vector((event.mouse_region_x, event.mouse_region_y))
         mouse.prev = Vector((event.mouse_region_x, event.mouse_region_y))
-        mouse.offset = Vector(0, 0)
-        mouse.delta = Vector(0, 0)
-        mouse.dir = Vector(0, 0)
+        mouse.offset = Vector((0, 0))
+        mouse.delta = Vector((0, 0))
+        mouse.dir = Vector((0, 0))
 
         if view2d is not None:
             view_pos = view2d.region_to_view(event.mouse_region_x, event.mouse_region_y)
             mouse.view_current = Vector(view_pos)
             mouse.view_prev = Vector(view_pos)
             mouse.view_start = Vector(view_pos)
-            mouse.view_offset = Vector(0, 0)
-            mouse.view_delta = Vector(0, 0)
+            mouse.view_offset = Vector((0, 0))
+            mouse.view_delta = Vector((0, 0))
 
         return mouse
 
