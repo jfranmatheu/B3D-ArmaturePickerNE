@@ -26,8 +26,8 @@ class APNODE_SliderRadial_StyleProps:
         description="The angle range of the arc. 360 for a closed radial slider, less than 360 for an arc slider",
         default=(-135, 135),
         size=2,
-        min=-180,
-        max=180
+        min=-45,
+        max=45
     )
 
 
