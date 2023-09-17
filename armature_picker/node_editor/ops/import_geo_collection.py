@@ -81,7 +81,7 @@ class AP_OT_import_geo_collection(ARMATURE_PICKER_OT_add_node, Operator):
 
         for ob in valid_objects:
             # Project coordinates.
-            reg_pos = (Vector((ob.location.x, ob.location.y)) - mid_point) * self.px_per_meter
+            reg_pos = (Vector((ob.location.x * zoom, ob.location.y * zoom)) - mid_point) * self.px_per_meter
             p = (reg_pos + mouse_region_pos - offset) * inv_zoom
 
             # Create node and attach Object to it.
