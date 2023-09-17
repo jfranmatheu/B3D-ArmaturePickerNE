@@ -70,6 +70,17 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_SliderRadial_Sty
         else:
             factor = 0
 
+        draw.wg_sld_rng_ui(
+            self, 'SLIDER',
+            factor=factor,
+            arc_angle=self.bar_arc_angle,
+            thickness_factor=self.u_thickness,
+            bg_color=self.color,
+            fill_color=self.fill_color
+        )
+
+        return
+
         if self.clamp_slider and self.handle_type == 'CIRCLE':
             # Check which factor is the handle radius over the slider bar width.
             handle_rad_factor = (rect.dimensions[1] * 0.5) / rect.dimensions[0]
