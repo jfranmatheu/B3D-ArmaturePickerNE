@@ -2,7 +2,8 @@ from .bone_picker.node import AP_BonePickerNode
 from .bone_picker_geo.node import APNODE_BonePickerGeo
 from .image.node import APNODE_Image
 from .label.node import APNODE_Label
-from .slider.node import APNODE_Slider
+from .sliders.lineal.node import APNODE_Slider
+from .sliders.radial.node import APNODE_SliderRadial
 
 NODES = (
     AP_BonePickerNode,
