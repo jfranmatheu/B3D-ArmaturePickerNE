@@ -81,7 +81,7 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_SliderRadial_Sty
         draw.wg_sld_rng_ui(
             self, 'SLIDER',
             factor=factor,
-            arc_angle=self.bar_arc_angle,
+            arc_angle_range=self.bar_arc_angle_range,
             thickness_factor=self.u_thickness,
             bg_color=self.color,
             fill_color=self.fill_color

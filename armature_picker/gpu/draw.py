@@ -280,7 +280,7 @@ def text_cached(data_id: str,
 
     if not dirty_text and (off := get_offscreen(data_id)) is not None:
         # offscreen(data_id, graphic_id, dirty, _pos, _label_dimensions, angle, off, origin=origin)
-        
+
         if not dirty and (batch := get_batch_from_cache(data_id, graphic_id)) is not None:
             pass
         else:
@@ -400,11 +400,11 @@ def wg_sld_ui(node: object, graphic_id: str, factor: float, roundness: float, bg
     rad = min(*node.rect_transform.dimensions) * 0.5 * roundness
     draw_node(node, graphic_id, _shader, use_uv=True, wg=True,
               u_factor=factor,
-              u_radius=rad, # u_outline=outline_thickness, 
+              u_radius=rad, # u_outline=outline_thickness,
               u_color=bg_color, u_fill_color=fill_color)
 
 
-def wg_sld_rng_ui(node: object, graphic_id: str, factor: float, arc_angle: float, thickness_factor: float, bg_color: RGBA, fill_color: RGBA, _shader=SHADERS.WG_SLD_RNG) -> None:
+def wg_sld_rng_ui(node: object, graphic_id: str, factor: float, arc_angle_range: float, thickness_factor: float, bg_color: RGBA, fill_color: RGBA, _shader=SHADERS.WG_SLD_RNG) -> None:
     ''' Uniforms:
         ---------------
         - ``float`` u_angle;
@@ -414,13 +414,21 @@ def wg_sld_rng_ui(node: object, graphic_id: str, factor: float, arc_angle: float
     '''
     if bg_color[-1] != 1.0:
         state.blend_set('ALPHA')
-    u_arc_angle = radians(arc_angle)
-    u_angle = u_arc_angle * factor
+    min_angle = radians(arc_angle_range[0])
+    max_angle = radians(arc_angle_range[1])
+    arc_angle = max_angle - min_angle
+    u_angle = arc_angle * factor
     # print(u_angle)
-    # u_angle = map_value(u_angle, (0, pi * 2), (0, u_arc_angle))
+    u_angle = map_value(u_angle, (0, arc_angle), (min_angle, max_angle))
     # print(u_angle)
+
+    if min_angle < 0:
+        min_angle = 2 * pi + min_angle
+    if max_angle < 0:
+        max_angle = 2 * pi + max_angle
+
     draw_node(node, graphic_id, _shader, use_uv=True, wg=False,
-              u_arc_angle=u_arc_angle,
+              u_arc_angle_range=(min(min_angle, max_angle), max(max_angle, min_angle)),
               u_angle=u_angle,
               u_thickness=thickness_factor,
               u_color=bg_color, u_fill_color=fill_color)
