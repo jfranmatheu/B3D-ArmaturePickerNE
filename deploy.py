@@ -60,7 +60,10 @@ class VersionFormatter(Formatter):
             if spec_option in {'u', 'l', 't', '1', '2', '3'}:
                 format_spec = format_spec[:-1]
                 if spec_option in {'1', '2', '3'}:
-                    value = value[int(spec_option) - 1]
+                    if spec_option == '3':
+                        value = value[int(spec_option) - 1:]
+                    else:
+                        value = value[int(spec_option) - 1]
                 else:
                     if spec_option == 'u':
                         value = value.upper()
