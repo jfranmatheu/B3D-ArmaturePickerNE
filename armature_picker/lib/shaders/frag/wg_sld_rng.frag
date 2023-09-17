@@ -72,9 +72,9 @@ void main(void){
             //if (radius > RAD_MAX-RAD_DIF*1.5)
             //    fragColor = pow(u_color, vec4(1.1));
             if (radius <= RAD_MID)
-                mix_factor = smoothstep(RAD_MID, RAD_MIN, radius);
+                mix_factor = smoothstep(RAD_MID, RAD_MIN*.95, radius);
             else
-                mix_factor = smoothstep(RAD_MAX, RAD_MID, radius);
+                mix_factor = smoothstep(RAD_MID, RAD_MAX, radius);
             fragColor = mix(u_color, pow(u_color, vec4(1.2)), mix_factor);
         }
         else
