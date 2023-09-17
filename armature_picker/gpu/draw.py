@@ -148,26 +148,15 @@ def draw(owner: object, graphic_id: str, pos: Vector, size: Vector, angle: float
 
 
 def draw_point(owner: object, graphic_id: str, pos: Vector, psize: float, angle: float, shader: GPUShader, dirty: bool | None = None, **uniforms):
-    def _draw():
-        gpu.state.point_size_set(psize)
-        is_dirty = dirty or owner.dirty if dirty is not None else owner.dirty
-        if not is_dirty and (batch := get_batch_from_cache(owner.uuid, graphic_id)) is not None:
-            pass
-        else:
-            batch = batch_for_shader(shader, 'POINTS',
-                                    {'pos': pos})
-            set_batch_to_cache(owner.uuid, graphic_id, batch)
-        _draw_batch(batch, shader, **uniforms)
-
-    if angle == 0:
-        _draw()
+    gpu.state.point_size_set(psize)
+    is_dirty = dirty or owner.dirty if dirty is not None else owner.dirty
+    if not is_dirty and (batch := get_batch_from_cache(owner.uuid, graphic_id)) is not None:
+        pass
     else:
-        with gpu.matrix.push_pop():
-            mat = Matrix.Rotation(angle, size=2)
-            gpu.matrix.load_matrix(mat)
-            gpu.matrix.translate(pos)
-            gpu.matrix.scale((psize, psize))
-            _draw()
+        batch = batch_for_shader(shader, 'POINTS',
+                                {'pos': pos})
+        set_batch_to_cache(owner.uuid, graphic_id, batch)
+    _draw_batch(batch, shader, **uniforms)
 
 
 def draw_node(node: object, graphic_id: str, shader: GPUShader, use_uv: bool = False, wg: bool = False, **uniforms):
