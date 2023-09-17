@@ -8,7 +8,7 @@ from .style_props import APNODE_SliderRadial_StyleProps
 from bpy.types import Context, Event, UILayout
 from mathutils import Vector
 
-from math import sin
+from math import sin, pi
 
 from .....gpu import draw
 from .....utils.geometry import get_center, angle_signed, angle_between, point_inside_circle
@@ -29,6 +29,7 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_SliderRadial_Sty
         
         # Force an update. Respect the 1:1 dimensions.
         self.slider_radius = self.slider_radius
+        self.rect_transform.rotation = pi / 2 # 90º
 
 
     # ----- ON HOVER --------------------------------
