@@ -53,8 +53,12 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_SliderRadial_Sty
 
         if self.clamp_slider:
             delta_mouse_x = mouse.delta.x
+            
+            min_val, max_val = self.range
+            range_val = max_val - min_val
+            inc = range_val / 360
 
-            value = map_value(delta_mouse_x * self.step, (0, 1), self.range)
+            value = map_value(self.value + delta_mouse_x * inc * self.sensitivity, (0, 1), self.range)
 
             # print("Relative Mouse Position:", rel_mouse, " ---> ", value)
             if value == self.value:
@@ -70,14 +74,11 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_SliderRadial_Sty
     # ----- DRAWING --------------------------------
 
     def draw_common(self, context: Context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
-        if self.clamp_slider:
-            value = self.get_value(context)
-            if value is None:
-                factor = 0
-            else:
-                factor = map_value(value, self.range, (0, 1))
-        else:
+        value = self.get_value(context)
+        if value is None:
             factor = 0
+        else:
+            factor = map_value(value, self.range, (0, 1))
 
         draw.wg_sld_rng_ui(
             self, 'SLIDER',
