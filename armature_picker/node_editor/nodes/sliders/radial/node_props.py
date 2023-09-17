@@ -1,6 +1,27 @@
 from bpy.types import Context, UILayout
+from bpy.props import FloatProperty
 
+from ..._transform_props import RectTransform
 
 
 class APNODE_SliderRadial_NodeProps:
-    pass
+    ''' Transform. '''
+    def update_dimensions(self, context: Context) -> None:
+        size = self.slider_radius * 2
+        self.dimensions = (size, size)
+
+
+    slider_radius: FloatProperty(
+        name="Slider Radius",
+        default=10,
+        min=10,
+        max=256,
+        update=update_dimensions
+    )
+    
+    def draw_transform(self, layout: UILayout, rect_transform: RectTransform) -> None:
+        layout.prop(rect_transform, 'origin')
+        # layout.prop(rect_transform, 'pivot')
+        layout.prop(self, 'slider_radius', text='Radius')
+        layout.prop(rect_transform, 'rotation')
+        layout.prop(self, 'draw_depth')
