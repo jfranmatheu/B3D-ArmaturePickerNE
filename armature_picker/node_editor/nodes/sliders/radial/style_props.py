@@ -24,7 +24,7 @@ class APNODE_SliderRadial_StyleProps:
     bar_arc_angle: FloatProperty(
         name="Arc Angle",
         description="The angle of the arc. 360 for a closed radial slider, less than 360 for an arc slider",
-        default=270,
+        default=360,
         min=0,
         max=360
     )
