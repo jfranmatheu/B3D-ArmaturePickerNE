@@ -1,7 +1,7 @@
 from armature_picker.utils.event import Mouse
-from .._base import AP_Node, Node
-from .._transform_props import RectTransform
-from .._slider_common import APNODE_Slider_Common
+from ..._base import AP_Node, Node
+from ..._transform_props import RectTransform
+from ..._slider_common import APNODE_Slider_Common
 from .node_props import APNODE_Slider_NodeProps
 from .style_props import APNODE_Slider_StyleProps
 
@@ -10,10 +10,10 @@ from mathutils import Vector
 
 from math import sin
 
-from ....gpu import draw
-from ....utils.geometry import point_inside_rect, get_center
-from ....utils.math import map_value
-from ....utils.operator import OpsReturn
+from .....gpu import draw
+from .....utils.geometry import point_inside_rect, get_center
+from .....utils.math import map_value
+from .....utils.operator import OpsReturn
 
 
 
