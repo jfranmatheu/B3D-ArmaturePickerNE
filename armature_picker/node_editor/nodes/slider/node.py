@@ -8,6 +8,8 @@ from .style_props import APNODE_Slider_StyleProps
 from bpy.types import Context, Event, UILayout
 from mathutils import Vector
 
+from math import sin
+
 from ....gpu import draw
 from ....utils.geometry import point_inside_rect, get_center
 from ....utils.math import map_value
@@ -83,11 +85,12 @@ class APNODE_Slider(APNODE_Slider_NodeProps, APNODE_Slider_StyleProps, APNODE_Sl
                 fill_color=self.fill_color if not hovered else Vector(self.fill_color) * 1.2,
             )
         elif self.bar_type == 'LINE':
-            pos = rect.get_point_relative(0, 0.5)
+            pos = rect.get_point_relative(0, 0)
             size = Vector((rect.dimensions[0], self.bar_line_thickness * scale))
+            pos.y += (rect.dimensions[1] * 0.5 - size.y * 0.5)
             draw.rectangle(
                 self, 'SLIDER_LINE',
-                pos - Vector((0, size.y * 0.5)), size, rect.rotation,
+                pos, size, rect.rotation,
                 # roundness=self.roundness,
                 # outline_thickness=self.outline_thickness,
                 color=self.color if not hovered else Vector(self.color) * 1.2,
