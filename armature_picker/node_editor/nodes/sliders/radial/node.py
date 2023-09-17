@@ -16,17 +16,19 @@ from .....utils.math import map_value
 from .....utils.operator import OpsReturn
 
 
+text_size_for_20rad_and_3char_and_02thickness = 12
+
 
 
 class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_SliderRadial_StyleProps, APNODE_Slider_Common, AP_Node, Node):
     bl_idname = 'AP_NODE_slider_radial'
     bl_label = 'Slider Radial'
     bl_icon = 'PROPERTIES'
-    
-    
+
+
     def init(self, context):
         super().init(context)
-        
+
         # Force an update. Respect the 1:1 dimensions.
         self.slider_radius = self.slider_radius
         # self.rect_transform.rotation = - pi / 2 # 90º
@@ -46,14 +48,13 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_SliderRadial_Sty
         if event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
             return 0
 
-        if mouse.local_dir.x == 0:
+        if mouse.dir.x == 0:
             return OpsReturn.RUN
 
         if self.clamp_slider:
-            rect: RectTransform = self.rect_transform
-            rel_mouse = mouse.local_rel # rect.convert_abs_coord_to_rel_coord(mouse.current, context)
+            delta_mouse_x = mouse.delta.x
 
-            value = map_value(rel_mouse.x, (0, 1), self.range)
+            value = map_value(delta_mouse_x * self.step, (0, 1), self.range)
 
             # print("Relative Mouse Position:", rel_mouse, " ---> ", value)
             if value == self.value:
@@ -87,6 +88,21 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_SliderRadial_Sty
             bg_color=self.color,
             fill_color=self.fill_color
         )
+
+        if self.show_text_value:
+            text = str(round(value, 1)) if value is not None else 'NONE'
+            text_dim = draw.get_text_dim(text, 12)
+            w = self.u_thickness * rect.dimensions[0] - 4 * scale
+            tw = text_dim[0]
+
+            ts = w / tw * 12
+
+            draw.text(
+                Vector(rect.origin),
+                text,
+                int(ts),
+                (0.5, 0.5),
+            )
 
         return
 

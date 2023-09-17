@@ -33,6 +33,12 @@ class APNODE_SliderRadial_StyleProps:
         name="Invert Fill Flow",
         default=True
     )
+    
+    show_text_value: BoolProperty(
+        name="Show Value",
+        description="Show text value",
+        default=True
+    )
 
 
     def draw_styles(self, layout: UILayout) -> None:
@@ -40,21 +46,25 @@ class APNODE_SliderRadial_StyleProps:
         col.prop(self, 'bar_thickness_factor')
         col.prop(self, 'bar_arc_angle')
         col.prop(self, 'invert_fill_flow')
+        
+        col.separator()
+        
+        col.prop(self, 'show_text_value')
 
         col.separator()
 
-        col.prop(self, 'bar_type')
+        # col.prop(self, 'bar_type')
         col.prop(self, 'color')
-        if self.bar_type == 'FILL':
-            col.prop(self, 'fill_color')
-        elif self.bar_type == 'LINE':
-            col.prop(self, 'bar_line_thickness')
+        # if self.bar_type == 'FILL':
+        col.prop(self, 'fill_color')
+        # elif self.bar_type == 'LINE':
+        #     col.prop(self, 'bar_line_thickness')
 
         col.separator()
 
-        row = col.row(align=True, heading='Handle')
-        row.prop(self, 'show_handle', text='')
-        _row = row.row(align=True)
-        _row.enabled = self.show_handle
-        _row.prop(self, 'handle_color',  text='')
-        _row.prop(self, 'handle_type',  text='', icon_only=True)
+        # row = col.row(align=True, heading='Handle')
+        # row.prop(self, 'show_handle', text='')
+        # _row = row.row(align=True)
+        # _row.enabled = self.show_handle
+        # _row.prop(self, 'handle_color',  text='')
+        # _row.prop(self, 'handle_type',  text='', icon_only=True)
