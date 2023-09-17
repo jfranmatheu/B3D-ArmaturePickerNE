@@ -31,7 +31,7 @@ class APNODE_SliderRadial_StyleProps:
     
     invert_fill_flow: BoolProperty(
         name="Invert Fill Flow",
-        default=True
+        default=False
     )
     
     show_text_value: BoolProperty(
