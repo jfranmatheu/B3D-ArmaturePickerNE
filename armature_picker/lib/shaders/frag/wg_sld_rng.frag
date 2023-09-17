@@ -1,15 +1,13 @@
-// @vert_id: BASIC
+// @vert_id: UV
 
 #pragma BLENDER_REQUIRE(gpu_shader_colorspace_lib.glsl)
 
-#ifdef GL_ES
-precision mediump float;
-#endif
-
 #define PI 3.14159265358979323846
 
-// in vec2 uv;
+in vec2 uv;
 
+// uniform vec2 u_dimensions;
+uniform float u_arc_angle;
 uniform float u_angle;
 uniform float u_thickness;
 uniform vec4 u_color;
@@ -26,9 +24,13 @@ out vec4 fragColor;
 #define ANG_MAX u_angle+0.02f
 #define ANG_DIF 0.02f
 
+// #define CXY 0.5 * u_dimensions
+
 
 void main(void){
-    vec2 cxy = 2.0 * gl_PointCoord - 1.0;
+    // vec2 coords = uv * u_dimensions;
+
+    vec2 cxy = 2.0 * uv - 1.0;
     float r = dot(cxy, cxy);
     float delta = fwidth(r);
     float alpha = 1.0 - smoothstep(1.0 - delta, 1.0 + delta, r);
@@ -36,8 +38,15 @@ void main(void){
         discard;
 
     // Use polar coordinates instead of cartesian
-    vec2 toCenter = vec2(0.5)-gl_PointCoord.xy;
-    float angle = atan(toCenter.y,toCenter.x);
+    vec2 toCenter = vec2(0.5)-uv.xy;
+    float angle = atan(toCenter.y, toCenter.x);
+
+    if (cxy.y < 1.0)
+        angle = PI - angle;
+
+    if (angle > u_arc_angle)
+        discard;
+
     float radius = length(toCenter)*2.0;
 
     if (radius < RAD_MIN || radius > RAD_MAX)
@@ -48,9 +57,6 @@ void main(void){
         alpha = smoothstep(RAD_MAX, RAD_MAX - RAD_DIF, radius);
 
     float mix_factor = .5;
-
-    if (cxy.y < 1.0)
-        angle = PI - angle;
 
     if (angle<ANG_DIF || angle>2*PI-ANG_DIF)
         fragColor = vec4(.4);

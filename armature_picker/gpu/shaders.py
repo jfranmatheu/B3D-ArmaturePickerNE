@@ -8,5 +8,5 @@ class SHADERS:
     IMA_OUTLINE = new_sh('IMA', 'IMA_OUTLINE')
     WG = new_sh('UV', 'WG')
     WG_SLD = new_sh('UV', 'WG_SLD')
-    WG_SLD_RNG = new_sh('BASIC', 'WG_SLD_RNG')
+    WG_SLD_RNG = new_sh('UV', 'WG_SLD_RNG')
     NODE = new_sh('UV', 'NODE')

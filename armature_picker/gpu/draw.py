@@ -10,7 +10,7 @@ from gpu.texture import from_image as get_gputex_from_image
 
 from colorsys import rgb_to_hsv
 from uuid import uuid4
-from math import cos, sin
+from math import cos, sin, radians, pi
 import textwrap
 from collections import defaultdict
 from typing import Tuple
@@ -19,6 +19,7 @@ from functools import partial
 from .text_offscreen import draw_offscreen, get_offscreen
 from ..utils.geometry import rotate_point
 from .shaders import SHADERS
+from ..utils.math import map_value
 
 
 RGBA = Tuple[float, float, float, float]
@@ -413,9 +414,13 @@ def wg_sld_rng_ui(node: object, graphic_id: str, factor: float, arc_angle: float
     '''
     if bg_color[-1] != 1.0:
         state.blend_set('ALPHA')
-    draw_point(node, graphic_id,
-              Vector(node.rect_transform.origin), node.rect_transform.dimensions[0], node.rect_transform.rotation,
-              _shader,
-              u_angle=arc_angle * factor,
+    u_arc_angle = radians(arc_angle)
+    u_angle = u_arc_angle * factor
+    # print(u_angle)
+    # u_angle = map_value(u_angle, (0, pi * 2), (0, u_arc_angle))
+    # print(u_angle)
+    draw_node(node, graphic_id, _shader, use_uv=True, wg=False,
+              u_arc_angle=u_arc_angle,
+              u_angle=u_angle,
               u_thickness=thickness_factor,
               u_color=bg_color, u_fill_color=fill_color)

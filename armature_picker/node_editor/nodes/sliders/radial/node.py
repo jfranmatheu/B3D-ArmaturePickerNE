@@ -22,6 +22,13 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_SliderRadial_Sty
     bl_idname = 'AP_NODE_slider_radial'
     bl_label = 'Slider Radial'
     bl_icon = 'PROPERTIES'
+    
+    
+    def init(self, context):
+        super().init(context)
+        
+        # Force an update. Respect the 1:1 dimensions.
+        self.slider_radius = self.slider_radius
 
 
     # ----- ON HOVER --------------------------------
