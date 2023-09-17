@@ -37,7 +37,7 @@ class APNODE_Slider_CommonStyle:
     bar_line_thickness: FloatProperty(
         name="Bar Thickness",
         description="Bar Line type thickness",
-        default=8,
+        default=1.5,
         min=1,
         max=5,
         update=lambda node, ctx: node.update_graphics(ctx)
