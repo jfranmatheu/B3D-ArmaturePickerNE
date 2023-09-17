@@ -8,6 +8,7 @@ from ._transform_props import RectTransform
 from ...gpu import draw
 from ...utils.operator import OpsReturn
 from ...utils.math import clamp, map_value, pi
+from math import degrees
 
 
 

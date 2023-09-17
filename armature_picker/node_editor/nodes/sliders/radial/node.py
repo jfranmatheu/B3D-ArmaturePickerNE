@@ -8,11 +8,11 @@ from .style_props import APNODE_SliderRadial_StyleProps
 from bpy.types import Context, Event, UILayout
 from mathutils import Vector
 
-from math import sin, pi
+from math import sin, pi, degrees
 
 from .....gpu import draw
 from .....utils.geometry import get_center, angle_signed, angle_between, point_inside_circle
-from .....utils.math import map_value
+from .....utils.math import map_value, clamp
 from .....utils.operator import OpsReturn
 
 
@@ -49,22 +49,21 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_SliderRadial_Sty
             return 0
 
         if mouse.dir.x == 0:
-            return OpsReturn.RUN
+            return 1
 
-        if self.clamp_slider:
-            delta_mouse_x = mouse.delta.x
-            
-            min_val, max_val = self.range
-            range_val = max_val - min_val
-            inc = range_val / 360
+        delta_mouse_x = mouse.delta.x
 
-            value = map_value(self.value + delta_mouse_x * inc * self.sensitivity, (0, 1), self.range)
+        min_val, max_val = self.range
+        range_val = max_val - min_val
+        inc = range_val / 360
+        
+        # print(self.value, range_val)
 
-            # print("Relative Mouse Position:", rel_mouse, " ---> ", value)
-            if value == self.value:
-                return 1
-        else:
-            value = self.value + mouse.delta.x * self.step
+        value = clamp(self.value + delta_mouse_x * inc * self.sensitivity, *self.range)
+
+        # print("Relative Mouse Position:", rel_mouse, " ---> ", value)
+        if value == self.value:
+            return 1
 
         self.set_value(context, value)
         self.value = value
@@ -91,7 +90,10 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_SliderRadial_Sty
         )
 
         if self.show_text_value:
-            text = str(round(value, 1)) if value is not None else 'NONE'
+            if self.unit_type == 'ANGLE' and value is not None:
+                text = str(int(degrees(value)))
+            else:
+                text = str(round(value, 1)) if value is not None else 'NONE'
             text_dim = draw.get_text_dim(text, 12)
             w = self.u_thickness * rect.dimensions[0] - 4 * scale
             tw = text_dim[0]
