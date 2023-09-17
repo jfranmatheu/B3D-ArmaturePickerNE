@@ -404,7 +404,7 @@ def wg_sld_ui(node: object, graphic_id: str, factor: float, roundness: float, bg
               u_color=bg_color, u_fill_color=fill_color)
 
 
-def wg_sld_rng_ui(node: object, graphic_id: str, factor: float, arc_angle_range: float, thickness_factor: float, bg_color: RGBA, fill_color: RGBA, _shader=SHADERS.WG_SLD_RNG) -> None:
+def wg_sld_rng_ui(node: object, graphic_id: str, factor: float, arc_angle: float, thickness_factor: float, bg_color: RGBA, fill_color: RGBA, _shader=SHADERS.WG_SLD_RNG) -> None:
     ''' Uniforms:
         ---------------
         - ``float`` u_angle;
@@ -414,21 +414,10 @@ def wg_sld_rng_ui(node: object, graphic_id: str, factor: float, arc_angle_range:
     '''
     if bg_color[-1] != 1.0:
         state.blend_set('ALPHA')
-    min_angle = radians(arc_angle_range[0])
-    max_angle = radians(arc_angle_range[1])
-    arc_angle = max_angle - min_angle
-    u_angle = arc_angle * factor
-    # print(u_angle)
-    u_angle = map_value(u_angle, (0, arc_angle), (min_angle, max_angle))
-    # print(u_angle)
-
-    if min_angle < 0:
-        min_angle = 2 * pi + min_angle
-    if max_angle < 0:
-        max_angle = 2 * pi + max_angle
-
+    u_arc_angle = radians(arc_angle)
+    u_angle = u_arc_angle * factor
     draw_node(node, graphic_id, _shader, use_uv=True, wg=False,
-              u_arc_angle_range=(min(min_angle, max_angle), max(max_angle, min_angle)),
+              u_arc_angle=u_arc_angle,
               u_angle=u_angle,
               u_thickness=thickness_factor,
               u_color=bg_color, u_fill_color=fill_color)
