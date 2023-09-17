@@ -8,7 +8,7 @@ precision mediump float;
 
 #define PI 3.14159265358979323846
 
-in vec2 uv;
+// in vec2 uv;
 
 uniform float u_angle;
 uniform float u_thickness;
@@ -46,7 +46,7 @@ void main(void){
         alpha = smoothstep(RAD_MIN, RAD_MIN + RAD_DIF, radius);
     else if (radius >= RAD_MAX - RAD_DIF && radius < RAD_MAX)
         alpha = smoothstep(RAD_MAX, RAD_MAX - RAD_DIF, radius);
-    
+
     float mix_factor = .5;
 
     if (cxy.y < 1.0)
@@ -55,7 +55,7 @@ void main(void){
     if (angle<ANG_DIF || angle>2*PI-ANG_DIF)
         fragColor = vec4(.4);
     else if (abs(angle-u_angle) < ANG_DIF) {
-        
+
         if (angle > ANG_MIN && angle < ANG_MAX)
             mix_factor = smoothstep(ANG_MIN, ANG_MAX, angle);
         fragColor = mix(u_fill_color, pow(u_fill_color, vec4(1.1)), angle);
@@ -74,7 +74,7 @@ void main(void){
         else
             fragColor = mix(u_fill_color, pow(u_fill_color, vec4(1.1)), angle);
     }
-    
+
     fragColor.a *= alpha;
     fragColor = blender_srgb_to_framebuffer_space(fragColor);
 }

@@ -5,7 +5,7 @@ from bpy.types import Image
 from gpu import state
 from gpu.types import GPUShader, GPUBatch, GPUTexture, GPUOffScreen
 from gpu_extras.batch import batch_for_shader
-from mathutils import Vector
+from mathutils import Vector, Matrix, Euler
 from gpu.texture import from_image as get_gputex_from_image
 
 from colorsys import rgb_to_hsv
@@ -145,6 +145,29 @@ def draw(owner: object, graphic_id: str, pos: Vector, size: Vector, angle: float
     if wg:
         shader.uniform_float('u_dimensions', size)
     _draw_batch(batch, shader, **uniforms)
+
+
+def draw_point(owner: object, graphic_id: str, pos: Vector, psize: float, angle: float, shader: GPUShader, dirty: bool | None = None, **uniforms):
+    def _draw():
+        gpu.state.point_size_set(psize)
+        is_dirty = dirty or owner.dirty if dirty is not None else owner.dirty
+        if not is_dirty and (batch := get_batch_from_cache(owner.uuid, graphic_id)) is not None:
+            pass
+        else:
+            batch = batch_for_shader(shader, 'POINTS',
+                                    {'pos': pos})
+            set_batch_to_cache(owner.uuid, graphic_id, batch)
+        _draw_batch(batch, shader, **uniforms)
+
+    if angle == 0:
+        _draw()
+    else:
+        with gpu.matrix.push_pop():
+            mat = Matrix.Rotation(angle, size=2)
+            gpu.matrix.load_matrix(mat)
+            gpu.matrix.translate(pos)
+            gpu.matrix.scale((psize, psize))
+            _draw()
 
 
 def draw_node(node: object, graphic_id: str, shader: GPUShader, use_uv: bool = False, wg: bool = False, **uniforms):
@@ -388,4 +411,22 @@ def wg_sld_ui(node: object, graphic_id: str, factor: float, roundness: float, bg
     draw_node(node, graphic_id, _shader, use_uv=True, wg=True,
               u_factor=factor,
               u_radius=rad, # u_outline=outline_thickness, 
+              u_color=bg_color, u_fill_color=fill_color)
+
+
+def wg_sld_rng_ui(node: object, graphic_id: str, factor: float, arc_angle: float, thickness_factor: float, bg_color: RGBA, fill_color: RGBA, _shader=SHADERS.WG_SLD_RNG) -> None:
+    ''' Uniforms:
+        ---------------
+        - ``float`` u_angle;
+        - ``vec4`` u_color;
+        - ``vec4`` u_fill_color;
+        - ``float`` u_thickness;
+    '''
+    if bg_color[-1] != 1.0:
+        state.blend_set('ALPHA')
+    draw_point(node, graphic_id,
+              Vector(node.rect_transform.origin), node.rect_transform.dimensions[0], node.rect_transform.rotation,
+              _shader,
+              u_angle=arc_angle * factor,
+              u_thickness=thickness_factor,
               u_color=bg_color, u_fill_color=fill_color)
