@@ -10,5 +10,6 @@ NODES = (
     APNODE_BonePickerGeo,
     APNODE_Image,
     APNODE_Label,
-    APNODE_Slider
+    APNODE_Slider,
+    APNODE_SliderRadial
 )
