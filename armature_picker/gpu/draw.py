@@ -404,7 +404,7 @@ def wg_sld_ui(node: object, graphic_id: str, factor: float, roundness: float, bg
               u_color=bg_color, u_fill_color=fill_color)
 
 
-def wg_sld_rng_ui(node: object, graphic_id: str, factor: float, arc_angle: float, thickness_factor: float, bg_color: RGBA, fill_color: RGBA, _shader=SHADERS.WG_SLD_RNG) -> None:
+def wg_sld_rng_ui(node: object, graphic_id: str, factor: float, arc_angle: float, thickness_factor: float, invert_angle: bool, bg_color: RGBA, fill_color: RGBA, _shader=SHADERS.WG_SLD_RNG) -> None:
     ''' Uniforms:
         ---------------
         - ``float`` u_angle;
@@ -419,5 +419,6 @@ def wg_sld_rng_ui(node: object, graphic_id: str, factor: float, arc_angle: float
     draw_node(node, graphic_id, _shader, use_uv=True, wg=False,
               u_arc_angle=u_arc_angle,
               u_angle=u_angle,
+              u_invert_angle=float(invert_angle),
               u_thickness=thickness_factor,
               u_color=bg_color, u_fill_color=fill_color)

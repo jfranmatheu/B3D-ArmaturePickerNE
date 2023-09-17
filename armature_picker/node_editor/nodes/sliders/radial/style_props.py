@@ -28,12 +28,18 @@ class APNODE_SliderRadial_StyleProps:
         min=0,
         max=360
     )
+    
+    invert_fill_flow: BoolProperty(
+        name="Invert Fill Flow",
+        default=True
+    )
 
 
     def draw_styles(self, layout: UILayout) -> None:
         col = layout.column()
         col.prop(self, 'bar_thickness_factor')
         col.prop(self, 'bar_arc_angle')
+        col.prop(self, 'invert_fill_flow')
 
         col.separator()
 

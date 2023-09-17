@@ -12,6 +12,7 @@ uniform float u_angle;
 uniform float u_thickness;
 uniform vec4 u_color;
 uniform vec4 u_fill_color;
+uniform float u_invert_angle;
 
 out vec4 fragColor;
 
@@ -43,6 +44,10 @@ void main(void){
 
     if (cxy.y < 1.0)
         angle = PI - angle;
+    
+    if (u_invert_angle == 1.0) {
+        angle = (PI * 2) - angle;
+    }
 
     if (angle > u_arc_angle)
         discard;

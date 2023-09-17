@@ -83,6 +83,7 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_SliderRadial_Sty
             factor=factor,
             arc_angle=self.bar_arc_angle,
             thickness_factor=self.u_thickness,
+            invert_angle=self.invert_fill_flow,
             bg_color=self.color,
             fill_color=self.fill_color
         )
