@@ -10,7 +10,7 @@ class APNODE_SliderRadial_StyleProps:
     # ----------------------------------------------------------------
     @property
     def u_thickness(self) -> float:
-        return map_value(self.bar_thickness_factor, (0, 1), (.9, .1))
+        return map_value(self.bar_thickness_factor, (0, 1), (.9, 0))
 
 
     bar_thickness_factor: FloatProperty(
