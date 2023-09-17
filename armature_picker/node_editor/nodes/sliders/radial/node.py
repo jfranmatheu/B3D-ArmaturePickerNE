@@ -29,7 +29,7 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_SliderRadial_Sty
         
         # Force an update. Respect the 1:1 dimensions.
         self.slider_radius = self.slider_radius
-        self.rect_transform.rotation = pi / 2 # 90º
+        self.rect_transform.rotation = - pi / 2 # 90º
 
 
     # ----- ON HOVER --------------------------------
@@ -81,7 +81,7 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_SliderRadial_Sty
         draw.wg_sld_rng_ui(
             self, 'SLIDER',
             factor=factor,
-            arc_angle=self.bar_arc_angle,
+            arc_angle_range=self.bar_arc_angle_range,
             thickness_factor=self.u_thickness,
             bg_color=self.color,
             fill_color=self.fill_color

@@ -16,24 +16,25 @@ class APNODE_SliderRadial_StyleProps:
     bar_thickness_factor: FloatProperty(
         name="Bar Thickness",
         description="From available radius, between 0 and 1, decide the thickness of the slider bar",
-        default=0.5,
+        default=0.2,
         min=0.0,
         max=1.0
     )
-    
-    bar_arc_angle: FloatProperty(
-        name="Arc Angle",
-        description="The total angle of the slider bar. 360 for a closed radial slider, less than 360 for an arc slider",
-        default=30,
-        min=10,
-        max=360
+
+    bar_arc_angle_range: FloatVectorProperty(
+        name="Arc Angle Range",
+        description="The angle range of the arc. 360 for a closed radial slider, less than 360 for an arc slider",
+        default=(-135, 135),
+        size=2,
+        min=-45,
+        max=45
     )
 
 
     def draw_styles(self, layout: UILayout) -> None:
         col = layout.column()
         col.prop(self, 'bar_thickness_factor')
-        col.prop(self, 'bar_arc_angle')
+        col.prop(self, 'bar_arc_angle_range')
 
         col.separator()
 

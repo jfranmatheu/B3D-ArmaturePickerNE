@@ -7,7 +7,7 @@
 in vec2 uv;
 
 // uniform vec2 u_dimensions;
-uniform float u_arc_angle;
+uniform vec2 u_arc_angle_range;
 uniform float u_angle;
 uniform float u_thickness;
 uniform vec4 u_color;
@@ -19,6 +19,9 @@ out vec4 fragColor;
 #define RAD_MAX 0.98f
 #define RAD_MID (RAD_MAX - RAD_MIN) / 2.0f
 #define RAD_DIF 0.03f
+
+#define MIN_ARC_ANGLE u_arc_angle_range.x
+#define MAX_ARC_ANGLE u_arc_angle_range.y
 
 #define ANG_MIN u_angle-0.02f
 #define ANG_MAX u_angle+0.02f
@@ -44,7 +47,7 @@ void main(void){
     if (cxy.y < 1.0)
         angle = PI - angle;
 
-    if (angle > u_arc_angle)
+    if (angle > MAX_ARC_ANGLE || angle < MIN_ARC_ANGLE)
         discard;
 
     float radius = length(toCenter)*2.0;
