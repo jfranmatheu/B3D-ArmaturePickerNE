@@ -111,7 +111,7 @@ class APNODE_Slider(APNODE_Slider_NodeProps, APNODE_Slider_StyleProps, APNODE_Sl
             dirty_handle_pos = self.dirty_handle_pos
             draw.wg(
                 self, 'SLIDER_HANDLE',
-                handle_pos, handle_size, 0, # rect.rotation,
+                handle_pos, handle_size, rect.rotation,
                 roundness=roundness,
                 outline_thickness=outline_thickness,
                 bg_color=self.handle_color,
