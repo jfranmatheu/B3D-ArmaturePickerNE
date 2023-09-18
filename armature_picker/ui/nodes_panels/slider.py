@@ -2,7 +2,7 @@ from bpy.types import Context, Panel
 
 from ...utils.ui_layout import draw_section
 from ..poll import poll_node
-from ...node_editor.nodes._slider_common import APNODE_Slider_Common
+from ...node_editor.nodes._slider_common import APNODE_Slider_CommonNode
 
 
 
@@ -18,7 +18,7 @@ class APNODE_PT_slider_contraints(Panel):
     @classmethod
     def poll(cls, context: Context):
         return poll_node(context)  and context.mode == 'EDIT_ARMATURE' and\
-            isinstance(context.space_data.node_tree.nodes.active, APNODE_Slider_Common)
+            isinstance(context.space_data.node_tree.nodes.active, APNODE_Slider_CommonNode)
 
     def draw(self, context: Context):
         layout = self.layout
