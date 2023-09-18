@@ -67,6 +67,7 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_SliderRadial_Sty
 
         self.set_value(context, value)
         self.value = value
+        self.update_handle_pos(context)
         return 1
 
 

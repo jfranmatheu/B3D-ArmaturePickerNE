@@ -138,7 +138,7 @@ class APNODE_Slider_CommonStyle:
 
 
 
-class APNODE_Slider_CommonProps:
+class APNODE_Slider_DataConstraintsProps:
     # ----- SELECT METHODS --------------------------------
 
     def get_bone(self, context: Context, from_pose_data: bool = False) -> Bone:
@@ -226,8 +226,6 @@ class APNODE_Slider_CommonProps:
             data = data.path_resolve(data_path, True)
 
         setattr(data, attr, new_value)
-
-        self.update_handle_pos(context)
 
 
     # ----- UPDATES -----------------------------------
@@ -408,7 +406,7 @@ class APNODE_Slider_CommonProps:
 
 
 
-class APNODE_Slider_Common(APNODE_Slider_CommonProps, APNODE_Slider_CommonStyle):
+class APNODE_Slider_CommonNode(APNODE_Slider_CommonStyle):
     draw_layer = 11
 
 
@@ -451,6 +449,7 @@ class APNODE_Slider_Common(APNODE_Slider_CommonProps, APNODE_Slider_CommonStyle)
     def modal_exit__pose(self, context: Context, cancel: bool) -> None:
         if cancel:
             self.set_value(context, self.backup_value)
+            self.update_handle_pos(context)
 
         del self.backup_value
         del self.value
@@ -504,3 +503,8 @@ class APNODE_Slider_Common(APNODE_Slider_CommonProps, APNODE_Slider_CommonStyle)
         layout.prop(rect_transform, 'edit_dimensions', text='Size')
         layout.prop(rect_transform, 'rotation')
         layout.prop(self, 'draw_depth')
+
+
+
+class APNODE_Slider_Common(APNODE_Slider_CommonNode, APNODE_Slider_DataConstraintsProps):
+    pass

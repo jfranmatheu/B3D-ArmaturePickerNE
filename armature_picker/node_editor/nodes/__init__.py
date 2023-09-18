@@ -4,6 +4,7 @@ from .image.node import APNODE_Image
 from .label.node import APNODE_Label
 from .sliders.lineal.node import APNODE_Slider
 from .sliders.radial.node import APNODE_SliderRadial
+from .sliders.lineal_2d.node import APNODE_Slider2D
 
 NODES = (
     AP_BonePickerNode,
@@ -11,5 +12,6 @@ NODES = (
     APNODE_Image,
     APNODE_Label,
     APNODE_Slider,
-    APNODE_SliderRadial
+    APNODE_SliderRadial,
+    APNODE_Slider2D,
 )

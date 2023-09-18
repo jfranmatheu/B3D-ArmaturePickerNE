@@ -55,6 +55,7 @@ class APNODE_Slider(APNODE_Slider_NodeProps, APNODE_Slider_StyleProps, APNODE_Sl
 
         self.set_value(context, value)
         self.value = value
+        self.update_handle_pos(context)
         return 1
 
 
