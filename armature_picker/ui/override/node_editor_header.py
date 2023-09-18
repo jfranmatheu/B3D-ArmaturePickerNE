@@ -18,7 +18,7 @@ def draw(self, context: Context):
     layout: UILayout = self.layout
     layout.template_header()
     if node_tree is not None:
-        layout.prop(node_tree, 'picker_mode')
+        layout.prop(node_tree, 'picker_mode', text='')
 
     layout.menu('AP_MT_utils', text='Utils')
 
