@@ -93,6 +93,14 @@ def get_rect_cage_coords(rect) -> dict:
     co = rect.coords_rotated
     return {'pos': (co[0], co[1], co[2], co[3])} # , co[0])}
 
+def get_cage_coords(x, y, w, h, p) -> dict:
+    return {'pos': (
+        (x + p, y + h - p),
+        (x + p, y + p),
+        (x + w - p, y + p),
+        (x + w - p, y + h - p)
+    )}
+
 
 # ----------------------------------------------------------------
 
@@ -186,6 +194,19 @@ def draw_node_cage(node: object, graphic_id: str, shader: GPUShader, thickness: 
     if thickness: state.line_width_set(1.0)
 
 
+def draw_cage(node: object, graphic_id: str, pos: Vector, size: Vector, pad: float, shader: GPUShader, thickness: float | None = None, **uniforms):
+    if not node.dirty and (batch := get_batch_from_cache(node.uuid, graphic_id)) is not None:
+        pass
+    else:
+        batch = batch_for_shader(shader, 'LINE_LOOP', get_cage_coords(*pos, *size, pad))
+        set_batch_to_cache(node.uuid, graphic_id, batch)
+    for key, value in uniforms.items():
+        shader.uniform_float(key, value)
+    if thickness: state.line_width_set(thickness)
+    batch.draw(shader)
+    if thickness: state.line_width_set(1.0)
+
+
 # ----------------------------------------------------------------
 
 def rectangle_ui(node: object, graphic_id: str, color: RGBA, _shader=SHADER_UNIFORM_COLOR) -> None:
@@ -213,29 +234,36 @@ def text(pos: Vector,
          angle: float = 0.0,
          color: tuple[float, float, float] = (.92, .92, .92),
          alpha: float = 1.0,
-         width=0) -> Vector:
+         width=0,
+         word_wrap=True) -> Vector:
     if size < 10:
         return
 
     blend_state = state.blend_get()
     blf.size(0, size, 72)
     text_dim = None
-    if width:
+    if width != 0:
         text_dim = blf.dimensions(0, text)
         # print(text_dim[0], rect.width)
         if text_dim[0] > width:
-            char_count = len(text)
-            target_char_count = max(int(char_count * width / text_dim[0]), 3)
-            cut_text = textwrap.shorten(text, width=target_char_count, placeholder="...")
-            if target_char_count > len(cut_text):
-                diff = target_char_count-len(cut_text)
-                if len(cut_text) == 3:
-                    text = text[:diff] + cut_text
-                else:
-                    off = len(cut_text)-3
-                    text = cut_text[:-3] + text[off:off+diff] + '...'
+            if word_wrap:
+                blf.enable(0, blf.WORD_WRAP)
+                blf.word_wrap(0, width)
             else:
-                text = cut_text
+                char_count = len(text)
+                target_char_count = max(int(char_count * width / text_dim[0]), 3)
+                cut_text = textwrap.shorten(text, width=target_char_count, placeholder="...")
+                if target_char_count > len(cut_text):
+                    diff = target_char_count-len(cut_text)
+                    if len(cut_text) == 3:
+                        text = text[:diff] + cut_text
+                    else:
+                        off = len(cut_text)-3
+                        text = cut_text[:-3] + text[off:off+diff] + '...'
+                else:
+                    text = cut_text
+        else:
+            word_wrap = False
     if pivot[0] != 0 or pivot[1] != 0:
         if pivot[0] != 0:
             text_dim = blf.dimensions(0, text)
@@ -255,6 +283,8 @@ def text(pos: Vector,
     if angle != 0:
         blf.disable(0, blf.ROTATION)
         blf.rotation(0, 0)
+    if width != 0 and word_wrap:
+        blf.disable(0, blf.WORD_WRAP)
     state.blend_set(blend_state)
     return pos
 
@@ -301,12 +331,17 @@ def text_cached(data_id: str,
 def _box(node: object, graphic_id: str, line_thickness: float, color: RGBA, _shader=SHADER_UNIFORM_COLOR):
     draw_node_cage(node, graphic_id, _shader, thickness=line_thickness, color=color)
 
-
-def box(node: object, graphic_id: str, line_thickness: float, color: RGBA, _shader=SHADER_POLYLINE_UNIFORM_COLOR):
+def box_ui(node: object, graphic_id: str, line_thickness: float, color: RGBA, _shader=SHADER_POLYLINE_UNIFORM_COLOR):
     state.blend_set('ALPHA')
     fb = gpu.state.active_framebuffer_get()
     x, y, w, h = fb.viewport_get()
     draw_node_cage(node, graphic_id, _shader, lineWidth=line_thickness, color=color, viewportSize=(w, h))
+
+def box(node: object, graphic_id: str, pos: Vector, size: Vector, padding: float, line_thickness: float, color: RGBA, _shader=SHADER_POLYLINE_UNIFORM_COLOR):
+    state.blend_set('ALPHA')
+    fb = gpu.state.active_framebuffer_get()
+    x, y, w, h = fb.viewport_get()
+    draw_cage(node, graphic_id, pos, size, padding, _shader, lineWidth=line_thickness, color=color, viewportSize=(w, h))
 
 
 def image(owner: object, graphic_id: str,

@@ -341,10 +341,10 @@ class AP_NodeTree(NodeTree):
 
 
     def _draw(self, context: Context) -> None:
-        
+        if not hasattr(self, 'uuid'):
+            self.uuid = uuid4().hex
+
         if context.active_object.mode != 'POSE':
-            if not hasattr(self, 'uuid'):
-                self.uuid = uuid4().hex
             draw.rectangle(
                 self, 'NONE',
                 Vector((0, 0)), Vector((context.region.width, context.region.height)), 0,
@@ -352,21 +352,31 @@ class AP_NodeTree(NodeTree):
             )
             draw.text(
                 Vector((context.region.width, context.region.height)) * 0.5,
-                'Armature must be in POSE mode',
+                'Ops! o.0\n\nArmature object must be in POSE mode in order to use or edit the Picker',
                 24,
-                (0.5, 0.5)
+                (0.5, 0.5),
+                width=int(context.region.width * 0.9)
             )
             return
-        
+
+
+        in_edit = self.picker_mode == 'EDIT'
+        if in_edit:
+            draw.box(
+                self, 'EDIT_CAGE',
+                Vector((0, 0)), Vector((context.region.width, context.region.height)),
+                padding=8,
+                line_thickness=1,
+                color=(.9, .3, .1, .5)
+            )                           
+
         refresh: bool = False
         zoom = get_node_editor_zoom(context)
         offset = get_node_editor_offset(context)
         ui_scale = context.preferences.system.ui_scale
 
-        in_edit = self.picker_mode == 'EDIT'
         active_node: AP_Node = self.nodes.active
         sel_nodes: set[AP_Node] = self.get_selected_nodes(context)
-
 
         with gpu.matrix.push_pop():
             gpu.matrix.translate(offset)
