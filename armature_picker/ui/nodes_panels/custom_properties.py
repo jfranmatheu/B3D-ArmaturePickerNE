@@ -3,7 +3,7 @@ from bpy.types import Context, Panel
 
 from ...node_editor.nodes._bone_picker_common import APNODE_BonePicker_Common
 from ...utils.ui_layout import draw_section
-from ..poll import poll_node
+from armature_picker.node_editor.poll import poll_check
 
 
 
@@ -112,8 +112,7 @@ class APNODE_PT_custom_properties(Panel):
 
     @classmethod
     def poll(cls, context: Context):    
-        return poll_node(context) and context.mode == 'POSE' and\
-            isinstance(context.space_data.node_tree.nodes.active, APNODE_BonePicker_Common)
+        return poll_check(context, 'EDIT', use_active_node=APNODE_BonePicker_Common)
 
     def draw(self, context: Context):
         layout = self.layout

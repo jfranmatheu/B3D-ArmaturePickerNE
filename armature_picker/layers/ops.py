@@ -3,7 +3,7 @@ from bpy.props import IntProperty
 
 from uuid import uuid4
 
-from ..ops.poll import poll_node_editor
+from armature_picker.node_editor.poll import poll_check
 from ..utils.operator import OpsReturn
 from .update import on_remove_layer
 from ..utils.node_editor import deselect_all_nodes
@@ -15,7 +15,7 @@ class AddPickerLayer(Operator):
 
     @classmethod
     def poll(cls, context: Context):
-        return poll_node_editor(context)
+        return poll_check(context, use_active_object=False)
 
     def execute(self, context: Context) -> OpsReturn:
         node_tree: NodeTree = context.space_data.node_tree
@@ -33,7 +33,7 @@ class RemovePickerLayer(Operator):
 
     @classmethod
     def poll(cls, context: Context):
-        return poll_node_editor(context)
+        return poll_check(context, use_active_object=False)
 
     def execute(self, context: Context) -> OpsReturn:
         node_tree: NodeTree = context.space_data.node_tree
@@ -62,7 +62,7 @@ class SelectNodesInPickerLayer(Operator):
 
     @classmethod
     def poll(cls, context: Context):
-        return poll_node_editor(context)
+        return poll_check(context, use_active_object=False)
 
     def execute(self, context: Context) -> OpsReturn:
         node_tree: NodeTree = context.space_data.node_tree

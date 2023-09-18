@@ -14,7 +14,7 @@ def poll(cls, context: Context):
 
 
 def draw(self, context):
-    if context.space_data.type != 'NODE_EDITOR' or context.space_data.tree_type != 'AP_NODETREE':
+    if context.area.type != 'NODE_EDITOR' or context.space_data.tree_type != 'AP_NODETREE':
         self.old_draw(context)
 
 

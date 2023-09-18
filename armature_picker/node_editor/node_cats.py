@@ -6,6 +6,8 @@
 import nodeitems_utils
 from nodeitems_utils import NodeCategory, NodeItem
 
+from armature_picker.node_editor.poll import poll_check
+
 # our own base class with an appropriate poll function,
 # so the categories only show up in our own tree type
 
@@ -13,7 +15,7 @@ from nodeitems_utils import NodeCategory, NodeItem
 class AP_NodeCategory(NodeCategory):
     @classmethod
     def poll(cls, context):
-        return context.space_data.tree_type == 'AP_NODETREE'
+        return poll_check(context, use_active_object=False)
 
 
 # all categories in a list

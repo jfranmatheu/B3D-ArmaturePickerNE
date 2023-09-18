@@ -3,7 +3,7 @@ from bpy.props import EnumProperty, IntProperty
 from mathutils import Vector
 import bpy
 
-from ...ops.poll import poll_node_editor
+from armature_picker.node_editor.poll import poll_check
 from ...utils.operator import OpsReturn
 from .add_node.op import ARMATURE_PICKER_OT_add_node, get_mouse_pos, get_node_editor_offset, get_node_editor_zoom
 from ...utils.node_editor import get_node_editor_view_point, get_node_editor_offset
@@ -30,7 +30,7 @@ class AP_OT_import_geo_collection(ARMATURE_PICKER_OT_add_node, Operator):
 
     @classmethod
     def poll(cls, context: Context):
-        return poll_node_editor(context) and context.active_object is not None and context.active_object.type == 'ARMATURE'
+        return poll_check(context, 'EDIT', use_active_object=False)
 
     def invoke(self, context: Context, event: Event) -> OpsReturn:
         self.event = event

@@ -1,7 +1,7 @@
 from bpy.types import Context, Panel
 
 from .ui_list import LIST_PickerLayers
-from ..ops.poll import poll_node_editor
+from armature_picker.node_editor.poll import poll_check
 
 
 class PickerLayersPanel(Panel):
@@ -13,7 +13,7 @@ class PickerLayersPanel(Panel):
 
     @classmethod
     def poll(cls, context: Context):
-        return poll_node_editor(context)
+        return poll_check(context, use_active_object=False)
 
 
     def draw(self, context: Context):

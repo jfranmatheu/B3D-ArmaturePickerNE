@@ -45,7 +45,7 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
     def on_hover(self, context: Context, rect: RectTransform, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
         if point_inside_rect(view_loc, rect.bottom_left, rect.size, rect.rotation, origin=Vector(rect.origin)):
             self.set_state('ik_fk_hovered', False)
-            if self.use_image and self.image is not None and context.mode == 'POSE':
+            if self.use_image and self.image is not None and self.node_tree.picker_mode == 'POSE':
 
                 ## bbox_n = rect.bound_box_norm
                 bbox_size = tuple(int(v) for v in (rect.bound_box_size))

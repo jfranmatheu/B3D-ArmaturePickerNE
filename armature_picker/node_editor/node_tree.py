@@ -1,9 +1,10 @@
 import bpy
 from bpy.types import NodeTree, Context, Event, Node
-from bpy.props import BoolProperty
+from bpy.props import BoolProperty, EnumProperty
 from mathutils import Vector
 import gpu
 
+from uuid import uuid4
 from typing import List, Tuple, Type, Dict, Set, Union
 from collections import defaultdict
 import functools
@@ -13,6 +14,8 @@ from .nodes._base import AP_Node
 from ..utils.node_editor import get_node_editor_zoom, get_node_editor_view_point, get_node_editor_offset, get_node_editor_region_coord, deselect_all_nodes
 from ..utils.armature import deselect_all_bones_from_active
 from ..utils.geometry import angle_signed
+from ..utils.view3d import view3d_set_mode
+from .poll import poll_check
 
 
 # ----------------------------------------------------------------
@@ -97,9 +100,34 @@ class AP_NodeTree(NodeTree):
     inject_modal: callable = None
     inject_modal_exit: callable = None
     inject_modal_draw: callable = None
+    picker_mode: str
 
     dirty: bool
 
+
+    bl_use_exclude_layers = False
+    bl_use_postprocess = False
+    bl_use_preview = False
+    bl_use_save_buffers = False
+    bl_use_shading_nodes = False
+    bl_use_shading_nodes_custom = False
+    bl_use_spherical_stereo = False
+    bl_use_texture_preview = False
+
+
+    # @classmethod
+    # def poll(cls, context: Context) -> bool:
+    #     return poll_check(context)
+
+
+    def __init__(self):
+        self.uuid = uuid4().hex
+
+    def __del__(self):
+        pass
+
+
+    # ----------------------------------------------------------------
 
     def get_selected_nodes(self, context: Context, include_active: bool = True) -> set[AP_Node]:
         sel_nodes = set(context.selected_nodes)
@@ -139,7 +167,7 @@ class AP_NodeTree(NodeTree):
         else:
             ensure_nodes_cache(self)
 
-        in_pose = context.mode == 'POSE'
+        in_pose = self.picker_mode == 'POSE'
 
         global G_hovered_node
         view_zoom = get_node_editor_zoom(context)
@@ -189,16 +217,19 @@ class AP_NodeTree(NodeTree):
             elif event.type == 'X':
                 bpy.ops.node.delete('INVOKE_DEFAULT')
                 ensure_nodes_cache(self)
-            # elif event.type == 'TAB':
-            #     view3d_set_mode(context, 'EDIT' if context.active_object.mode == 'POSE' else 'POSE')
-            return {'PASS_THROUGH'}
+            elif event.type == 'TAB':
+                self.picker_mode = 'POSE' if self.picker_mode == 'EDIT' else 'EDIT'
+                context.area.tag_redraw()
+                if self.picker_mode == 'POSE':
+                    view3d_set_mode(context, 'POSE')
+            return {'FINISHED'}
 
         self.mouse_pos = Vector((event.mouse_region_x, event.mouse_region_y))
 
         self.modal_nodes = None
         self.active_node = None
 
-        if context.active_object.mode == 'POSE':
+        if self.picker_mode == 'POSE':
             ret = self.invoke__pose(context, event)
         else:
             ret = self.invoke__edit(context, event)
@@ -310,12 +341,29 @@ class AP_NodeTree(NodeTree):
 
 
     def _draw(self, context: Context) -> None:
+        
+        if context.active_object.mode != 'POSE':
+            if not hasattr(self, 'uuid'):
+                self.uuid = uuid4().hex
+            draw.rectangle(
+                self, 'NONE',
+                Vector((0, 0)), Vector((context.region.width, context.region.height)), 0,
+                color=(0.25, 0.1, 0.1, .9)
+            )
+            draw.text(
+                Vector((context.region.width, context.region.height)) * 0.5,
+                'Armature must be in POSE mode',
+                24,
+                (0.5, 0.5)
+            )
+            return
+        
         refresh: bool = False
         zoom = get_node_editor_zoom(context)
         offset = get_node_editor_offset(context)
         ui_scale = context.preferences.system.ui_scale
 
-        in_edit = context.mode == 'EDIT_ARMATURE'
+        in_edit = self.picker_mode == 'EDIT'
         active_node: AP_Node = self.nodes.active
         sel_nodes: set[AP_Node] = self.get_selected_nodes(context)
 
@@ -432,5 +480,17 @@ class AP_NodeTree(NodeTree):
 
 
 def register():
-    if not hasattr(NodeTree, 'dirty'):
-        NodeTree.dirty = BoolProperty()
+    NodeTree.dirty = BoolProperty()
+
+    NodeTree.picker_mode = EnumProperty(
+        name='Picker Mode',
+        items=(
+            ('EDIT', 'Edit Mode', "Edit Mode", 'GREASEPENCIL', 0),
+            ('POSE', 'Pose Mode', "Pose Mode", 'POSE_HLT', 1),
+        ),
+        default='EDIT'
+    )
+
+def unregister():
+    del NodeTree.dirty
+    del NodeTree.picker_mode

@@ -10,6 +10,7 @@ from ...utils.event import Mouse, EventType, EventValue
 from ...utils.operator import OpsReturn
 from ...utils.armature import deselect_all_bones_from_active
 from ...utils.geometry import point_inside_rect
+from armature_picker.node_editor.poll import poll_check
 
 from ._transform_props import NodeTransformProps, RectTransform
 
@@ -48,31 +49,6 @@ def set_dirty_label_state(uuid: str, state: bool) -> None:
 # Generic state cache.
 
 _state_cache: dict[str, dict[str, bool]] = defaultdict(dict)
-
-
-# ----------------------------------------------------------------
-# Poll functions.
-
-def poll__node_select(context: Context) -> None:
-    if context.active_object is None:
-        return False
-    if context.active_object.type != 'ARMATURE':
-        return False
-    for area in context.window.screen.areas:
-        if area.type == 'VIEW_3D':
-            return context.mode == 'POSE' and context.active_object.mode == 'POSE'
-    return False
-
-
-def poll__node_edit(context: Context) -> None:
-    if context.active_object is None:
-        return False
-    if context.active_object.type != 'ARMATURE':
-        return False
-    for area in context.window.screen.areas:
-        if area.type == 'VIEW_3D':
-            return context.mode == 'EDIT_ARMATURE' and context.active_object.mode == 'EDIT'
-    return False
 
 
 # ----------------------------------------------------------------
@@ -292,14 +268,14 @@ class AP_Node(NodeTransformProps):
 
     def _invoke(self, context: Context, event: Event, mouse_pos: Vector) -> set[str]:
         ''' Internal. '''
-        if poll__node_select(context):
+        if poll_check(context, 'POSE'):
             if event.type != EventType.LEFTMOUSE:
                 return
             invoke = self.invoke__pose
             modal = self.modal__pose
             modal_enter = self.modal_enter__pose
             modal_exit = self.modal_exit__pose
-        elif poll__node_edit(context):
+        elif poll_check(context, 'EDIT'):
             invoke = self.invoke__edit
             modal = self.modal__edit
             modal_enter = self.modal_enter__edit
@@ -410,9 +386,10 @@ class AP_Node(NodeTransformProps):
         # ----- UI LAYOUT DRAWING --------------------------------
 
     def draw_buttons_ext(self, context: Context, layout: UILayout) -> None:
-        if context.mode == 'POSE':
+        mode = self.node_tree.picker_mode
+        if mode == 'POSE':
             self.draw_ui__pose(context, layout)
-        elif context.mode == 'EDIT_ARMATURE':
+        elif mode == 'EDIT_ARMATURE':
             self.draw_ui__edit(context, layout)
 
     def draw_ui__pose(self, context: Context, layout: UILayout) -> None:

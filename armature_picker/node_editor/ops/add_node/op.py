@@ -5,7 +5,7 @@ import bpy
 
 from ....utils.operator import OpsReturn, add_modal_handler
 from ....utils.event import get_mouse_pos, EventType, EventValue
-from ....ops.poll import poll_node_editor
+from armature_picker.node_editor.poll import poll_check
 from ....utils.node_editor import get_node_editor_zoom, get_node_editor_offset, get_node_editor_region_coord
 
 
@@ -18,7 +18,7 @@ class ARMATURE_PICKER_OT_add_node(Operator):
 
     @classmethod
     def poll(cls, context: Context):
-        return poll_node_editor(context)
+        return poll_check(context, 'EDIT', use_active_object=False)
 
     def invoke(self, context: Context, event: Event) -> OpsReturn:
         if not hasattr(self, 'modal_nodes'):

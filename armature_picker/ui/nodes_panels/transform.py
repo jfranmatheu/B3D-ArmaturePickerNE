@@ -1,7 +1,7 @@
 from bpy.types import Context, Panel
 
 from ...utils.ui_layout import draw_section_h
-from ..poll import poll_node
+from armature_picker.node_editor.poll import poll_check
 
 
 
@@ -17,7 +17,7 @@ class APNODE_PT_transform(Panel):
 
     @classmethod
     def poll(cls, context: Context):
-        return poll_node(context) and context.mode == 'EDIT_ARMATURE'
+        return poll_check(context, 'EDIT')
 
     def draw(self, context: Context):
         layout = self.layout

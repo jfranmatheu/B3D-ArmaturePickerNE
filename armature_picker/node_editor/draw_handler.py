@@ -14,6 +14,10 @@ def draw_callback():
         return
     if context.space_data.tree_type != 'AP_NODETREE':
         return
+    if context.active_object is None:
+        return
+    if context.active_object.type not in {'ARMATURE'}:
+        return
     context.space_data.node_tree._draw(context)
 
 

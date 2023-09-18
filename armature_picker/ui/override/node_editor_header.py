@@ -9,12 +9,16 @@ def draw(self, context: Context):
     if context.space_data.tree_type != 'AP_NODETREE':
         self.old_draw(context)
         return
+    
+    node_tree = context.space_data.node_tree
 
     snode = context.space_data
     overlay = snode.overlay
 
     layout: UILayout = self.layout
     layout.template_header()
+    if node_tree is not None:
+        layout.prop(node_tree, 'picker_mode')
 
     layout.menu('AP_MT_utils', text='Utils')
 
