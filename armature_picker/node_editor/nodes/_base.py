@@ -389,7 +389,7 @@ class AP_Node(NodeTransformProps):
         mode = self.node_tree.picker_mode
         if mode == 'POSE':
             self.draw_ui__pose(context, layout)
-        elif mode == 'EDIT_ARMATURE':
+        elif mode == 'EDIT':
             self.draw_ui__edit(context, layout)
 
     def draw_ui__pose(self, context: Context, layout: UILayout) -> None:
