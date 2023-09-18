@@ -7,11 +7,21 @@ from .sliders.radial.node import APNODE_SliderRadial
 from .sliders.lineal_2d.node import APNODE_Slider2D
 
 NODES = (
-    AP_BonePickerNode,
-    APNODE_BonePickerGeo,
+    {
+        'name': 'Picker Buttons',
+        'items': (
+            AP_BonePickerNode,
+            APNODE_BonePickerGeo,
+        )
+    },
     APNODE_Image,
     APNODE_Label,
-    APNODE_Slider,
-    APNODE_SliderRadial,
-    APNODE_Slider2D,
+    {
+        'name': 'Sliders',
+        'items': (
+            APNODE_Slider,
+            APNODE_SliderRadial,
+            APNODE_Slider2D,
+        )
+    }
 )
