@@ -80,34 +80,31 @@ void main(void){
 
     float alpha = smoothstep(amp_radius, radius, len);
 
-    /*
-    vec2 st = gl_FragCoord.st/u_dimensions.xy;
-    st.x *= u_dimensions.x/u_dimensions.y;
+    vec2 st = uv.xy * 2 - 1; // + 0.5/2.5; // gl_FragCoord.st/u_dimensions.xy;
+    st.x *= 1.0; // u_dimensions.x/u_dimensions.y
 
     vec3 color = u_color.rgb;
 
     // Grid
-    vec2 grid_st = st*300.;
-    color += vec3(0.5,0.,0.)*grid(grid_st,0.01);
-    color += vec3(0.2,0.,0.)*grid(grid_st,0.02);
-    color += vec3(0.2)*grid(grid_st,0.1);
+    vec2 grid_st = st*25.;
+    color += vec3(0.4)*grid(grid_st, 0.01);
+    color += vec3(0.2)*grid(grid_st, 0.02);
+    color += vec3(0.2)*grid(grid_st, 0.1);
 
     // Crosses
-    vec2 crosses_st = st + .5;
-    crosses_st *= 3.;
-    vec2 crosses_st_f = fract(crosses_st);
-    color *= 1.-cross(crosses_st_f,vec2(.3,.3));
-    color += vec3(.9)*cross(crosses_st_f,vec2(.2,.2));
+    // vec2 crosses_st = st + .5;
+    // crosses_st *= 3.;
+    // vec2 crosses_st_f = fract(crosses_st);
+    // color *= 1.-cross(crosses_st_f,vec2(.3,.3));
+    // color += vec3(.9)*cross(crosses_st_f,vec2(.2,.2));
 
     fragColor = vec4(color, u_color.a); 
-    */
 
-    float scale = u_dimensions.x * .5;
-    float resolution = .2;
-    vec2 grid_uv = uv.xy * scale; // scale
-    float x = grid(grid_uv, resolution); // resolution
-
-    fragColor = mix(u_color, vec4(pow(u_color.rgb, vec3(1.2)), u_color.a), x);
+    //float scale = u_dimensions.x * .5;
+    //float resolution = .2;
+    //vec2 grid_uv = uv.xy * scale; // scale
+    //float x = grid(grid_uv, resolution); // resolution
+    //fragColor = mix(u_color, vec4(pow(u_color.rgb, vec3(1.2)), u_color.a), x);
 
     if (u_outline != 0 && u_radius != 0) {
         float outline_factor = smoothstep(0.0, 1.0, uv.x) + smoothstep(1.0, 0.0, uv.y);
