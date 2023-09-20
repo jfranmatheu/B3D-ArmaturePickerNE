@@ -6,7 +6,16 @@ from ..._slider_common import APNODE_Slider_DataConstraintsProps, RectTransform
 
 
 class Axis(APNODE_Slider_DataConstraintsProps, PropertyGroup):
-    pass
+    def draw_slider_constraints_props(self, layout: UILayout) -> None:
+        col = layout.column(align=True)
+        col.prop(self, 'unit_type')
+        if self.unit_type == 'VALUE':
+            col.prop(self, 'min_value')
+            col.prop(self, 'max_value')
+        elif self.unit_type == 'ANGLE':
+            col.prop(self, 'min_angle')
+            col.prop(self, 'max_angle')
+        
 
 
 class APNODE_Slider2D_NodeProps:
