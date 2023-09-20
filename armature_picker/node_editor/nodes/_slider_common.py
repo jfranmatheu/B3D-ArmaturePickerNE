@@ -495,7 +495,7 @@ class APNODE_Slider_CommonNode(APNODE_Slider_CommonStyle):
 
         t = w / h
         if t < 2:
-            rect.edit_dimensions = (w, w * 0.5)
+            rect.edit_dimensions = (w, int(w * 0.5))
             return
 
         rect.dimensions = rect.edit_dimensions
