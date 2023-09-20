@@ -26,8 +26,12 @@ class APNODE_Slider2D(APNODE_Slider2D_NodeProps, APNODE_Slider2D_StyleProps, APN
     def init(self, context):
         super().init(context)
 
-        self.rect_transform.dimensions = (36, 36)
+        self.rect_transform.dimensions = (40, 40)
         self.roundness = 0.25
+        self.handle_scale = 0.75
+        self.outline_thickness = 0.5
+        self.color = (0.212, 0.63, 1.0, 0.9)
+        self.handle_color = (.95, .9, .84, 1.0)
 
 
     def get_value(self, context: Context) -> tuple | None:
