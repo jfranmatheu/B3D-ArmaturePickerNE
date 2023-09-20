@@ -22,6 +22,15 @@ class APNODE_Slider(APNODE_Slider_NodeProps, APNODE_Slider_StyleProps, APNODE_Sl
     bl_idname = 'AP_NODE_slider'
     bl_label = 'Slider'
     bl_icon = 'PROPERTIES'
+    
+    
+    def __init__(self) -> None:
+        super().__init__()
+        
+        self.roundness = 1.0
+        self.color = (.281, .281, .281, .9)
+        self.fill_color = (.212, .63, 1.0, 1.0)
+        self.handle_color = (.8, .8, .8, 1.0)
 
 
     # ----- ON HOVER --------------------------------
