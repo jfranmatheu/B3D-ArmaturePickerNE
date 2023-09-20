@@ -1,7 +1,7 @@
 from bpy.types import Context, Menu
 
 from ...nodes import NODES
-from .op import ARMATURE_PICKER_OT_add_node
+# from .op import ARMATURE_PICKER_OT_add_node
 
 
 class MT_add_node(Menu):
@@ -22,6 +22,6 @@ class MT_add_node(Menu):
                 sub_pie = col.box()
                 sub_pie.emboss = 'PULLDOWN_MENU'
                 for _node in items:
-                    sub_pie.operator(ARMATURE_PICKER_OT_add_node.bl_idname, text=_node.bl_label).node_idname = _node.bl_idname
+                    sub_pie.operator('armature_picker.add_node', text=_node.bl_label).node_idname = _node.bl_idname
             else:
-                pie.operator(ARMATURE_PICKER_OT_add_node.bl_idname, text=node.bl_label, icon=node.bl_icon).node_idname = node.bl_idname
+                pie.operator('armature_picker.add_node', text=node.bl_label, icon=node.bl_icon).node_idname = node.bl_idname
