@@ -31,6 +31,7 @@ class APNODE_Slider(APNODE_Slider_NodeProps, APNODE_Slider_StyleProps, APNODE_Sl
         self.color = (.281, .281, .281, .9)
         self.fill_color = (.212, .63, 1.0, 1.0)
         self.handle_color = (.8, .8, .8, 1.0)
+        self.rect_transform.edit_dimensions = (100, 12)
 
 
     # ----- ON HOVER --------------------------------
