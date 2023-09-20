@@ -421,6 +421,23 @@ def wg_ui(node: object, graphic_id: str, roundness: float, outline_thickness: fl
               u_color=bg_color, u_radius=rad, u_outline=outline_thickness, u_outline_color_factor=outline_color_factor)
 
 
+def wg_grid_ui(node: object, graphic_id: str, roundness: float, outline_thickness: float, bg_color: RGBA, _shader=SHADERS.WG_GRID) -> None:
+    ''' Uniforms:
+        ---------------
+        - ``vec2`` u_dimensions;
+        - ``vec4`` u_color;
+        - ``float`` u_radius;
+        - ``float`` u_outline;
+    '''
+    if bg_color[-1] != 1.0:
+        state.blend_set('ALPHA')
+    rad = min(*node.rect_transform.dimensions) * 0.5 * roundness
+    value = rgb_to_hsv(bg_color[0], bg_color[1], bg_color[2])[-1]
+    outline_color_factor = 1 + pow(value, 2)
+    draw_node(node, graphic_id, _shader, use_uv=True, wg=True,
+              u_color=bg_color, u_radius=rad, u_outline=outline_thickness, u_outline_color_factor=outline_color_factor)
+
+
 def wg_sld_ui(node: object, graphic_id: str, factor: float, roundness: float, bg_color: RGBA, fill_color: RGBA, _shader=SHADERS.WG_SLD) -> None:
     ''' Uniforms:
         ---------------

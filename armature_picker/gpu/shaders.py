@@ -7,6 +7,7 @@ class SHADERS:
     IMA_OPA = new_sh('IMA', 'IMA_OPA')
     IMA_OUTLINE = new_sh('IMA', 'IMA_OUTLINE')
     WG = new_sh('UV', 'WG')
+    WG_GRID = new_sh('UV', 'WG_GRID')
     WG_SLD = new_sh('UV', 'WG_SLD')
     WG_SLD_RNG = new_sh('UV', 'WG_SLD_RNG')
     NODE = new_sh('UV', 'NODE')

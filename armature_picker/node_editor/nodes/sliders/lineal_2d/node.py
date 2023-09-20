@@ -78,7 +78,7 @@ class APNODE_Slider2D(APNODE_Slider2D_NodeProps, APNODE_Slider2D_StyleProps, APN
     # ----- DRAWING --------------------------------
 
     def draw_common(self, context: Context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
-        draw.wg_ui(
+        draw.wg_grid_ui(
             self, 'SLIDER_2D',
             roundness=self.roundness,
             outline_thickness=self.outline_thickness,
