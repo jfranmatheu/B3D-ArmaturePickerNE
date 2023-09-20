@@ -32,6 +32,8 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_SliderRadial_Sty
         # Force an update. Respect the 1:1 dimensions.
         self.slider_radius = self.slider_radius
         # self.rect_transform.rotation = - pi / 2 # 90º
+        self.color = (.281, .281, .281, .9)
+        self.fill_color = (.212, .63, 1.0, 1.0)
 
 
     # ----- ON HOVER --------------------------------

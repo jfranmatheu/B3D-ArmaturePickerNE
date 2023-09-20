@@ -16,7 +16,7 @@ class APNODE_SliderRadial_StyleProps:
     bar_thickness_factor: FloatProperty(
         name="Bar Thickness",
         description="From available radius, between 0 and 1, decide the thickness of the slider bar",
-        default=0.2,
+        default=0.15,
         min=0.0,
         max=1.0
     )

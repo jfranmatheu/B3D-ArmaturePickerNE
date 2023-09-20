@@ -13,7 +13,7 @@ class APNODE_SliderRadial_NodeProps:
 
     slider_radius: IntProperty(
         name="Slider Radius",
-        default=15,
+        default=20,
         min=10,
         max=256,
         update=update_dimensions
