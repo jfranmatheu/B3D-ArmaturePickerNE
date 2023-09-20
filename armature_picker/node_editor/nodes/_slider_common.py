@@ -203,9 +203,12 @@ class APNODE_Slider_DataConstraintsProps:
 
 
     def set_value(self, context: Context, new_value: int | float) -> None:
+        if not isinstance(new_value, (float, int)):
+            return
+
         data, full_data_path, is_custom_datapath, is_custom_prop = self.get_data_and_datapath(context)
         if data is None or full_data_path == '':
-            return None
+            return
 
         if self.clamp_slider:
             new_value = clamp(new_value, *self.range)
