@@ -16,7 +16,7 @@ from collections import defaultdict
 from typing import Tuple
 from functools import partial
 
-from .text_offscreen import draw_offscreen, get_offscreen
+from .offscreen import draw_offscreen, get_offscreen
 from ..utils.geometry import rotate_point
 from .shaders import SHADERS
 from ..utils.math import map_value
