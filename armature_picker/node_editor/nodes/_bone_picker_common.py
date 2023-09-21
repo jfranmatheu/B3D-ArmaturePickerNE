@@ -22,7 +22,7 @@ class APNODE_BonePicker_CommonStyle:
 class APNODE_BonePicker_CommonProps:
 
     def get_bone_custom_properties(self, context: Context) -> None:
-        if context.active_object is None:
+        if context.active_object is None or not self.use_ik_fk:
             return ((
                 'NONE', "None", "",
             ),)
