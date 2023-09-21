@@ -22,6 +22,10 @@ class APNODE_BonePicker_CommonStyle:
 class APNODE_BonePicker_CommonProps:
 
     def get_bone_custom_properties(self, context: Context) -> None:
+        if context.active_object is None:
+            return ((
+                'NONE', "None", "",
+            ),)
         pose = context.active_object.pose
         if bone := pose.bones.get(self.bone_name, None):
             return [
@@ -74,6 +78,8 @@ class APNODE_BonePicker_CommonProps:
     # ----- DRAW UI LAYOUT --------------------------------
 
     def draw_ui__pose(self, context: Context, layout: UILayout) -> None:
+        if context.active_object is None:
+            return
         if context.active_object.animation_data is None:
             layout.label(text="No animation data")
             return
@@ -99,6 +105,8 @@ class APNODE_BonePicker_CommonProps:
 
 
     def draw_ui__edit(self, context: Context, layout: UILayout) -> None:
+        if context.active_object is None:
+            return
         layout.use_property_split = True
         layout.use_property_decorate = False
         layout.prop_search(self, 'bone_name', context.active_object.pose, 'bones', text='', icon='BONE_DATA')
@@ -121,7 +129,7 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps, APNODE_BonePicker_
 
 
     def get_ik_fk_state(self, context: Context) -> bool:
-        if context.active_object.type != 'ARMATURE':
+        if context.active_object is None or context.active_object.type != 'ARMATURE':
             return False
         if bone := self.get_bone(context, from_pose_data = True):
             if self.ik_fk_prop_idname in bone:
@@ -129,7 +137,7 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps, APNODE_BonePicker_
         return False
 
     def toggle_ik_fk(self, context: Context) -> bool:
-        if context.active_object.type != 'ARMATURE':
+        if context.active_object is None or context.active_object.type != 'ARMATURE':
             return False
         if bone := context.active_pose_bone:
             if bone.name != self.bone_name:
@@ -144,7 +152,7 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps, APNODE_BonePicker_
     # ----- SELECT METHODS --------------------------------
 
     def get_bone(self, context: Context, from_pose_data: bool = False) -> Bone:
-        if context.active_object.type != 'ARMATURE':
+        if context.active_object is None or context.active_object.type != 'ARMATURE':
             return None
         armature: Armature = context.active_object.data
         if from_pose_data:
@@ -154,7 +162,7 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps, APNODE_BonePicker_
         return bones.get(self.bone_name, None)
 
     def select_bone(self, context: Context, deselect_all: bool = True) -> None:
-        if context.active_object.type != 'ARMATURE':
+        if context.active_object is None or context.active_object.type != 'ARMATURE':
             return
         armature: Armature = context.active_object.data
         bones = armature.bones if context.mode == 'POSE' else armature.edit_bones
