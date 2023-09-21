@@ -31,7 +31,7 @@ def init():
 def cleanse_modules():
     """ Search for your plugin modules in blender python sys.modules and remove them. """
     global modules
-    if modules is not None:
+    if modules is None:
         return
 
     for module_name in sorted(sys.modules.keys()):
@@ -75,19 +75,18 @@ def unregister():
     global modules
     global ordered_classes
 
-    if ordered_classes is None or modules is None:
-        return
-
     for cls in reversed(ordered_classes):
         bpy.utils.unregister_class(cls)
+        
+    sys_modules = sys.modules
 
     for module in modules:
         if module.__name__ == __name__:
             continue
         if hasattr(module, "unregister"):
             module.unregister()
-
-    cleanse_modules()
+        if module.__name__ in sys_modules:
+            del sys_modules[module.__name__]
 
 
 # Import modules
