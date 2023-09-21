@@ -1,7 +1,7 @@
 from bpy.types import Context, Menu
 
 from ...nodes import NODES
-# from .op import ARMATURE_PICKER_OT_add_node
+# from .op import AP_OT_add_node
 
 
 class MT_add_node(Menu):

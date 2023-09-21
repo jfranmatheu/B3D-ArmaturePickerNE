@@ -9,7 +9,7 @@ from armature_picker.node_editor.poll import poll_check
 from ....utils.node_editor import get_node_editor_zoom, get_node_editor_offset, get_node_editor_region_coord
 
 
-class ARMATURE_PICKER_OT_add_node(Operator):
+class AP_OT_add_node(Operator):
     bl_idname = 'armature_picker.add_node'
     bl_label = 'Add Node'
     bl_description = "Add new node, drag it and place it where you want"
