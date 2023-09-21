@@ -157,7 +157,7 @@ class APNODE_Slider_DataConstraintsProps:
         pose = context.active_object.pose
         if bone := pose.bones.get(self.bone_name, None):
             custom_props = [
-                (key, key, "") for key in bone.keys() if not key.startswith('_RNA')
+                (key, key, "") for (key, value) in bone.items() if not key.startswith('_RNA') and isinstance(value, (float, int))
             ]
             if len(custom_props) != 0:
                 return custom_props
