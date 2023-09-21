@@ -554,18 +554,12 @@ class AP_NodeTree(NodeTree):
             self.box.y_max = ori_y
             self.box.y_min = curr_y
 
-        off = get_node_editor_offset(context)
-        zoom = get_node_editor_zoom(context)
         proj_box = Box(*(get_node_editor_view_point(context, self.box.min)),
                        *(get_node_editor_view_point(context, self.box.max)))
-        print("p", proj_box.min, proj_box.max)
+
         for node in self.nodes:
             rect = node.rect_transform
-
-            # node_box = Box(*get_node_editor_region_coord(context, rect.min), *get_node_editor_region_coord(context, rect.max))
-
             if rect_overlap(proj_box, rect):
-                print(rect.min, rect.max)
                 node.select = True
             elif node.select:
                 node.select = False
