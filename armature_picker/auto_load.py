@@ -22,8 +22,38 @@ def init():
     global modules
     global ordered_classes
 
+    cleanse_modules()
+
     modules = get_all_submodules(Path(__file__).parent)
     ordered_classes = get_ordered_classes_to_register(modules)
+
+
+def cleanse_modules():
+    """ Search for your plugin modules in blender python sys.modules and remove them. """
+    global modules
+    if modules is not None:
+        return
+
+    for module_name in sorted(sys.modules.keys()):
+        if module_name.startswith(__name__):
+            del sys.modules[module_name]
+
+
+def reload(module):
+    file_name = module.__file__
+
+    with open(file_name) as file:
+        raw = file.read().decode()
+
+    m_globals = {}
+
+    exec(raw, globals=m_globals)
+
+    for symbol, val in m_globals.items():
+        module.__dict__[symbol] = val
+
+    return module
+
 
 def register():
     for cls in ordered_classes:
@@ -44,6 +74,8 @@ def unregister():
             continue
         if hasattr(module, "unregister"):
             module.unregister()
+
+    cleanse_modules()
 
 
 # Import modules
