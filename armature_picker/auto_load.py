@@ -75,6 +75,9 @@ def unregister():
     global modules
     global ordered_classes
 
+    if ordered_classes is None or modules is None:
+        return
+
     for cls in reversed(ordered_classes):
         bpy.utils.unregister_class(cls)
 
