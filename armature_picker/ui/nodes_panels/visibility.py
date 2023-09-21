@@ -18,7 +18,7 @@ class APNODE_PT_visibility(Panel):
 
     @classmethod
     def poll(cls, context: Context):
-        return poll_check(context, 'EDIT')
+        return poll_check(context, 'EDIT', use_active_node=True)
 
     def draw(self, context: Context):
         layout = self.layout
