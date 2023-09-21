@@ -292,6 +292,9 @@ class AP_NodeTree(NodeTree):
         if self.nodes.active is not None:
             if (event.type == 'G' and event.value == 'RELEASE') or\
                (event.type == 'LEFTMOUSE' and event.value == 'CLICK_DRAG' and G_hovered_node is not None and hovered_node in sel_nodes):
+                if all([node.locked for node in sel_nodes]):
+                    # All nodes are locked!
+                    return {'CANCELLED'}
                 self.modal_nodes = sel_nodes
                 self.set_inject_modal(context, event,
                                       modal_callback=self.modal__move_node__update,
@@ -300,6 +303,9 @@ class AP_NodeTree(NodeTree):
                 return {'RUNNING_MODAL'}
 
             if (event.type == 'R' and event.value == 'RELEASE'): # and self.active_node is not None:
+                if all([node.locked for node in sel_nodes]):
+                    # All nodes are locked!
+                    return {'CANCELLED'}
                 self.modal_nodes = sel_nodes
                 self.set_inject_modal(context, event,
                                       modal_callback=self.modal__rotate_node__update,
