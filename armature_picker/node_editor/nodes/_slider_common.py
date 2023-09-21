@@ -226,6 +226,10 @@ class APNODE_Slider_DataConstraintsProps:
 
         if is_custom_prop:
             attr = full_data_path
+            value = self.get_value(context)
+            if isinstance(value, int):
+                # Ensure it is integer value to avoid mutating custom property type.
+                new_value = int(new_value)
         else:
             split = full_data_path.split('.')
             data_path = '.'.join(split[:-1])
