@@ -66,6 +66,9 @@ class AP_OT_import_geo_collection(ARMATURE_PICKER_OT_add_node, Operator):
                 continue
             mid_point += Vector((ob.location.x, ob.location.y))
             valid_objects.append(ob)
+        
+        if len(valid_objects) == 0:
+            return OpsReturn.CANCEL
 
         mid_point /= len(valid_objects)
 
