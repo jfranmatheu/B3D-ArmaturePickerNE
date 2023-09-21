@@ -220,8 +220,6 @@ class AP_NodeTree(NodeTree):
             elif event.type == 'TAB':
                 self.picker_mode = 'POSE' if self.picker_mode == 'EDIT' else 'EDIT'
                 context.area.tag_redraw()
-                if self.picker_mode == 'POSE':
-                    view3d_set_mode(context, 'POSE')
             return {'FINISHED'}
 
         self.mouse_pos = Vector((event.mouse_region_x, event.mouse_region_y))
