@@ -22,7 +22,7 @@ class APNODE_BonePicker_CommonStyle:
 class APNODE_BonePicker_CommonProps:
 
     def get_bone_custom_properties(self, context: Context) -> None:
-        if context.active_object is not None and self.use_ik_fk:
+        if context.active_object is not None and self.use_ik_fk and context.active_object.type == 'ARMATURE':
             pose = context.active_object.pose
             if bone := pose.bones.get(self.bone_name, None):
                 items = [(key, key, "") for (key, value) in bone.items() if not key.startswith('_RNA') and isinstance(value, bool)]
