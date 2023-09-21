@@ -209,7 +209,7 @@ class AP_NodeTree(NodeTree):
 
     def _invoke(self, context: Context, event: Event) -> set[str]:
         # Skip navigation km.
-        if event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE', 'T', 'N', 'TAB', 'X', 'A'}:
+        if event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE', 'T', 'N', 'TAB', 'X'}:
             if event.value != 'PRESS':
                 return {'PASS_THROUGH'}
             if event.type == 'WHEELUPMOUSE':
@@ -225,11 +225,13 @@ class AP_NodeTree(NodeTree):
             elif event.type == 'X':
                 bpy.ops.node.delete('INVOKE_DEFAULT')
                 ensure_nodes_cache(self)
-            elif event.type == 'A':
-                bpy.ops.node.select_all(action='TOGGLE')
             elif event.type == 'TAB':
                 self.picker_mode = 'POSE' if self.picker_mode == 'EDIT' else 'EDIT'
                 context.area.tag_redraw()
+            return {'FINISHED'}
+
+        if event.type == 'A' and not event.shift:
+            bpy.ops.node.select_all(action='TOGGLE')
             return {'FINISHED'}
 
         self.mouse_pos = Vector((event.mouse_region_x, event.mouse_region_y))
