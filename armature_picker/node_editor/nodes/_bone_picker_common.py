@@ -22,19 +22,15 @@ class APNODE_BonePicker_CommonStyle:
 class APNODE_BonePicker_CommonProps:
 
     def get_bone_custom_properties(self, context: Context) -> None:
-        if context.active_object is None or not self.use_ik_fk:
-            return ((
-                'NONE', "None", "",
-            ),)
-        pose = context.active_object.pose
-        if bone := pose.bones.get(self.bone_name, None):
-            return [
-                (key, key, "") for (key, value) in bone.items() if not key.startswith('_RNA') and isinstance(value, bool)
-            ]
-        else:
-            return ((
-                'NONE', "None", "",
-            ),)
+        if context.active_object is not None and self.use_ik_fk:
+            pose = context.active_object.pose
+            if bone := pose.bones.get(self.bone_name, None):
+                items = [(key, key, "") for (key, value) in bone.items() if not key.startswith('_RNA') and isinstance(value, bool)]
+                if len(items) != 0:
+                    return items
+        return ((
+            'NONE', "None", "",
+        ),)
 
     # ----- UPDATES -----------------------------------
 
