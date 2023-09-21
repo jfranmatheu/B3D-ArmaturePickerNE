@@ -178,6 +178,30 @@ class RectTransform(PropertyGroup):
         return Vector(Vector(self.dimensions))
 
     @property
+    def x_min(self) -> float:
+        return min(self.coords_rotated, key=lambda v: v[0])[0]
+
+    @property
+    def x_max(self) -> float:
+        return min(self.coords_rotated, key=lambda v: v[0])[0]
+
+    @property
+    def y_min(self) -> float:
+        return min(self.coords_rotated, key=lambda v: v[1])[1]
+
+    @property
+    def y_max(self) -> float:
+        return min(self.coords_rotated, key=lambda v: v[1])[1]
+
+    @property
+    def min(self) -> Vector:
+        return Vector((self.x_min, self.y_min))
+
+    @property
+    def max(self) -> Vector:
+        return Vector((self.x_max, self.y_max))
+
+    @property
     def coords_rotated_norm(self) -> list[Vector]:
         ''' Order: ``Top-Left``, ``Bottom-Left``, ``Bottom-Right``, ``Top-Right``. '''
         coords = self.coords_rotated

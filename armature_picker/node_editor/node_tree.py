@@ -7,13 +7,13 @@ import gpu
 from uuid import uuid4
 from typing import List, Tuple, Type, Dict, Set, Union
 from collections import defaultdict
-import functools
+from dataclasses import dataclass
 
 from ..gpu import draw
 from .nodes._base import AP_Node
 from ..utils.node_editor import get_node_editor_zoom, get_node_editor_view_point, get_node_editor_offset, get_node_editor_region_coord, deselect_all_nodes
 from ..utils.armature import deselect_all_bones_from_active
-from ..utils.geometry import angle_signed
+from ..utils.geometry import angle_signed, rect_overlap, Box
 from ..utils.view3d import view3d_set_mode
 from .poll import poll_check
 
@@ -24,6 +24,14 @@ from .poll import poll_check
 G_active_node = ''
 G_hovered_node = ''
 nodes_count: int = -1
+
+# ----------------------------------------------------------------
+
+@dataclass
+class DummyNode:
+    uuid: str
+    dirty: bool = True
+
 
 # ----------------------------------------------------------------
 
@@ -278,6 +286,13 @@ class AP_NodeTree(NodeTree):
                 # deselect_all_nodes(context, nullify_active=True)
                 bpy.ops.node.select_all(False, action='DESELECT')
                 return {'RUNNING_MODAL'}
+            if event.type == 'LEFTMOUSE' and event.value == 'CLICK_DRAG':
+                self.set_inject_modal(context, event,
+                                      modal_callback=self.modal__box_select__update,
+                                      modal_enter_callback=self.modal__box_select__enter,
+                                      modal_exit_callback=self.modal__box_select__exit,
+                                      modal_draw_callback=self.modal__box_select__draw)
+                return {'RUNNING_MODAL'}
 
         if event.type == 'A' and event.value == 'PRESS' and event.shift:
             from .ops.add_node.pie_menu import MT_add_node
@@ -343,10 +358,12 @@ class AP_NodeTree(NodeTree):
         return {'FINISHED'}
 
     def _exit(self, context: Context, cancel: bool) -> None:
+        self.inject_modal = None
         if self.inject_modal_draw is not None:
             self.inject_modal_draw = None
         if self.inject_modal_exit is not None:
             self.inject_modal_exit(context, self.mouse_pos, cancel)
+            self.inject_modal_exit = None
         elif self.active_node is not None and self.active_node.in_modal:
             self.active_node.modal_exit(context, cancel)
 
@@ -406,11 +423,14 @@ class AP_NodeTree(NodeTree):
 
 
             if self.inject_modal_draw is not None:
-                self.inject_modal_draw(context, ui_scale, sel_nodes, in_edit=in_edit)
+                self.inject_modal_draw(context, ui_scale, sel_nodes, in_edit=in_edit, in_view2d=True)
 
 
             if refresh:
                 context.region.tag_redraw()
+
+        if self.inject_modal_draw is not None:
+            self.inject_modal_draw(context, ui_scale, sel_nodes, in_edit=in_edit, in_view2d=False)
 
 
     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -491,7 +511,9 @@ class AP_NodeTree(NodeTree):
         self.modal_nodes = None
 
 
-    def modal__rotate_node__draw(self, context: Context, ui_scale: float, sel_nodes: list[Node], in_edit: bool) -> None:
+    def modal__rotate_node__draw(self, context: Context, ui_scale: float, sel_nodes: list[Node], in_edit: bool, in_view2d: bool) -> None:
+        if not in_view2d or not in_edit:
+            return
         draw.text(self.modal_rotation_origin_view.copy(), 'o', 12, (0.5, 0.5), color=(1, 0, 0, 1))
         return
         print(self.modal_rotation_origin_region)
@@ -501,6 +523,83 @@ class AP_NodeTree(NodeTree):
             color=(1, 0, 0, 1.0)
         )
 
+
+    # ----------------------------------------------------------------
+
+    def modal__box_select__enter(self, context: Context, event: Event, mouse_pos: Vector) -> None:
+        self.box = Box(mouse_pos.x, mouse_pos.y, mouse_pos.x, mouse_pos.y)
+        self.box_origin = mouse_pos.copy()
+        self.dummy_node = DummyNode('MODAL_BOX_SELECT')
+        self.prev_sel_nodes = self.get_selected_nodes(context, include_active=True)
+
+    def modal__box_select__update(self, context: Context, event: Event, mouse_pos: Vector) -> int:
+        if event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
+            return -1
+
+        if event.type != 'MOUSEMOVE':
+            return 1
+
+        ori_x, ori_y = self.box_origin
+        curr_x, curr_y = mouse_pos
+
+        if curr_x > ori_x:
+            self.box.x_max = curr_x
+        elif curr_x < ori_x:
+            self.box.x_max = ori_x
+            self.box.x_min = curr_x
+
+        if curr_y > ori_y:
+            self.box.y_max = curr_y
+        elif curr_y < ori_y:
+            self.box.y_max = ori_y
+            self.box.y_min = curr_y
+
+        off = get_node_editor_offset(context)
+        zoom = get_node_editor_zoom(context)
+        proj_box = Box(*(get_node_editor_view_point(context, self.box.min)),
+                       *(get_node_editor_view_point(context, self.box.max)))
+        print("p", proj_box.min, proj_box.max)
+        for node in self.nodes:
+            rect = node.rect_transform
+
+            # node_box = Box(*get_node_editor_region_coord(context, rect.min), *get_node_editor_region_coord(context, rect.max))
+
+            if rect_overlap(proj_box, rect):
+                print(rect.min, rect.max)
+                node.select = True
+            elif node.select:
+                node.select = False
+
+        context.region.tag_redraw()
+        return 1
+
+    def modal__box_select__exit(self, context: Context, mouse_pos: Vector, cancel: bool) -> None:
+        if cancel:
+            for sel_node in self.prev_sel_nodes:
+                sel_node.select = True
+
+        else:
+            sel_nodes = self.get_selected_nodes(context)
+            if len(sel_nodes) != 0:
+                self.nodes.active = sel_nodes.pop()
+                del sel_nodes
+
+        del self.box
+        del self.box_origin
+        del self.dummy_node
+        del self.prev_sel_nodes
+
+
+    def modal__box_select__draw(self, context: Context, ui_scale: float, sel_nodes: list[Node], in_edit: bool, in_view2d: bool) -> None:
+        if in_view2d or not in_edit:
+            return
+        draw.box(
+            self.dummy_node, 'BOX_SELECT',
+            self.box.pos, self.box.size,
+            padding=0,
+            line_thickness=2.0,
+            color=(1, .3, .1, .92)
+        )
 
 
 def register():
