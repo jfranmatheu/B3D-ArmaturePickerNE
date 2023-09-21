@@ -74,7 +74,7 @@ class APNODE_BonePicker_CommonProps:
     # ----- DRAW UI LAYOUT --------------------------------
 
     def draw_ui__pose(self, context: Context, layout: UILayout) -> None:
-        if context.active_object is None:
+        if context.active_object is None or context.active_object.type not in {'ARMATURE'}:
             return
         if context.active_object.animation_data is None:
             layout.label(text="No animation data")
@@ -101,7 +101,7 @@ class APNODE_BonePicker_CommonProps:
 
 
     def draw_ui__edit(self, context: Context, layout: UILayout) -> None:
-        if context.active_object is None:
+        if context.active_object is None or context.active_object.type not in {'ARMATURE'}:
             return
         layout.use_property_split = True
         layout.use_property_decorate = False
