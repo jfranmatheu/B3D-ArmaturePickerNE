@@ -89,9 +89,19 @@ def get_rect_coords(rect) -> dict:
     return {'pos': rect.coords_rotated}
 
 
-def get_rect_cage_coords(rect) -> dict:
-    co = rect.coords_rotated
-    return {'pos': (co[0], co[1], co[2], co[3])} # , co[0])}
+def get_rect_cage_coords(rect, margin: float = 0) -> dict:
+    if margin == 0:
+        co = rect.coords_rotated
+        return {'pos': (co[0], co[1], co[2], co[3])}
+
+    co = rect.coords
+    co_mar = (Vector(co[0]) + Vector((-margin, margin)),
+                    Vector(co[1]) + Vector((-margin, -margin)),
+                    Vector(co[2]) + Vector((margin, -margin)),
+                    Vector(co[3]) + Vector((margin, margin)))
+    o = Vector(rect.origin)
+    co_mar = tuple(rotate_point(_co, o, rect.rotation) for _co in co_mar)
+    return {'pos': co_mar}
 
 def get_cage_coords(x, y, w, h, p) -> dict:
     return {'pos': (
@@ -181,11 +191,11 @@ def draw_node(node: object, graphic_id: str, shader: GPUShader, use_uv: bool = F
     _draw_batch(batch, shader, **uniforms)
 
 
-def draw_node_cage(node: object, graphic_id: str, shader: GPUShader, thickness: float | None = None, **uniforms):
+def draw_node_cage(node: object, graphic_id: str, shader: GPUShader, margin: float, thickness: float | None = None, **uniforms):
     if not node.dirty and (batch := get_batch_from_cache(node.uuid, graphic_id)) is not None:
         pass
     else:
-        batch = batch_for_shader(shader, 'LINE_LOOP', get_rect_cage_coords(node.rect_transform))
+        batch = batch_for_shader(shader, 'LINE_LOOP', get_rect_cage_coords(node.rect_transform, margin))
         set_batch_to_cache(node.uuid, graphic_id, batch)
     for key, value in uniforms.items():
         shader.uniform_float(key, value)
@@ -328,14 +338,14 @@ def text_cached(data_id: str,
         text(_text_pos, _text, _text_size, pivot, angle, color, alpha, width)
 
 
-def _box(node: object, graphic_id: str, line_thickness: float, color: RGBA, _shader=SHADER_UNIFORM_COLOR):
+def _box(node: object, graphic_id: str, margin: float, line_thickness: float, color: RGBA, _shader=SHADER_UNIFORM_COLOR):
     draw_node_cage(node, graphic_id, _shader, thickness=line_thickness, color=color)
 
-def box_ui(node: object, graphic_id: str, line_thickness: float, color: RGBA, _shader=SHADER_POLYLINE_UNIFORM_COLOR):
+def box_ui(node: object, graphic_id: str, margin: float, line_thickness: float, color: RGBA, _shader=SHADER_POLYLINE_UNIFORM_COLOR):
     state.blend_set('ALPHA')
     fb = gpu.state.active_framebuffer_get()
     x, y, w, h = fb.viewport_get()
-    draw_node_cage(node, graphic_id, _shader, lineWidth=line_thickness, color=color, viewportSize=(w, h))
+    draw_node_cage(node, graphic_id, _shader, margin=margin, lineWidth=line_thickness, color=color, viewportSize=(w, h))
 
 def box(node: object, graphic_id: str, pos: Vector, size: Vector, padding: float, line_thickness: float, color: RGBA, _shader=SHADER_POLYLINE_UNIFORM_COLOR):
     state.blend_set('ALPHA')

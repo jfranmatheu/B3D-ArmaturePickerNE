@@ -196,6 +196,7 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps, APNODE_BonePicker_
         if active or selected:
             draw.box_ui(
                 self, 'BUTTON_BOX_ACTIVE',
+                margin=4,
                 line_thickness=2 * scale,
                 color=(1.0, 1.0, .1, 1.0) if active else (1.0, .6, .1, 1.0)
             )
@@ -204,6 +205,7 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps, APNODE_BonePicker_
         if active:
             draw.box_ui(
                 self, 'BUTTON_BOX_ACTIVE',
+                margin=4,
                 line_thickness=(1.5 * scale),
                 color=(1.0, 1.0, .1, 1.0)
             )

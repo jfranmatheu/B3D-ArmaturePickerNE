@@ -41,6 +41,7 @@ class APNODE_Label(APNODE_Label_NodeProps, APNODE_Label_StyleProps, AP_Node, Nod
         if active or selected:
             draw.box_ui(
                 self, 'LABEL_BOX_ACTIVE',
+                margin=4,
                 line_thickness=(3 * scale) if active else 2.5 * scale,
                 color=(1.0, 1.0, .1, 1.0) if active else (.32, .64, 1.0, 1.0)
             )

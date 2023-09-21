@@ -48,6 +48,7 @@ class APNODE_Image(APNODE_Image_NodeProps, AP_Node, Node):
         if active or selected:
             draw.box_ui(
                 self, 'IMAGE_BOX_ACTIVE',
+                margin=4,
                 line_thickness=(3 * scale) if active else 2.5 * scale,
                 color=(1.0, 1.0, .1, 1.0) if active else (.32, .64, 1.0, 1.0)
             )
