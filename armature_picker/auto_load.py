@@ -56,6 +56,12 @@ def reload(module):
 
 
 def register():
+    global modules
+    global ordered_classes
+
+    if ordered_classes is None or modules is None:
+        init()
+
     for cls in ordered_classes:
         bpy.utils.register_class(cls)
 
@@ -66,6 +72,9 @@ def register():
             module.register()
 
 def unregister():
+    global modules
+    global ordered_classes
+
     for cls in reversed(ordered_classes):
         bpy.utils.unregister_class(cls)
 
