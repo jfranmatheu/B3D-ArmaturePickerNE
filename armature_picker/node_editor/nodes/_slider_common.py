@@ -142,7 +142,7 @@ class APNODE_Slider_DataConstraintsProps:
     # ----- SELECT METHODS --------------------------------
 
     def get_bone(self, context: Context, from_pose_data: bool = False) -> Bone:
-        if context.active_object.type != 'ARMATURE':
+        if context.active_object is None or context.active_object.type != 'ARMATURE':
             print("Active object is not an Armature")
             return None
         armature: Armature = context.active_object.data
@@ -154,6 +154,10 @@ class APNODE_Slider_DataConstraintsProps:
 
 
     def get_bone_custom_properties(self, context: Context) -> None:
+        if context.active_object is None:
+            return ((
+                'NONE', "None", "",
+            ),)
         pose = context.active_object.pose
         if bone := pose.bones.get(self.bone_name, None):
             custom_props = [
