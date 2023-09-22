@@ -16,7 +16,7 @@ bl_info = {
     "author" : "J. Fran Matheu (@jfranmatheu)",
     "description" : "",
     "blender" : (3, 6, 2),
-    "version" : (1, 0, 13),
+    "version" : (1, 0, 14),
     "location" : "",
     "warning" : "Alpha Version!",
     "category" : "Generic"
