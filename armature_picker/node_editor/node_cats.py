@@ -1,3 +1,4 @@
+'''
 ### Node Categories ###
 # Node categories are a python system for automatically
 # extending the Add menu, toolbar panels and search operator.
@@ -34,3 +35,4 @@ def register():
 
 def unregister():
     nodeitems_utils.unregister_node_categories('AP_NODES')
+'''
