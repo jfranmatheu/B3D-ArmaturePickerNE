@@ -148,7 +148,10 @@ def draw_bb(owner: object, graphic_id: str, bbox: list[Vector], shader: GPUShade
 
 
 def draw(owner: object, graphic_id: str, pos: Vector, size: Vector, angle: float, shader: GPUShader, origin: Vector | None = None, dirty: bool | None = None, use_uv: bool = False, wg: bool = False, **uniforms):
-    is_dirty = dirty or owner.dirty if dirty is not None else owner.dirty
+    if graphic_id is None:
+        is_dirty = True
+    else:
+        is_dirty = dirty or owner.dirty if dirty is not None else owner.dirty
     if not is_dirty and (batch := get_batch_from_cache(owner.uuid, graphic_id)) is not None:
         pass
     else:
@@ -160,7 +163,8 @@ def draw(owner: object, graphic_id: str, pos: Vector, size: Vector, angle: float
         batch = batch_for_shader(shader, 'TRIS',
                                  _input,
                                  indices=tex_indices)
-        set_batch_to_cache(owner.uuid, graphic_id, batch)
+        if graphic_id is not None:
+            set_batch_to_cache(owner.uuid, graphic_id, batch)
     if wg:
         shader.uniform_float('u_dimensions', size)
     _draw_batch(batch, shader, **uniforms)
@@ -179,13 +183,18 @@ def draw_point(owner: object, graphic_id: str, pos: Vector, psize: float, angle:
 
 
 def draw_node(node: object, graphic_id: str, shader: GPUShader, use_uv: bool = False, wg: bool = False, **uniforms):
-    if not node.dirty and (batch := get_batch_from_cache(node.uuid, graphic_id)) is not None:
+    if graphic_id is None:
+        is_dirty = True
+    else:
+        is_dirty = node.dirty
+    if not is_dirty and (batch := get_batch_from_cache(node.uuid, graphic_id)) is not None:
         pass
     else:
         batch = batch_for_shader(shader, 'TRIS',
                                  get_rect_uv_coords(node.rect_transform) if use_uv else get_rect_coords(node.rect_transform),
                                  indices=tex_indices)
-        set_batch_to_cache(node.uuid, graphic_id, batch)
+        if graphic_id is not None:
+            set_batch_to_cache(node.uuid, graphic_id, batch)
     if wg:
         shader.uniform_float('u_dimensions', node.rect_transform.dimensions)
     _draw_batch(batch, shader, **uniforms)
