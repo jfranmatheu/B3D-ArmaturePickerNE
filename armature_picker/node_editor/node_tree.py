@@ -402,7 +402,7 @@ class AP_NodeTree(NodeTree):
                 Vector((0, 0)), Vector((context.region.width, context.region.height)), 0,
                 color=(0.25, 0.1, 0.1, .2),
             )
-            image = bpy.data.images.get('Sav Martin es Muy Cool')
+            image = bpy.data.images.get('...tmp_overlay_image')
             if not image:
                 image = bpy.data.images.load(Paths.LIB_IMAGES('icons8-human-bones-64.png'))
                 image.name = '...tmp_overlay_image'
