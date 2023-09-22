@@ -403,7 +403,7 @@ class APNODE_Slider_DataConstraintsProps:
         layout.prop(self, 'clamp_slider')
 
         col = layout.column(align=True)
-        col.enabled = self.clamp_slider
+        # col.enabled = self.clamp_slider
         col.prop(self, 'unit_type')
         if self.unit_type == 'VALUE':
             col.prop(self, 'min_value')
@@ -412,9 +412,9 @@ class APNODE_Slider_DataConstraintsProps:
             col.prop(self, 'min_angle')
             col.prop(self, 'max_angle')
 
-        col = layout.column(align=True)
-        col.enabled = not self.clamp_slider
-        col.prop(self, 'step')
+        # col = layout.column(align=True)
+        # col.enabled = not self.clamp_slider
+        # col.prop(self, 'step')
 
 
 
