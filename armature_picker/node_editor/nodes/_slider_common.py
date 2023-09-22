@@ -177,7 +177,11 @@ class APNODE_Slider_DataConstraintsProps:
                 data_path = self.bone_attr
             elif self.bone_data_source == 'CUSTOM_PROPERTY':
                 is_custom_prop = True
-                data_path = f'["{self.bone_custom_property}"]'
+                if self.bone_custom_property == 'NONE':
+                    data = None
+                    data_path = ''
+                else:
+                    data_path = f'["{self.bone_custom_property}"]'
 
         elif self.data_source == 'DATA_PATH':
             is_custom_datapath = True
