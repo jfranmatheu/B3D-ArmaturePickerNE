@@ -32,6 +32,7 @@ class DummyNode:
     uuid: str
     dirty: bool = True
 
+graphic_users: dict[str, dict[str, DummyNode]] = defaultdict(dict)
 
 # ----------------------------------------------------------------
 
@@ -112,7 +113,6 @@ class AP_NodeTree(NodeTree):
 
     dirty: bool
 
-
     bl_use_exclude_layers = False
     bl_use_postprocess = False
     bl_use_preview = False
@@ -133,6 +133,15 @@ class AP_NodeTree(NodeTree):
 
     def __del__(self):
         pass
+
+    def get_graphic_user(self, user_id: str) -> None:
+        if user_id not in graphic_users[self.uuid]:
+            graphic_users[self.uuid][user_id] = DummyNode(user_id, dirty=True)
+        return graphic_users[self.uuid][user_id]
+
+    def on_region_resize(self, context: Context) -> None:
+        for graphic in graphic_users[self.uuid].values():
+            graphic.dirty = True
 
 
     # ----------------------------------------------------------------
@@ -396,7 +405,7 @@ class AP_NodeTree(NodeTree):
         in_edit = self.picker_mode == 'EDIT'
         if in_edit:
             draw.box(
-                self, 'EDIT_CAGE',
+                self.get_graphic_user('EDIT_CAGE'), 'EDIT_CAGE',
                 Vector((0, 0)), Vector((context.region.width, context.region.height)),
                 padding=8,
                 line_thickness=1,

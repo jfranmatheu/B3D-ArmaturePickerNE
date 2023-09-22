@@ -19,18 +19,24 @@ class TheAPGZG(GZG, TheAPGZKM):
         return poll_check(context)
 
     def invoke_prepare(gzg, context: Context, gz: TheAPGZ) -> None:
-        print("TheAPGZG::invoke_prepare", gz.bl_idname)
+        # print("TheAPGZG::invoke_prepare", gz.bl_idname)
+        pass
 
     def setup(gzg, context: Context):
-        print("TheAPGZG::setup")
+        # print("TheAPGZG::setup")
         gz = gzg.gizmos.new(TheAPGZ.bl_idname)
         gz.use_event_handle_all = True
         gz.use_draw_modal = True
         gz.scale_basis = 1.0
         gzg.the_gz = gz
+        gzg.reg_size = context.region.width, context.region.height
 
     def draw_prepare(gzg, context: Context):
         pass
 
     def refresh(gzg, context: Context):
-        pass
+        reg_size = context.region.width, context.region.height
+        if not all([x==y for x, y in zip(reg_size, gzg.reg_size)]):
+            context.region.tag_redraw()
+            gzg.reg_size = reg_size
+            context.space_data.node_tree.on_region_resize(context)
