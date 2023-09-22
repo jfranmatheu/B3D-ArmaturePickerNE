@@ -9,6 +9,7 @@ from typing import List, Tuple, Type, Dict, Set, Union
 from collections import defaultdict
 from dataclasses import dataclass
 
+from armature_picker.paths import Paths
 from ..gpu import draw
 from .nodes._base import AP_Node
 from ..utils.node_editor import get_node_editor_zoom, get_node_editor_view_point, get_node_editor_offset, get_node_editor_region_coord, deselect_all_nodes
@@ -397,13 +398,35 @@ class AP_NodeTree(NodeTree):
 
         if context.active_object.mode != 'POSE':
             draw.rectangle(
-                self, 'NONE',
+                self, None,
                 Vector((0, 0)), Vector((context.region.width, context.region.height)), 0,
-                color=(0.25, 0.1, 0.1, .25)
+                color=(0.25, 0.1, 0.1, .2),
+            )
+            image = bpy.data.images.get('Sav Martin es Muy Cool')
+            if not image:
+                image = bpy.data.images.load(Paths.LIB_IMAGES('icons8-human-bones-64.png'))
+                image.name = '...tmp_overlay_image'
+            aspect_ratio = image.size[1] / image.size[0]
+            w = min(int(context.region.width * 0.5), 128)
+            h = w * aspect_ratio
+
+            ipos = Vector((context.region.width * 0.5 - w * 0.5, context.region.height * 0.5 - h * 0.5))
+            draw.image(
+                self, None,
+                ipos, Vector((w, h)), 0,
+                image=image
             )
             draw.text(
-                Vector((context.region.width * 0.5, context.region.height - 40)), # Vector((context.region.width, context.region.height)) * 0.5,
-                'Ops! o.0\n\nArmature object must be in POSE mode in order to use or edit the Picker',
+                Vector((ipos.x + w - 25, ipos.y + h)),
+                "Let's pose!",
+                16,
+                (0.0, 0.0),
+                width=int(context.region.width * 0.9),
+                color=(.8, .3, .75, 1.0)
+            )
+            draw.text(
+                Vector((context.region.width * 0.5, ipos.y - h * 0.5)), # Vector((context.region.width * 0.5, context.region.height - 40)), # 
+                "I can't dance outside POSE!",
                 24,
                 (0.5, 1.0),
                 width=int(context.region.width * 0.9)
