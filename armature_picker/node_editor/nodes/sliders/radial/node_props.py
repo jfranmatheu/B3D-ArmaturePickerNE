@@ -36,12 +36,13 @@ class APNODE_SliderRadial_NodeProps:
     )
 
     def draw_slider_constraints_props(self, layout: UILayout) -> None:
-        layout.prop(self, 'unit_type')
+        col = layout.column(align=True)
+        col.prop(self, 'unit_type')
         if self.unit_type == 'VALUE':
-            layout.prop(self, 'min_value')
-            layout.prop(self, 'max_value')
+            col.prop(self, 'min_value')
+            col.prop(self, 'max_value')
         elif self.unit_type == 'ANGLE':
-            layout.prop(self, 'min_angle')
-            layout.prop(self, 'max_angle')
+            col.prop(self, 'min_angle')
+            col.prop(self, 'max_angle')
 
         layout.prop(self, 'sensitivity')
