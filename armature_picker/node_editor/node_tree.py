@@ -239,7 +239,7 @@ class AP_NodeTree(NodeTree):
                 context.area.tag_redraw()
             return {'FINISHED'}
 
-        if event.type == 'A' and not event.shift:
+        if event.type == 'A' and not event.shift and event.value == 'PRESS':
             bpy.ops.node.select_all(action='TOGGLE')
             return {'FINISHED'}
 
