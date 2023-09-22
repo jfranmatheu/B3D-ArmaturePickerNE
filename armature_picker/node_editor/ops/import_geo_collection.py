@@ -91,6 +91,7 @@ class AP_OT_import_geo_collection(AP_OT_add_node, Operator):
             geo_node: APNODE_BonePickerGeo = new_node(
                 self, context, APNODE_BonePickerGeo.bl_idname, p)
             geo_node.object = ob
+            geo_node.geo_scale = self.px_per_meter
 
             # If the object name matches any bone, link it to the node.
             if bone := pose_bones.get(ob.name):
