@@ -1,5 +1,13 @@
-from bpy.types import Context
+from bpy.types import Context, SpaceNodeEditor
 from mathutils import Vector
+
+
+def get_armature_picker_editor(context: Context) -> SpaceNodeEditor:
+    for area in context.screen.areas:
+        if area.type == 'NODE_EDITOR':
+            if area.spaces[0].tree_type == 'AP_NODETREE':
+                return area.spaces[0]
+    return None
 
 
 def get_node_editor_view_point(context: Context, region_point: Vector) -> Vector:
