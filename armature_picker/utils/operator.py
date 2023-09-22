@@ -10,5 +10,6 @@ class OpsReturn:
 
 def add_modal_handler(context, operator):
     if not context.window_manager.modal_handler_add(operator):
+        print("WARN! Operator failed to add modal handler!")
         return OpsReturn.CANCEL
     return OpsReturn.RUN
