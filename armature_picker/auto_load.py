@@ -24,6 +24,7 @@ def init():
 
     cleanse_modules()
 
+    print("[ArmaturePicker] Initializing modules...")
     modules = get_all_submodules(Path(__file__).parent)
     ordered_classes = get_ordered_classes_to_register(modules)
 
@@ -33,6 +34,8 @@ def cleanse_modules():
     global modules
     if modules is None:
         return
+
+    print("[ArmaturePicker] Cleaning up old modules...")
 
     for module_name in sorted(sys.modules.keys()):
         if module_name.startswith(__name__):
@@ -56,6 +59,7 @@ def reload(module):
 
 
 def register():
+    print("[ArmaturePicker] Registering Addon...")
     global modules
     global ordered_classes
 
@@ -72,12 +76,13 @@ def register():
             module.register()
 
 def unregister():
+    print("[ArmaturePicker] Unregistering Addon...")
     global modules
     global ordered_classes
 
     for cls in reversed(ordered_classes):
         bpy.utils.unregister_class(cls)
-        
+
     sys_modules = sys.modules
 
     for module in modules:
