@@ -114,28 +114,42 @@ class APNODE_Slider_CommonStyle:
 
 
     def draw_styles(self, layout: UILayout) -> None:
-        col = layout.column()
-        col.prop(self, 'roundness')
-        col.prop(self, 'outline_thickness')
+        layout.row().prop(self, 'bar_type', expand=True)
 
-        col.separator()
+        layout.separator()
 
-        col.prop(self, 'bar_type')
-        col.prop(self, 'color')
+        col = layout.column(align=True)
+
         if self.bar_type == 'FILL':
+            col.prop(self, 'roundness')
+            col.prop(self, 'outline_thickness')
+
+            col.separator()
+
+            col.prop(self, 'color')
             col.prop(self, 'fill_color')
+            
+            col.separator()
+
+            row = col.row(align=True, heading='Handle')
+            row.prop(self, 'show_handle', text='')
+            _row = row.row(align=True)
+            _row.enabled = self.show_handle
+            _row.prop(self, 'handle_color',  text='')
+            _row.prop(self, 'handle_type',  text='', icon_only=True)
+
         elif self.bar_type == 'LINE':
             col.prop(self, 'bar_line_thickness')
 
-        col.separator()
+            col.separator()
 
-        row = col.row(align=True, heading='Handle')
-        row.prop(self, 'show_handle', text='')
-        _row = row.row(align=True)
-        _row.enabled = self.show_handle
-        _row.prop(self, 'handle_color',  text='')
-        _row.prop(self, 'handle_type',  text='', icon_only=True)
+            col.prop(self, 'color')
+            
+            col.separator()
 
+            row = col.row(align=True)
+            row.prop(self, 'handle_color',  text='Handle')
+            row.prop(self, 'handle_type',  text='', icon_only=True)
 
 
 class APNODE_Slider_DataConstraintsProps:
@@ -152,7 +166,7 @@ class APNODE_Slider_DataConstraintsProps:
             bones = armature.bones if context.mode == 'POSE' else armature.edit_bones
         return bones.get(self.bone_name, None)
 
-    
+
     def get_bone_names(self, context: Context) -> tuple:
         if context.active_object is not None and context.active_object.type == 'ARMATURE':
             return tuple((bone.name, bone.name, "") for bone in context.active_object.data.bones)

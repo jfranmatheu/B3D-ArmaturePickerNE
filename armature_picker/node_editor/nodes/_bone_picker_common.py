@@ -115,7 +115,9 @@ class APNODE_BonePicker_CommonProps:
         row = layout.row(align=True, heading='IK/FK')
         row.prop(self, 'use_ik_fk', text='', expand=False)
         row.prop(self, 'ik_fk_prop_idname', text='')
-        layout.prop(self, 'ik_fk_size', text='Toggle Size')
+        row = layout.row()
+        row.enabled = self.use_ik_fk
+        row.prop(self, 'ik_fk_size', text='Toggle Size')
 
 
 
