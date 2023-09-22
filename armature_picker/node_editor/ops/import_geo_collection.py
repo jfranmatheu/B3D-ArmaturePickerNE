@@ -64,18 +64,42 @@ class AP_OT_import_geo_collection(AP_OT_add_node, Operator):
                 continue
             if len(ob.data.vertices) < 3:
                 continue
-            mid_point += Vector((ob.location.x, ob.location.y))
+
             valid_objects.append(ob)
-        
+
         if len(valid_objects) == 0:
             return OpsReturn.CANCEL
 
+        # --------------------------------------
+        # APPLY SCALE, ROTATION AND PIVOT TO GEOMETRY.
+        active_object = context.active_object
+        bpy.ops.object.mode_set(mode='OBJECT')
+
+        for ob in context.selected_objects:
+            ob.select_set(False)
+        for ob in valid_objects:
+            ob.select_set(True)
+        context.view_layer.objects.active = valid_objects[0]
+
+        bpy.ops.object.transform_apply(location=False, rotation=True, scale=True)
+        bpy.ops.object.origin_set(type='GEOMETRY_ORIGIN')
+
+        for ob in valid_objects:
+            ob.select_set(False)
+
+        active_object.select_set(True)
+        context.view_layer.objects.active = active_object
+        bpy.ops.object.mode_set(mode='POSE')
+        # --------------------------------------
+
+        for ob in valid_objects:
+            mid_point += Vector((ob.location.x, ob.location.y))
         mid_point /= len(valid_objects)
 
         # MOVE CURSOR TO THE CENTER OF THE EDITOR.
         region_mid = (int(context.area.x + context.area.width / 2), int(context.area.y + context.area.height / 2))
         context.window.cursor_warp(*region_mid)
-        
+
         # GET SOME VARS TO PROJECT THE GEOMETRY IN THE PICKER VIEW2D.
         mouse_region_pos = Vector((int(context.area.width / 2), int(context.area.height / 2)))
         zoom = get_node_editor_zoom(context)
