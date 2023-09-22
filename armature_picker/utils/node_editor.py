@@ -3,7 +3,7 @@ from mathutils import Vector
 
 
 def get_armature_picker_editor(context: Context) -> SpaceNodeEditor:
-    for area in context.screen.areas:
+    for area in context.window.screen.areas:
         if area.type == 'NODE_EDITOR':
             if area.spaces[0].tree_type == 'AP_NODETREE':
                 return area.spaces[0]
