@@ -23,7 +23,7 @@ class AP_OT_import_geo_collection(AP_OT_add_node, Operator):
     px_per_meter: IntProperty(
         name="Scale",
         description="Equivalent to aprox. Pixels/Meter * 2 (when zoom-in to max).",
-        default=20,
+        default=100,
         min=10,
         max=256,
     )
