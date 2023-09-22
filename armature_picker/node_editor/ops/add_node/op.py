@@ -58,12 +58,7 @@ class AP_OT_add_node(MoveNodesModal, Operator):
         return poll_check(context, 'EDIT', use_active_object=False)
 
     def invoke(self, context: Context, event: Event) -> OpsReturn:
-        if not hasattr(self, 'modal_nodes'):
-            mouse_pos = get_mouse_pos(event)
-            self.modal_nodes = (new_node(context, self.node_idname, event), )
-        else:
-            mouse_pos = None
-            # When calling it externally... aka 'AP_OT_import_geo_collection'
-            pass
+        mouse_pos = get_mouse_pos(event)
+        self.modal_nodes = (new_node(context, self.node_idname, event), )
         self.modal__move_node__enter(context, event, mouse_pos)
         return add_modal_handler(context, self)
