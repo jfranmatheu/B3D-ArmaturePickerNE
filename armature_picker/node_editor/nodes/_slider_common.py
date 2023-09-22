@@ -194,7 +194,7 @@ class APNODE_Slider_DataConstraintsProps:
     def get_value(self, context: Context) -> float | int | None:
         data, data_path, is_custom_datapath, is_custom_prop = self.get_data_and_datapath(context)
         if data is None or data_path == '':
-            print("WTF", data, data_path)
+            # print("WTF", data, data_path)
             return None
 
         try:
