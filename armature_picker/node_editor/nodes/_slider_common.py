@@ -152,6 +152,11 @@ class APNODE_Slider_DataConstraintsProps:
             bones = armature.bones if context.mode == 'POSE' else armature.edit_bones
         return bones.get(self.bone_name, None)
 
+    
+    def get_bone_names(self, context: Context) -> tuple:
+        if context.active_object is not None and context.active_object.type == 'ARMATURE':
+            return tuple((bone.name, bone.name, "") for bone in context.active_object.data.bones)
+        return (('NONE', "None", "",),)
 
     def get_bone_custom_properties(self, context: Context) -> None:
         if context.active_object is not None and context.active_object.type == 'ARMATURE':
@@ -265,7 +270,7 @@ class APNODE_Slider_DataConstraintsProps:
     bone_name: EnumProperty(
         name="Bone Name",
         description="Name of the bone to control",
-        items=lambda node, ctx: tuple((bone.name, bone.name, "") for bone in ctx.active_object.data.bones),
+        items=get_bone_names,
         update=update_bone_name
     )
 
