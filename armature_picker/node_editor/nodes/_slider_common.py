@@ -400,7 +400,7 @@ class APNODE_Slider_DataConstraintsProps:
 
 
     def draw_slider_constraints_props(self, layout: UILayout) -> None:
-        layout.prop(self, 'clamp_slider')
+        # layout.prop(self, 'clamp_slider')
 
         col = layout.column(align=True)
         # col.enabled = self.clamp_slider
