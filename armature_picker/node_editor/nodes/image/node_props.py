@@ -54,4 +54,6 @@ class APNODE_Image_NodeProps:
     )
 
     def draw_buttons_ext(self, context: Context, layout: UILayout) -> None:
-        layout.prop(self, 'image')
+        row = layout.row(align=True)
+        row.prop(self, 'image')
+        row.operator('armature_picker.load_image_for_active_node', text='', icon='IMPORT')

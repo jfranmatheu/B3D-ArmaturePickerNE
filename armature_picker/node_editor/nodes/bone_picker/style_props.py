@@ -73,7 +73,9 @@ class APNODE_BonePicker_StyleProps:
         row.prop(self, 'use_image', text="")
         _row = row.row(align=True)
         _row.enabled = self.use_image
-        _row.prop(self, 'image', text="")
+        _row = _row.row(align=True)
+        _row.prop(self, 'image', text='')
+        _row.operator('armature_picker.load_image_for_active_node', text='', icon='IMPORT')
 
         col = layout.column()
         if self.use_image:
