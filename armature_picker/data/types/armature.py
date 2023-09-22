@@ -3,7 +3,7 @@ from bpy.props import PointerProperty
 
 
 def register():
-    Armature.picker = PointerProperty(name="Armature Picker", type=NodeTree)
+    Armature.picker = PointerProperty(name="Armature Picker", type=NodeTree, poll=lambda arm, node_tree: node_tree.bl_idname == 'AP_NODETREE')
 
 def unregister():
     del Armature.picker
