@@ -92,9 +92,23 @@ class AP_OT_import_geo_collection(AP_OT_add_node, Operator):
         bpy.ops.object.mode_set(mode='POSE')
         # --------------------------------------
 
+        z_depth = []
         for ob in valid_objects:
+            z_depth.append(ob.location.z)
             mid_point += Vector((ob.location.x, ob.location.y))
         mid_point /= len(valid_objects)
+
+        min_depth = min(z_depth)
+        max_depth = max(z_depth)
+        depth_range = max_depth - min_depth
+        if depth_range < 0.01:
+            depth_mult = 1000
+        elif depth_range < 0.1:
+            depth_mult = 100
+        elif depth_range < 2:
+            depth_mult = 10
+        else:
+            depth_mult = 1
 
         # MOVE CURSOR TO THE CENTER OF THE EDITOR.
         region_mid = (int(context.area.x + context.area.width / 2), int(context.area.y + context.area.height / 2))
@@ -116,7 +130,7 @@ class AP_OT_import_geo_collection(AP_OT_add_node, Operator):
                 self, context, APNODE_BonePickerGeo.bl_idname, p)
             geo_node.object = ob
             geo_node.geo_scale = self.px_per_meter
-            geo_node.draw_depth = int(ob.location.z * 10)
+            geo_node.draw_depth = int(ob.location.z * depth_mult)
 
             # If the object name matches any bone, link it to the node.
             if bone := pose_bones.get(ob.name):
