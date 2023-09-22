@@ -1,6 +1,6 @@
 import bpy
 from bpy.types import NodeTree, Context, Event, Node
-from bpy.props import BoolProperty, EnumProperty
+from bpy.props import BoolProperty, EnumProperty, StringProperty
 from mathutils import Vector
 import gpu
 
@@ -36,14 +36,17 @@ graphic_users: dict[str, dict[str, DummyNode]] = defaultdict(dict)
 
 # ----------------------------------------------------------------
 
-sorted_nodetree_nodes_cache: dict[str, List[List[AP_Node]]] = defaultdict(list)
 
-def ensure_nodes_cache(node_tree: NodeTree):
+
+def ensure_nodes_cache(node_tree: 'AP_NodeTree'):
+    if node_tree.uuid == '':
+        node_tree.uuid = uuid4().hex
+
     # Empty cache? Probably first time?
-    if sorted_nodetree_nodes_cache[node_tree.uuid] == []:
+    if node_tree.sorted_nodes_cache == []:
         return refresh_nodes_cache(node_tree)
     # Invalid cached nodes?
-    first_cached_node = sorted_nodetree_nodes_cache[node_tree.uuid][0][0]
+    first_cached_node = node_tree.sorted_nodes_cache[0][0]
     if first_cached_node is None or not hasattr(first_cached_node, 'uuid'):
         return refresh_nodes_cache(node_tree)
     # Changes in the node count?
@@ -54,10 +57,10 @@ def ensure_nodes_cache(node_tree: NodeTree):
     refresh_nodes_cache(node_tree)
 
 
-def refresh_nodes_cache(node_tree: NodeTree):
+def refresh_nodes_cache(node_tree: 'AP_NodeTree'):
     nodes: List[AP_Node] = node_tree.nodes
 
-    sorted_nodetree_nodes_cache[node_tree.uuid].clear()
+    node_tree.sorted_nodes_cache.clear()
 
     if len(nodes) == 0:
         ## print("No nodes")
@@ -92,7 +95,7 @@ def refresh_nodes_cache(node_tree: NodeTree):
         if active_on_top:
             sorted_nodes[-1].append(active_node)
 
-    sorted_nodetree_nodes_cache[node_tree.uuid] = sorted_nodes
+    node_tree.sorted_nodes_cache = sorted_nodes
 
 # ----------------------------------------------------------------
 
@@ -107,6 +110,7 @@ class AP_NodeTree(NodeTree):
     # Icon identifier
     bl_icon = 'OUTLINER_OB_ARMATURE' # CON_ARMATURE
 
+    sorted_nodes_cache: List[List[AP_Node]] = []
 
     active_node: Union[AP_Node, Node]
     modal_nodes: Union[List[AP_Node], List[Node]]
@@ -134,6 +138,7 @@ class AP_NodeTree(NodeTree):
 
     def __init__(self):
         self.uuid = uuid4().hex
+        self.sorted_nodes_cache = []
 
     def __del__(self):
         pass
@@ -195,7 +200,7 @@ class AP_NodeTree(NodeTree):
         region_offset = get_node_editor_offset(context)
         view_loc = get_node_editor_view_point(context, region_loc)
 
-        for node_layer_nodes in reversed(sorted_nodetree_nodes_cache[self.uuid]):
+        for node_layer_nodes in reversed(self.sorted_nodes_cache):
             for node in reversed(node_layer_nodes):
                 if not node.visible:
                     continue
@@ -428,7 +433,7 @@ class AP_NodeTree(NodeTree):
             gpu.matrix.translate(offset)
             gpu.matrix.scale_uniform(zoom)
 
-            for node_layer_nodes in sorted_nodetree_nodes_cache[self.uuid]:
+            for node_layer_nodes in self.sorted_nodes_cache:
                 for node in node_layer_nodes:
                     if not node.visible:
                         continue
@@ -612,6 +617,7 @@ class AP_NodeTree(NodeTree):
 
 
 def register():
+    NodeTree.uuid = StringProperty()
     NodeTree.dirty = BoolProperty()
 
     NodeTree.picker_mode = EnumProperty(
@@ -624,5 +630,6 @@ def register():
     )
 
 def unregister():
+    del NodeTree.uuid
     del NodeTree.dirty
     del NodeTree.picker_mode

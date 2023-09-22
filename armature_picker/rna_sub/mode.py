@@ -1,5 +1,6 @@
 from armature_picker.ackit import Register
 from armature_picker.utils.node_editor import get_armature_picker_editor
+from armature_picker.node_editor.node_tree import ensure_nodes_cache
 
 from bpy.types import Context, Object
 
@@ -19,3 +20,4 @@ def on_mode_change(context: Context, object: Object, mode: str):
                 region.tag_redraw()
             if area.spaces[0].node_tree != picker:
                 area.spaces[0].node_tree = picker
+            ensure_nodes_cache(picker)
