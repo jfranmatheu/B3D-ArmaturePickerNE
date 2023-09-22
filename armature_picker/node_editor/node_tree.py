@@ -399,13 +399,13 @@ class AP_NodeTree(NodeTree):
             draw.rectangle(
                 self, 'NONE',
                 Vector((0, 0)), Vector((context.region.width, context.region.height)), 0,
-                color=(0.25, 0.1, 0.1, .9)
+                color=(0.25, 0.1, 0.1, .25)
             )
             draw.text(
-                Vector((context.region.width, context.region.height)) * 0.5,
+                Vector((context.region.width * 0.5, context.region.height - 40)), # Vector((context.region.width, context.region.height)) * 0.5,
                 'Ops! o.0\n\nArmature object must be in POSE mode in order to use or edit the Picker',
                 24,
-                (0.5, 0.5),
+                (0.5, 1.0),
                 width=int(context.region.width * 0.9)
             )
             return
