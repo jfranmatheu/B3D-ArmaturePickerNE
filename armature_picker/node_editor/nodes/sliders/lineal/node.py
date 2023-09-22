@@ -61,7 +61,7 @@ class APNODE_Slider(APNODE_Slider_NodeProps, APNODE_Slider_StyleProps, APNODE_Sl
             if value == self.value:
                 return 1
         else:
-            value = self.value + mouse.delta.x * self.step
+            value = self.value + mouse.local_delta.x * self.step
 
         self.set_value(context, value)
         self.value = value
