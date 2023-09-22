@@ -426,7 +426,7 @@ class AP_NodeTree(NodeTree):
             )
             draw.text(
                 Vector((context.region.width * 0.5, ipos.y - h * 0.5)), # Vector((context.region.width * 0.5, context.region.height - 40)), # 
-                "I can't dance outside POSE!",
+                "Pose me please :'v",
                 24,
                 (0.5, 1.0),
                 width=int(context.region.width * 0.9)
