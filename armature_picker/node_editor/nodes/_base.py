@@ -386,6 +386,8 @@ class AP_Node(NodeTransformProps):
         # ----- UI LAYOUT DRAWING --------------------------------
 
     def draw_buttons_ext(self, context: Context, layout: UILayout) -> None:
+        if not poll_check(context, 'ANY', use_active_object=True):
+            return
         mode = self.node_tree.picker_mode
         if mode == 'POSE':
             self.draw_ui__pose(context, layout)
