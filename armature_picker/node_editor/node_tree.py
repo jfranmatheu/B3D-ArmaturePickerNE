@@ -36,26 +36,28 @@ graphic_users: dict[str, dict[str, DummyNode]] = defaultdict(dict)
 
 # ----------------------------------------------------------------
 
-sorted_nodetree_nodes_cache: List[List[AP_Node]] = []
+sorted_nodetree_nodes_cache: dict[str, List[List[AP_Node]]] = defaultdict(list)
 
 def ensure_nodes_cache(node_tree: NodeTree):
     # Empty cache? Probably first time?
-    if sorted_nodetree_nodes_cache == []:
-        return refresh_nodes_cache(node_tree.nodes)
+    if sorted_nodetree_nodes_cache[node_tree.uuid] == []:
+        return refresh_nodes_cache(node_tree)
     # Invalid cached nodes?
-    first_cached_node = sorted_nodetree_nodes_cache[0][0]
+    first_cached_node = sorted_nodetree_nodes_cache[node_tree.uuid][0][0]
     if first_cached_node is None or not hasattr(first_cached_node, 'uuid'):
-        return refresh_nodes_cache(node_tree.nodes)
+        return refresh_nodes_cache(node_tree)
     # Changes in the node count?
     global nodes_count
     if len(node_tree.nodes) == nodes_count:
         return
     nodes_count = len(node_tree.nodes)
-    refresh_nodes_cache(node_tree.nodes)
+    refresh_nodes_cache(node_tree)
 
 
-def refresh_nodes_cache(nodes: List[AP_Node]):
-    sorted_nodetree_nodes_cache.clear()
+def refresh_nodes_cache(node_tree: NodeTree):
+    nodes: List[AP_Node] = node_tree.nodes
+
+    sorted_nodetree_nodes_cache[node_tree.uuid].clear()
 
     if len(nodes) == 0:
         ## print("No nodes")
@@ -72,6 +74,7 @@ def refresh_nodes_cache(nodes: List[AP_Node]):
     layer_indices = list(nodes_by_draw_layer.keys())
     layer_indices.sort()
 
+    sorted_nodes: List[List[AP_Node]] = []
     for node_layer_index in layer_indices:
         # Filter nodes-in-layer by their draw_depth attribute.
         _nodes = nodes_by_draw_layer[node_layer_index]
@@ -81,14 +84,15 @@ def refresh_nodes_cache(nodes: List[AP_Node]):
         else:
             active_on_top = False
 
-        sorted_nodetree_nodes_cache.append(
+        sorted_nodes.append(
             sorted(_nodes, key=lambda node: node.draw_depth)
         )
 
         # Add Active Node on top ALWAYS.
         if active_on_top:
-            sorted_nodetree_nodes_cache[-1].append(active_node)
+            sorted_nodes[-1].append(active_node)
 
+    sorted_nodetree_nodes_cache[node_tree.uuid] = sorted_nodes
 
 # ----------------------------------------------------------------
 
@@ -157,7 +161,7 @@ class AP_NodeTree(NodeTree):
     def update_nodes_depth(self) -> None:
         ''' We can call this after active node is changed. '''
         # TODO: support partial update, pass Node here and change its order in a more smart way.
-        refresh_nodes_cache(self.nodes)
+        refresh_nodes_cache(self)
 
 
     def _test_select(self, context: Context, region_loc) -> int:
@@ -180,7 +184,7 @@ class AP_NodeTree(NodeTree):
         if active_node is not None and G_active_node != active_node.uuid:
             # Active Node is updated !
             G_active_node = active_node.uuid
-            refresh_nodes_cache(self.nodes)
+            refresh_nodes_cache(self)
         else:
             ensure_nodes_cache(self)
 
@@ -191,7 +195,7 @@ class AP_NodeTree(NodeTree):
         region_offset = get_node_editor_offset(context)
         view_loc = get_node_editor_view_point(context, region_loc)
 
-        for node_layer_nodes in reversed(sorted_nodetree_nodes_cache):
+        for node_layer_nodes in reversed(sorted_nodetree_nodes_cache[self.uuid]):
             for node in reversed(node_layer_nodes):
                 if not node.visible:
                     continue
@@ -424,7 +428,7 @@ class AP_NodeTree(NodeTree):
             gpu.matrix.translate(offset)
             gpu.matrix.scale_uniform(zoom)
 
-            for node_layer_nodes in sorted_nodetree_nodes_cache:
+            for node_layer_nodes in sorted_nodetree_nodes_cache[self.uuid]:
                 for node in node_layer_nodes:
                     if not node.visible:
                         continue
