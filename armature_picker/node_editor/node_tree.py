@@ -201,6 +201,8 @@ class AP_NodeTree(NodeTree):
                     continue
                 if in_pose and not node.interactable:
                     continue
+                if not in_pose and node.locked:
+                    continue
                 if node._test_select(context, region_loc, view_loc, view_zoom, region_offset):
                     G_hovered_node = node.uuid
                     #### print("hovered_node", node.label)
