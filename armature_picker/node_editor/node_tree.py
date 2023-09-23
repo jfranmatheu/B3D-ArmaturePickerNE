@@ -37,17 +37,14 @@ graphic_users: dict[str, dict[str, DummyNode]] = defaultdict(dict)
 
 # ----------------------------------------------------------------
 
-
+sorted_nodes_cache: Dict[str, List[List[AP_Node]]] = defaultdict(list)
 
 def ensure_nodes_cache(node_tree: 'AP_NodeTree'):
-    if node_tree.uuid == '':
-        node_tree.uuid = uuid4().hex
-
     # Empty cache? Probably first time?
-    if node_tree.sorted_nodes_cache == []:
+    if len(sorted_nodes_cache[node_tree.uuid]) == 0:
         return refresh_nodes_cache(node_tree)
     # Invalid cached nodes?
-    first_cached_node = node_tree.sorted_nodes_cache[0][0]
+    first_cached_node = sorted_nodes_cache[node_tree.uuid][0][0]
     if first_cached_node is None or not hasattr(first_cached_node, 'uuid'):
         return refresh_nodes_cache(node_tree)
     # Changes in the node count?
@@ -61,7 +58,7 @@ def ensure_nodes_cache(node_tree: 'AP_NodeTree'):
 def refresh_nodes_cache(node_tree: 'AP_NodeTree'):
     nodes: List[AP_Node] = node_tree.nodes
 
-    node_tree.sorted_nodes_cache.clear()
+    sorted_nodes_cache[node_tree.uuid].clear()
 
     if len(nodes) == 0:
         ## print("No nodes")
@@ -96,7 +93,7 @@ def refresh_nodes_cache(node_tree: 'AP_NodeTree'):
         if active_on_top:
             sorted_nodes[-1].append(active_node)
 
-    node_tree.sorted_nodes_cache = sorted_nodes
+    sorted_nodes_cache[node_tree.uuid] = sorted_nodes
 
 # ----------------------------------------------------------------
 
@@ -110,8 +107,6 @@ class AP_NodeTree(NodeTree):
     bl_label = "Armature Picker"
     # Icon identifier
     bl_icon = 'OUTLINER_OB_ARMATURE' # CON_ARMATURE
-
-    sorted_nodes_cache: List[List[AP_Node]] = []
 
     active_node: Union[AP_Node, Node]
     modal_nodes: Union[List[AP_Node], List[Node]]
@@ -139,7 +134,6 @@ class AP_NodeTree(NodeTree):
 
     def __init__(self):
         self.uuid = uuid4().hex
-        self.sorted_nodes_cache = []
 
     def __del__(self):
         pass
@@ -201,7 +195,7 @@ class AP_NodeTree(NodeTree):
         region_offset = get_node_editor_offset(context)
         view_loc = get_node_editor_view_point(context, region_loc)
 
-        for node_layer_nodes in reversed(self.sorted_nodes_cache):
+        for node_layer_nodes in reversed(sorted_nodes_cache[self.uuid]):
             for node in reversed(node_layer_nodes):
                 if not node.visible:
                     continue
@@ -456,7 +450,7 @@ class AP_NodeTree(NodeTree):
             gpu.matrix.translate(offset)
             gpu.matrix.scale_uniform(zoom)
 
-            for node_layer_nodes in self.sorted_nodes_cache:
+            for node_layer_nodes in sorted_nodes_cache[self.uuid]:
                 for node in node_layer_nodes:
                     if not node.visible:
                         continue
