@@ -64,7 +64,9 @@ def get_point_in_rect_space(p: Vector, rect, invert: bool = False) -> Vector:
 def rect_overlap(rect_A, rect_B) -> bool:
     R1 = (rect_A.x_min, rect_A.y_min, rect_A.x_max, rect_A.y_max)
     R2 = (rect_B.x_min, rect_B.y_min, rect_B.x_max, rect_B.y_max)
-    return not ((R1[0]>=R2[2]) or (R1[2]<=R2[0]) or (R1[3]<=R2[1]) or (R1[1]>=R2[3]))
+    if ((R1[0]>=R2[2]) or (R1[2]<=R2[0]) or (R1[3]<=R2[1]) or (R1[1]>=R2[3])):
+        return False
+    return True
 
 
 # A utility function to calculate area
