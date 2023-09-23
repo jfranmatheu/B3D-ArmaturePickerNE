@@ -201,8 +201,6 @@ class AP_NodeTree(NodeTree):
                     continue
                 if in_pose and not node.interactable:
                     continue
-                if not in_pose and node.locked:
-                    continue
                 if node._test_select(context, region_loc, view_loc, view_zoom, region_offset):
                     G_hovered_node = node.uuid
                     #### print("hovered_node", node.label)
@@ -318,7 +316,7 @@ class AP_NodeTree(NodeTree):
             return {'FINISHED'}
 
         if G_hovered_node is not None:
-            hovered_node: Node = self.nodes.get(G_hovered_node, None)
+            hovered_node: AP_Node = self.nodes.get(G_hovered_node, None)
 
         sel_nodes = self.get_selected_nodes(context, include_active=True)
         # print("Selected nodes", sel_nodes)
@@ -348,7 +346,7 @@ class AP_NodeTree(NodeTree):
                                       modal_draw_callback=self.modal__rotate_node__draw)
                 return {'RUNNING_MODAL'}
 
-        if G_hovered_node is not None and hovered_node is not None and hovered_node not in sel_nodes:
+        if G_hovered_node is not None and hovered_node is not None and hovered_node not in sel_nodes and not hovered_node.locked:
             if event.type == 'LEFTMOUSE' and event.value == 'CLICK_DRAG':
                 for sel_node in sel_nodes:
                     sel_node.select = False
