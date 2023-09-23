@@ -643,8 +643,12 @@ def register():
         ),
         default='EDIT'
     )
+    
+    NodeTree.picker_update_flags = set()
 
 def unregister():
     del NodeTree.uuid
     del NodeTree.dirty
     del NodeTree.picker_mode
+    
+    del NodeTree.picker_update_flags

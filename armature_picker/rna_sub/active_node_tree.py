@@ -27,3 +27,5 @@ def on_node_tree_change(context: Context, space_data: SpaceNodeEditor, node_tree
     if armature.picker is None:
         armature.picker = node_tree
     ensure_nodes_cache(node_tree)
+    
+    node_tree.picker_update_flags.add('CENTER_VIEW')
