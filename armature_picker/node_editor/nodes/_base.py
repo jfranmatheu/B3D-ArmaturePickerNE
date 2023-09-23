@@ -79,7 +79,11 @@ class AP_Node(NodeTransformProps):
 
     # VISIBILITY LAYERS
     # ----------------------------------------------------------------
-    locked: BoolProperty(name="Locked", default=False)
+    def update_locked(self, context: Context) -> None:
+        if self.locked:
+            self.select = False
+
+    locked: BoolProperty(name="Locked", default=False, update=update_locked)
     visible: BoolProperty(name="Visible", default=True)
 
     def update_picker_layer(self, context: Context) -> None:
@@ -184,7 +188,7 @@ class AP_Node(NodeTransformProps):
 
     def init(self, context):
         self.name = self.uuid = uuid4().hex
-        
+
         self.rect_transform.node_idname = self.uuid
 
         self.dirty = True
