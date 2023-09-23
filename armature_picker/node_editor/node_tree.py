@@ -15,8 +15,6 @@ from .nodes._base import AP_Node
 from ..utils.node_editor import get_node_editor_zoom, get_node_editor_view_point, get_node_editor_offset, get_node_editor_region_coord, deselect_all_nodes
 from ..utils.armature import deselect_all_bones_from_active
 from ..utils.geometry import angle_signed, rect_overlap, Box
-from ..utils.view3d import view3d_set_mode
-from .poll import poll_check
 
 
 # ----------------------------------------------------------------
