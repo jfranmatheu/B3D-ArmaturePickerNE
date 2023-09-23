@@ -38,7 +38,7 @@ class APNODE_Label(APNODE_Label_NodeProps, APNODE_Label_StyleProps, AP_Node, Nod
         )
 
     def draw__edit(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
-        if active or selected:
+        if (active or selected) and not self.locked:
             draw.box_ui(
                 self, 'LABEL_BOX_ACTIVE',
                 margin=4,
