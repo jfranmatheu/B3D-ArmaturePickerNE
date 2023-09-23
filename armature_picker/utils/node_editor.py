@@ -24,7 +24,14 @@ def get_node_editor_zoom(context: Context) -> float:
     view2d = region.view2d
     region_height = region.height
     view_height = view2d.region_to_view(0, region_height)[1] - view2d.region_to_view(0, 0)[1]
+    if view_height == 0:
+        return 1
     return region_height / view_height
+
+def get_node_editor_view_size(context: Context) -> Vector:
+    region = context.region
+    view2d = region.view2d
+    return Vector(view2d.region_to_view(region.width, region.height)) - Vector(view2d.region_to_view(0, 0))
 
 
 def deselect_all_nodes(context: Context, nullify_active: bool = True) -> None:
