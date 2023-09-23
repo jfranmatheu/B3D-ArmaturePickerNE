@@ -7,12 +7,14 @@ from bpy.types import Context, Object
 
 @Register.RNA_SUB(Object, 'mode', persistent=True)
 def on_mode_change(context: Context, object: Object, mode: str):
-    # print(f"RNA::on_mode_change -> {mode} ['{object.name}']")
     if object.type != 'ARMATURE':
         return
+
+    print(f"RNA::on_mode_change -> {mode} ['{object.name}']")
+
     if object.mode != 'POSE':
         return
-    
+
     if picker := object.data.picker:
         if area := get_armature_picker_editor(context, ret_area=True):
             area.tag_redraw()

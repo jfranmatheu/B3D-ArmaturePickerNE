@@ -25,6 +25,8 @@ def on_active_object_change(context: Context, view_layer_objects: LayerObjects, 
     if active_object is None or active_object.type != 'ARMATURE':
         return
 
+    print(f"RNA::on_active_object_change -> {active_object.name}")
+
     act_armature: Armature = active_object.data
 
     # print("Change active object!", active_object)
