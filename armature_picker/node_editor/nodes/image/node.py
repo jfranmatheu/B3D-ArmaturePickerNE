@@ -44,15 +44,6 @@ class APNODE_Image(APNODE_Image_NodeProps, AP_Node, Node):
             )
 
 
-    def draw__edit(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
-        if (active or selected) and not self.locked:
-            draw.box_ui(
-                self, 'IMAGE_BOX_ACTIVE',
-                margin=4,
-                line_thickness=(3 * scale) if active else 2.5 * scale,
-                color=(1.0, 1.0, .1, 1.0) if active else (.32, .64, 1.0, 1.0)
-            )
-
     # ----- UI LAYOUT DRAWING -----------------------------------------------------------
 
     def draw_transform(self, layout: UILayout, rect_transform: RectTransform) -> None:

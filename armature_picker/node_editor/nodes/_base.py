@@ -11,6 +11,7 @@ from ...utils.operator import OpsReturn
 from ...utils.armature import deselect_all_bones_from_active
 from ...utils.geometry import point_inside_rect
 from armature_picker.node_editor.poll import poll_check
+from armature_picker.gpu import draw
 
 from ._transform_props import NodeTransformProps, RectTransform
 
@@ -367,7 +368,17 @@ class AP_Node(NodeTransformProps):
 
     def draw__edit(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         ''' Specific drawing for EDIT mode. '''
-        pass
+        if active or selected:
+            if self.locked:
+                color = (.5, .5, .5, .5)
+            else:
+                color = (1.0, 1.0, .1, 1.0) if active else (1.0, .6, .1, 1.0)
+            draw.box_ui(
+                self, 'SELECT_CAGE',
+                margin=4,
+                line_thickness=2 * scale,
+                color=color
+            )
 
     def draw_common(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         ''' Shader drawing between POSE and EDIT. '''

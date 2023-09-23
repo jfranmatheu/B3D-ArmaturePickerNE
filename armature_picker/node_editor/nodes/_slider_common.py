@@ -488,23 +488,6 @@ class APNODE_Slider_CommonNode(APNODE_Slider_CommonStyle):
 
     # ------ DRAWING --------------------------------
 
-    def draw__edit(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
-        if (active or selected) and not self.locked:
-            draw.box_ui(
-                self, 'BOX_ACTIVE',
-                margin=4,
-                line_thickness=2 * scale,
-                color=(1.0, 1.0, .1, 1.0) if active else (1.0, .6, .1, 1.0)
-            )
-
-    # def draw__pose(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
-    #     if active:
-    #         draw.box_ui(
-    #             self, 'BOX_ACTIVE',
-    #             line_thickness=(1.5 * scale),
-    #             color=(1.0, 1.0, .1, 1.0)
-    #         )
-
 
     # ----- TRANSFORM -----------------------------------------------------------
 
