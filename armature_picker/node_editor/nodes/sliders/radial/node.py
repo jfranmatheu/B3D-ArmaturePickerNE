@@ -166,3 +166,18 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_SliderRadial_Sty
 
             if dirty_handle_pos:
                 self.set_state('dirty_handle_pos', False)
+
+    
+    def draw__edit(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+        ''' Specific drawing for EDIT mode. '''
+        if active or selected:
+            if self.locked:
+                color = (.5, .5, .5, .5)
+            else:
+                color = (1.0, 1.0, .1, 1.0) if active else (1.0, .6, .1, 1.0)
+            draw.circle_ui(
+                self, # 'SELECT_CAGE',
+                margin=4,
+                line_thickness=2 * scale,
+                color=color
+            )
