@@ -12,7 +12,7 @@ from dataclasses import dataclass
 from armature_picker.paths import Paths
 from ..gpu import draw
 from .nodes._base import AP_Node
-from ..utils.node_editor import get_node_editor_zoom, get_node_editor_view_point, get_node_editor_offset, get_node_editor_region_coord, deselect_all_nodes
+from ..utils.node_editor import get_node_editor_zoom, get_node_editor_view_point, get_node_editor_offset, get_node_editor_region_coord, get_node_editor_visible_view_box
 from ..utils.armature import deselect_all_bones_from_active
 from ..utils.geometry import angle_signed, rect_overlap, Box
 
@@ -443,6 +443,8 @@ class AP_NodeTree(NodeTree):
 
         active_node: AP_Node = self.nodes.active
         sel_nodes: set[AP_Node] = self.get_selected_nodes(context)
+        
+        visible_view_box = get_node_editor_visible_view_box(context)
 
         with gpu.matrix.push_pop():
             gpu.matrix.translate(offset)
@@ -451,6 +453,9 @@ class AP_NodeTree(NodeTree):
             for node_layer_nodes in sorted_nodes_cache[self.uuid]:
                 for node in node_layer_nodes:
                     if not node.visible:
+                        continue
+                    if not rect_overlap(visible_view_box, node.rect_transform):
+                        print("Node outside view", node.label)
                         continue
                     if node.dirty:
                         refresh = True
