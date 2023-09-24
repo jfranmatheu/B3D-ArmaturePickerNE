@@ -3,10 +3,13 @@ from .._transform_props import RectTransform
 from .node_props import APNODE_Label_NodeProps
 from .style_props import APNODE_Label_StyleProps
 
+from mathutils import Vector
+
 import bpy
 from bpy.types import Context, UILayout
 
 from ....gpu import draw
+from ....utils.geometry import rotate_point
 
 
 class APNODE_Label(APNODE_Label_NodeProps, APNODE_Label_StyleProps, AP_Node, Node):
@@ -27,14 +30,25 @@ class APNODE_Label(APNODE_Label_NodeProps, APNODE_Label_StyleProps, AP_Node, Nod
     # ----- DRAWING --------------------------------
 
     def draw_common(self, context: Context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
-        draw.text(
-            # self.uuid, 'LABEL_TEXT', self.dirty, self.dirty_label,
-            rect.position,
+        padding = 4 * scale
+        size = rect.size
+        pos = rect.position
+        padding = 4 * scale
+        label_dimensions = size
+        pivot = (0.5, 0.5)
+        tex_pos = pos + Vector((padding, padding))
+
+        draw.text_cached(
+            self.uuid, 'LABEL', self.dirty, self.dirty_label,
+            tex_pos,
+            Vector(rect.origin) if rect.rotation == 0 else rotate_point(pos + Vector((padding, padding)), Vector(rect.origin), rect.rotation),
             self.text,
             self.text_size,
-            pivot=(0, 0),
+            label_dimensions,
+            pivot=pivot if rect.rotation == 0 else (0, 0),
             angle=rect.rotation,
-            color=self.text_color
+            color=self.text_color,
+            origin=Vector(rect.origin)
         )
 
 
