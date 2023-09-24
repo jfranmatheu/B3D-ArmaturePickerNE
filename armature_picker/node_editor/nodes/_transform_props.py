@@ -175,7 +175,7 @@ class RectTransform(PropertyGroup):
 
     @property
     def size(self) -> Vector:
-        return Vector(Vector(self.dimensions))
+        return Vector((max(self.dimensions[0], 1), max(self.dimensions[1], 1)))
 
     @property
     def x_min(self) -> float:
