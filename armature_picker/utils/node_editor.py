@@ -1,6 +1,8 @@
 from bpy.types import Context, SpaceNodeEditor, Area
 from mathutils import Vector
 
+from armature_picker.ackit.bcy import CyBlStruct
+
 
 def get_armature_picker_editor(context: Context, ret_area: bool = False) -> SpaceNodeEditor | Area:
     for area in context.window.screen.areas:
@@ -41,3 +43,48 @@ def deselect_all_nodes(context: Context, nullify_active: bool = True) -> None:
         node.select = False
     if nullify_active:
         context.space_data.node_tree.nodes.active = None
+
+def center_node_editor_view(context: Context) -> None:
+    node_tree = context.space_data.node_tree
+    if len(node_tree.nodes) == 0:
+            return
+
+    zoom = get_node_editor_zoom(context)
+
+    min_p = Vector((0, 0))
+    max_p = Vector((0 ,0))
+
+    for node in node_tree.nodes:
+        # x, y = node.rect_transform.origin
+        # min_p.x = min(min_p.x, x)
+        # max_p.x = max(max_p.x, x)
+        # min_p.y = min(min_p.y, y)
+        # max_p.y = max(max_p.y, y)
+        for co in node.rect_transform.coords_rotated:
+            x, y = co
+            min_p.x = min(min_p.x, x)
+            max_p.x = max(max_p.x, x)
+            min_p.y = min(min_p.y, y)
+            max_p.y = max(max_p.y, y)
+
+    '''
+    # THIS NEEDS TO BE DONE IN A SECOND PASS,
+    # AFTER THESE CHANGES TAKE EFFECT.
+    tot_size = max_p - min_p
+    view_size = get_node_editor_view_size(context)
+
+    void_space = (view_size - tot_size) * 0.5
+    min_p -= void_space
+    max_p -= void_space
+    '''
+
+    pad = 5 * zoom
+    pad_v = Vector((pad, pad))
+    min_p -= pad_v
+    max_p += pad_v
+
+    cy_region = CyBlStruct.UI_REGION(context.region)
+    cy_region.v2d.cur.xmin = min_p.x
+    cy_region.v2d.cur.xmax = max_p.x
+    cy_region.v2d.cur.ymin = min_p.y
+    cy_region.v2d.cur.ymax = max_p.y
