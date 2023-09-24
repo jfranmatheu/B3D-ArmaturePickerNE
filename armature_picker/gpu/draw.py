@@ -5,6 +5,7 @@ from bpy.types import Image
 from gpu import state
 from gpu.types import GPUShader, GPUBatch, GPUTexture, GPUOffScreen
 from gpu_extras.batch import batch_for_shader
+from gpu_extras.presets import draw_circle_2d
 from mathutils import Vector, Matrix, Euler
 from gpu.texture import from_image as get_gputex_from_image
 
@@ -361,6 +362,16 @@ def box(node: object, graphic_id: str, pos: Vector, size: Vector, padding: float
     fb = gpu.state.active_framebuffer_get()
     x, y, w, h = fb.viewport_get()
     draw_cage(node, graphic_id, pos, size, padding, _shader, lineWidth=line_thickness, color=color, viewportSize=(w, h))
+
+
+def circle_ui(node: object, margin: float, line_thickness: float, color: RGBA):
+    ''' Without caching. '''
+    if color[-1] != 1.0:
+        state.blend_set('ALPHA')
+    rect = node.rect_transform
+    state.line_width_set(line_thickness)
+    draw_circle_2d(rect.origin, color, (rect.dimensions[0] + margin) * 0.5, segments=24)
+    state.line_width_set(1.0)
 
 
 def image(owner: object, graphic_id: str,
