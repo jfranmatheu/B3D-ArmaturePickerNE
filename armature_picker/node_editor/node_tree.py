@@ -652,3 +652,5 @@ def unregister():
     del NodeTree.picker_mode
     
     del NodeTree.picker_update_flags
+    
+    sorted_nodes_cache.clear()
