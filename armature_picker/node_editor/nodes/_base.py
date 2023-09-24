@@ -375,7 +375,7 @@ class AP_Node(NodeTransformProps):
                 color = (1.0, 1.0, .1, 1.0) if active else (1.0, .6, .1, 1.0)
             draw.box_ui(
                 self, 'SELECT_CAGE',
-                margin=4,
+                margin=2,
                 line_thickness=2 * scale,
                 color=color
             )
