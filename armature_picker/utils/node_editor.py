@@ -2,6 +2,7 @@ from bpy.types import Context, SpaceNodeEditor, Area
 from mathutils import Vector
 
 from armature_picker.ackit.bcy import CyBlStruct
+from .geometry import Box
 
 
 def get_armature_picker_editor(context: Context, ret_area: bool = False) -> SpaceNodeEditor | Area:
@@ -88,3 +89,12 @@ def center_node_editor_view(context: Context) -> None:
     cy_region.v2d.cur.xmax = max_p.x
     cy_region.v2d.cur.ymin = min_p.y
     cy_region.v2d.cur.ymax = max_p.y
+
+
+def get_node_editor_visible_view_box(context: Context) -> Box:
+    cy_region = CyBlStruct.UI_REGION(context.region)
+    return Box(
+        cy_region.v2d.cur.xmin,
+        cy_region.v2d.cur.ymin,
+        cy_region.v2d.cur.xmax,
+        cy_region.v2d.cur.ymax)
