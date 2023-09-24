@@ -18,8 +18,8 @@ def get_offscreen(data_id: str) -> GPUOffScreen | None:
 def draw_offscreen(data_id: str, draw_callback: callable, _width: int, _height: int):
     ''' 'draw_callback' is typically a functools.partial function. '''
 
-    width = ceil(_width)
-    height = ceil(_height)
+    width = ceil(max(_width, 1))
+    height = ceil(max(_width, 1))
 
     wnd = bpy.context.window
     wnd_size = wnd.width, wnd.height
@@ -37,7 +37,7 @@ def draw_offscreen(data_id: str, draw_callback: callable, _width: int, _height: 
                 ## gpu.matrix.translate(Vector((-1, -1)))
                 ## gpu.matrix.scale(Vector((0.00394/(width/50), 0.018/(height/10))))
 
-                gpu.matrix.scale((wnd_size[0] / _width * 1 / 10.25, wnd_size[1] / _height * 1 / 10.25))
+                gpu.matrix.scale((wnd_size[0] / width * 1 / 10.25, wnd_size[1] / height * 1 / 10.25))
 
                 # blf.size(0, 20*10)
 
