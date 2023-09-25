@@ -127,6 +127,10 @@ class APNODE_Slider_DataConstraintsProps:
     def update_bone_custom_property(self, context: Context) -> None:
         pass
 
+    def update_handle_pos(self, context: Context) -> None:
+        self.set_state('dirty_handle', True)
+        context.region.tag_redraw()
+
 
     # ----- PROPERTIES --------------------------------
 
