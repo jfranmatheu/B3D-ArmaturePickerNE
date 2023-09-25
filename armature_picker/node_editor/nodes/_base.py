@@ -412,8 +412,13 @@ class AP_Node(NodeTransformProps):
             set_dirty_label_state(self.uuid, False)
             self.update_graphics(context)
 
+    def modal_draw__edit(self, context: Context, rect: RectTransform, style, ui_scale: float) -> None:
+        pass
 
-        # ----- UI LAYOUT DRAWING --------------------------------
+    def modal_draw__pose(self, context: Context, rect: RectTransform, style, ui_scale: float) -> None:
+        pass
+
+    # ----- UI LAYOUT DRAWING --------------------------------
 
     def draw_buttons_ext(self, context: Context, layout: UILayout) -> None:
         if not poll_check(context, 'ANY', use_active_object=True):

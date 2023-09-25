@@ -107,8 +107,8 @@ class AP_NodeTree(NodeTree):
     # Icon identifier
     bl_icon = 'OUTLINER_OB_ARMATURE' # CON_ARMATURE
 
-    active_node: Union[AP_Node, Node]
-    modal_nodes: Union[List[AP_Node], List[Node]]
+    active_node: Union[AP_Node, Node] = None
+    modal_nodes: Union[List[AP_Node], List[Node]] = None
     inject_modal: callable = None
     inject_modal_exit: callable = None
     inject_modal_draw: callable = None
@@ -464,6 +464,9 @@ class AP_NodeTree(NodeTree):
                         refresh = True
                     node._draw(context, node.get_style(theme_style), ui_scale, active=node==active_node, selected=node in sel_nodes, in_edit=in_edit)
 
+            if self.active_node is not None and self.active_node.in_modal:
+                draw_callback = self.active_node.modal_draw__edit if in_edit else self.active_node.modal_draw__pose
+                draw_callback(context, self.active_node.rect_transform, self.active_node.get_style(theme_style), ui_scale)
 
             if self.inject_modal_draw is not None:
                 self.inject_modal_draw(context, ui_scale, sel_nodes, in_edit=in_edit, in_view2d=True)

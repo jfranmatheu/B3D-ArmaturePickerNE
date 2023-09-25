@@ -24,6 +24,13 @@ class APNODE_SliderLinear(APNODE_Slider_NodeProps, APNODE_Slider_Common, AP_Node
     default_height = 12
 
 
+
+    def init(self, context):
+        super().init(context)
+
+        self.show_text_value = False
+
+
     # ----- ON HOVER --------------------------------
 
     def on_hover(self, context: Context, rect: RectTransform, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
@@ -126,3 +133,41 @@ class APNODE_SliderLinear(APNODE_Slider_NodeProps, APNODE_Slider_Common, AP_Node
 
             if dirty_handle_pos:
                 self.set_state('dirty_handle_pos', False)
+
+
+    def modal_draw__pose(self, context: Context, rect: RectTransform, style: SliderLinear_Style, ui_scale: float) -> None:
+        if not self.show_text_value:
+            return
+
+        if style.handle_type == 'CIRCLE':
+            handle_size = Vector((rect.dimensions[1], rect.dimensions[1]))
+        elif style.handle_type == 'LINE':
+            handle_size = Vector((2, rect.dimensions[1]))
+
+        value = self.get_value(context)
+        if value is None:
+            factor = 0
+            text = 'NONE'
+        else:
+            factor = map_value(value, self.range, (0, 1))
+            if isinstance(value, float):
+                value = round(value, 3)
+            text = str(value)
+
+        if style.handle_type == 'CIRCLE':
+            # Check which factor is the handle radius over the slider bar width.
+            handle_rad_factor = (rect.dimensions[1] * 0.5) / rect.dimensions[0]
+            factor = map_value(factor, (0, 1), (handle_rad_factor, 1 - handle_rad_factor))
+
+        rect = self.rect_transform
+        handle_pos = rect.get_point_relative(factor, 0.5, apply_rotation=True, rotate_from_origin=True)
+        handle_pos -= handle_size * 0.5
+
+        handle_pos.y += handle_size.y * 1.5
+
+        draw.text(
+            handle_pos,
+            text,
+            12,
+            (0, 0)
+        )

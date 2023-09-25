@@ -14,19 +14,6 @@ class APNODE_SliderRadial_NodeProps:
     style: PointerProperty(name="Style", type=SliderRadial_Style)
 
 
-    ''' Properties. '''
-    show_text_value: BoolProperty(
-        name="Show Value",
-        description="Show text value",
-        default=True
-    )
-
-    def draw_ui__edit(self, context: Context, layout: UILayout) -> None:
-        super().draw_ui__edit(context, layout)
-        layout.separator()
-        layout.prop(self, 'show_text_value')
-
-
     ''' Transform. '''
     def update_dimensions(self, context: Context) -> None:
         size = self.slider_radius * 2

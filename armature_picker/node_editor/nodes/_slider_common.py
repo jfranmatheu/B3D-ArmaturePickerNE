@@ -250,6 +250,12 @@ class APNODE_Slider_DataConstraintsProps:
 
     # ----- DRAW UI LAYOUT --------------------------------
 
+    show_text_value: BoolProperty(
+        name="Show Value",
+        description="Show text value",
+        default=True
+    )
+
     def draw_ui__pose(self, context: Context, layout: UILayout) -> None:
         # Draw data_path property field...
         pass
@@ -279,6 +285,9 @@ class APNODE_Slider_DataConstraintsProps:
             except Exception as e:
                 row.alert = True
             row.prop(self, 'data_path')
+        
+        layout.separator()
+        layout.prop(self, 'show_text_value')
 
 
     def draw_slider_constraints_props(self, layout: UILayout) -> None:
