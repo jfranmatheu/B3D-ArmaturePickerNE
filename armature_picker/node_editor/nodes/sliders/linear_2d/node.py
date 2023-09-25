@@ -79,7 +79,7 @@ class APNODE_SliderLinear2D(APNODE_Slider2D_NodeProps, APNODE_Slider_CommonNode,
             self, 'SLIDER_2D',
             roundness=style.roundness,
             outline_thickness=style.outline_thickness,
-            bg_color=style.color
+            bg_color=style.color if not hovered else Vector(style.color) * 1.2,
         )
 
         factor_x, factor_y = 0, 0
