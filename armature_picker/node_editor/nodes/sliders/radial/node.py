@@ -76,8 +76,6 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_Slider_Common, A
 
     def draw_common(self, context: Context, rect: RectTransform, style: SliderRadial_Style, scale: float, active: bool, selected: bool, hovered: bool) -> None:
 
-        style
-
         value = self.get_value(context)
         if value is None:
             factor = 0
