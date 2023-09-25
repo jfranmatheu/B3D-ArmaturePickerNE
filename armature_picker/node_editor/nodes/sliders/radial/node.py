@@ -10,7 +10,7 @@ from mathutils import Vector
 from math import degrees
 
 from .....gpu import draw
-from .....utils.geometry import point_inside_circle
+from .....utils.geometry import point_inside_circle, rotate_point
 from .....utils.math import map_value, clamp
 from .....utils.operator import OpsReturn
 
@@ -68,13 +68,14 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_Slider_Common, A
         self.set_value(context, value)
         self.value = value
         self.update_handle_pos(context)
+        self.dirty_label = True
         return 1
 
 
     # ----- DRAWING --------------------------------
 
     def draw_common(self, context: Context, rect: RectTransform, style: SliderRadial_Style, scale: float, active: bool, selected: bool, hovered: bool) -> None:
-        
+
         style
 
         value = self.get_value(context)
@@ -99,16 +100,28 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_Slider_Common, A
             else:
                 text = str(round(value, 1)) if value is not None else 'NONE'
             text_dim = draw.get_text_dim(text, 12)
-            w = style.u_thickness * rect.dimensions[0] - 4 * scale
+            w = style.u_thickness * rect.dimensions[0] - 8
             tw = text_dim[0]
 
             ts = w / tw * 12
 
-            draw.text(
+            label_dimensions = Vector(text_dim)
+            add_dim = Vector((label_dimensions.x * 0.25, label_dimensions.y * 0.1))
+            label_dimensions += add_dim
+            pivot = (0.5, 0.5)
+            tex_pos = Vector(rect.origin) - label_dimensions * 0.5
+
+            draw.text_cached(
+                self.uuid, 'LABEL', self.dirty, self.dirty_label,
+                tex_pos,
                 Vector(rect.origin),
                 text,
-                int(ts),
-                (0.5, 0.5),
+                ts,
+                label_dimensions,
+                pivot=pivot,
+                angle=0,
+                color=(.92, .92, .92, 1.0),
+                origin=Vector(rect.origin)
             )
 
 
