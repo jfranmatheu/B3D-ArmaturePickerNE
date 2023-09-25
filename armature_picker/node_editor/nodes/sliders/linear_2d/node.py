@@ -20,9 +20,20 @@ class APNODE_SliderLinear2D(APNODE_Slider2D_NodeProps, APNODE_Slider_CommonNode,
     bl_label = 'Slider 2D'
     bl_icon = 'PROPERTIES'
     wg_type = 'slider_linear_2d'
-    
+
     default_width = 40
     default_height = 40
+
+
+    def init(self, context):
+        super().init(context)
+
+        self.show_text_value = False
+
+
+    def update_handle_pos(self, context: Context) -> None:
+        self.set_state('dirty_handle_pos', True)
+        context.region.tag_redraw()
 
 
     def get_value(self, context: Context) -> tuple | None:
@@ -73,7 +84,7 @@ class APNODE_SliderLinear2D(APNODE_Slider2D_NodeProps, APNODE_Slider_CommonNode,
     # ----- DRAWING --------------------------------
 
     def draw_common(self, context: Context, rect: RectTransform, style: SliderLinear2D_Style, scale: float, active: bool, selected: bool, hovered: bool) -> None:
-        
+
 
         draw.wg_grid_ui(
             self, 'SLIDER_2D',
@@ -113,3 +124,24 @@ class APNODE_SliderLinear2D(APNODE_Slider2D_NodeProps, APNODE_Slider_CommonNode,
 
         if dirty_handle_pos:
             self.set_state('dirty_handle_pos', False)
+
+
+    def modal_draw__pose(self, context: Context, rect: RectTransform, style: SliderLinear2D_Style, ui_scale: float) -> None:
+        if not self.show_text_value:
+            return
+
+        values = self.get_value(context)
+        if values is not None:
+            value_x = round(values[0], 2) if isinstance(values[0], float) else values[0]
+            value_y = round(values[1], 2) if isinstance(values[1], float) else values[1]
+
+            text = f'X: {value_x},  Y: {value_y}'
+        else:
+            text = 'NONE'
+
+        draw.text(
+            rect.get_point_relative(0, 0, offset=Vector((0, -10))),
+            text,
+            10,
+            (0, 1)
+        )

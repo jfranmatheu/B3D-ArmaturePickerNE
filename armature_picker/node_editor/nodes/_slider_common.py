@@ -128,7 +128,7 @@ class APNODE_Slider_DataConstraintsProps:
         pass
 
     def update_handle_pos(self, context: Context) -> None:
-        self.set_state('dirty_handle', True)
+        self.set_state('dirty_handle_pos', True)
         context.region.tag_redraw()
 
 
@@ -248,48 +248,6 @@ class APNODE_Slider_DataConstraintsProps:
             return (self.min_angle, self.max_angle)
 
 
-    # ----- DRAW UI LAYOUT --------------------------------
-
-    show_text_value: BoolProperty(
-        name="Show Value",
-        description="Show text value",
-        default=True
-    )
-
-    def draw_ui__pose(self, context: Context, layout: UILayout) -> None:
-        # Draw data_path property field...
-        pass
-
-    def draw_ui__edit(self, context: Context, layout: UILayout) -> None:
-        layout.use_property_split = True
-        layout.use_property_decorate = False
-
-        layout.row().prop(self, 'data_source', expand=True)
-
-        if self.data_source == 'BONE':
-            layout.prop(self, 'bone_name', text='Bone', icon='BONE_DATA')
-
-            if self.bone_name and self.bone_name != 'NONE':
-                layout.row().prop(self, 'bone_data_source', expand=True, text=" ")
-
-                if self.bone_data_source == 'ATTR':
-                    layout.prop(self, 'bone_attr', text=" ")
-                elif self.bone_data_source == 'CUSTOM_PROPERTY':
-                    layout.prop(self, 'bone_custom_property', text=" ")
-
-        elif self.data_source == 'DATA_PATH':
-            row = layout.row()
-            try:
-                if self.data_path != '':
-                    context.active_object.path_resolve(self.data_path, True)
-            except Exception as e:
-                row.alert = True
-            row.prop(self, 'data_path')
-        
-        layout.separator()
-        layout.prop(self, 'show_text_value')
-
-
     def draw_slider_constraints_props(self, layout: UILayout) -> None:
         # layout.prop(self, 'clamp_slider')
 
@@ -311,6 +269,13 @@ class APNODE_Slider_DataConstraintsProps:
 
 class APNODE_Slider_CommonNode:
     draw_layer = 11
+    
+    
+    show_text_value: BoolProperty(
+        name="Show Value",
+        description="Show text value",
+        default=True
+    )
 
 
     @property
@@ -359,6 +324,42 @@ class APNODE_Slider_CommonNode:
 
 
     # ------ DRAWING --------------------------------
+    
+    
+    # ----- DRAW UI LAYOUT --------------------------------
+
+    def draw_ui__pose(self, context: Context, layout: UILayout) -> None:
+        # Draw data_path property field...
+        pass
+
+    def draw_ui__edit(self, context: Context, layout: UILayout) -> None:
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+
+        layout.row().prop(self, 'data_source', expand=True)
+
+        if self.data_source == 'BONE':
+            layout.prop(self, 'bone_name', text='Bone', icon='BONE_DATA')
+
+            if self.bone_name and self.bone_name != 'NONE':
+                layout.row().prop(self, 'bone_data_source', expand=True, text=" ")
+
+                if self.bone_data_source == 'ATTR':
+                    layout.prop(self, 'bone_attr', text=" ")
+                elif self.bone_data_source == 'CUSTOM_PROPERTY':
+                    layout.prop(self, 'bone_custom_property', text=" ")
+
+        elif self.data_source == 'DATA_PATH':
+            row = layout.row()
+            try:
+                if self.data_path != '':
+                    context.active_object.path_resolve(self.data_path, True)
+            except Exception as e:
+                row.alert = True
+            row.prop(self, 'data_path')
+            
+        layout.separator()
+        layout.prop(self, 'show_text_value')
 
 
     # ----- TRANSFORM -----------------------------------------------------------
