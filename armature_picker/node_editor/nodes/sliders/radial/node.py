@@ -89,8 +89,8 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_Slider_Common, A
             arc_angle=style.bar_arc_angle,
             thickness_factor=style.u_thickness,
             invert_angle=style.invert_fill_flow,
-            bg_color=style.color,
-            fill_color=style.fill_color
+            bg_color=style.color if not hovered else Vector(style.color) * 1.2,
+            fill_color=style.fill_color if not hovered else Vector(style.fill_color) * 1.2,
         )
 
         if self.show_text_value:
