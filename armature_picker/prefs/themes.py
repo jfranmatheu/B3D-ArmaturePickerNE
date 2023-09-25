@@ -1,5 +1,5 @@
 from bpy.types import PropertyGroup, UILayout, Context
-from bpy.props import PointerProperty, StringProperty
+from bpy.props import PointerProperty, StringProperty, EnumProperty
 
 from ..utils.ui_layout import draw_section
 from .styles import *
@@ -17,12 +17,22 @@ class PG_ArmaturePickerTheme(PropertyGroup):
 
     label: PointerProperty(type=Label_Style)
 
+    wg_type: EnumProperty(
+        name="Widget Type",
+        items=(
+            ('label', 'Label', ""),
+            ('bone_picker', 'Bone Picker', ""),
+            ('slider_linear', 'Slider Lineal', ""),
+            ('slider_radial', 'Slider Radial', ""),
+            ('slider_linear_2d', 'Slider Lineal 2D', ""),
+        )
+    )
 
     def draw(self, layout: UILayout) -> None:
-        grid = layout.grid_flow(row_major=True)
-        self.label.draw(draw_section(grid, 'Label', icon='NONE'), in_prefs_space=True)
-        self.image.draw(draw_section(grid, 'Image', icon='IMAGE'), in_prefs_space=True)
-        self.bone_picker.draw(draw_section(grid, 'BonePicker', icon='BONE_DATA'), in_prefs_space=True)
-        self.slider_linear.draw(draw_section(grid, 'Slider linear', icon='PROPERTIES'), in_prefs_space=True)
-        self.slider_radial.draw(draw_section(grid, 'Slideer Radial', icon='NONE'), in_prefs_space=True)
-        self.slider_linear_2d.draw(draw_section(grid, 'Slider linear 2D', icon='NONE'), in_prefs_space=True)
+        row = layout.split(factor=.25, align=True)
+        col = row.column(align=True)
+        col.use_property_split = False
+        col.prop(self, 'wg_type', text=' ', icon='NONE', expand=True)
+        data = getattr(self, self.wg_type)
+        name = UILayout.enum_item_name(self, 'wg_type', self.wg_type)
+        data.draw(draw_section(row.column(), name, icon='NONE'), in_prefs_space=True)

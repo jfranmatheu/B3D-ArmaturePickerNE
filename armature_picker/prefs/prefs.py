@@ -3,6 +3,7 @@ from bpy.props import CollectionProperty, IntProperty, PointerProperty, EnumProp
 
 from ..ackit._globals import __main_package__
 from .themes import PG_ArmaturePickerTheme
+from ..utils.ui_layout import draw_section_h
 
 
 class ArmaturePickerPreferences(AddonPreferences):
@@ -28,5 +29,15 @@ class ArmaturePickerPreferences(AddonPreferences):
         return self.user_themes[self.active_theme_id]
 
     def draw(self, context: Context) -> None:
+        
+        themes_header, theme_section = draw_section_h(self.layout, 'Themes', icon='COLOR')
+        themes_header.scale_y = 1.5
+        themes_header.prop(self, 'active_theme_id', text='')
+        actions = themes_header.row(align=True)
+        actions.scale_x = 1.5
+        actions.operator('armature_picker.new_theme', icon='ADD', text='')
+        if self.active_theme_id != 'DEFAULT':
+            actions.alert = True
+            actions.operator('armature_picker.remove_theme', icon='REMOVE', text='')
         theme = self.active_theme
-        theme.draw(self.layout)
+        theme.draw(theme_section)
