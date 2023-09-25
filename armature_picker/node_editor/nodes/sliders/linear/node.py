@@ -2,36 +2,26 @@ from armature_picker.utils.event import Mouse
 from ..._base import AP_Node, Node
 from ..._transform_props import RectTransform
 from ..._slider_common import APNODE_Slider_Common
-from .node_props import APNODE_Slider_NodeProps
-from .style_props import APNODE_Slider_StyleProps
+from .node_props import APNODE_Slider_NodeProps, SliderLinear_Style
 
 from bpy.types import Context, Event, UILayout
 from mathutils import Vector
 
-from math import sin
-
 from .....gpu import draw
-from .....utils.geometry import point_inside_rect, get_center
+from .....utils.geometry import point_inside_rect
 from .....utils.math import map_value
 from .....utils.operator import OpsReturn
 
 
 
-
-class APNODE_Slider(APNODE_Slider_NodeProps, APNODE_Slider_StyleProps, APNODE_Slider_Common, AP_Node, Node):
+class APNODE_SliderLinear(APNODE_Slider_NodeProps, APNODE_Slider_Common, AP_Node, Node):
     bl_idname = 'AP_NODE_slider'
     bl_label = 'Slider'
     bl_icon = 'PROPERTIES'
-    
-    
-    def __init__(self) -> None:
-        super().__init__()
-        
-        self.roundness = 1.0
-        self.color = (.281, .281, .281, .9)
-        self.fill_color = (.212, .63, 1.0, 1.0)
-        self.handle_color = (.8, .8, .8, 1.0)
-        self.rect_transform.edit_dimensions = (100, 12)
+    wg_type = 'slider_linear'
+
+    default_width = 100
+    default_height = 12
 
 
     # ----- ON HOVER --------------------------------
@@ -71,7 +61,8 @@ class APNODE_Slider(APNODE_Slider_NodeProps, APNODE_Slider_StyleProps, APNODE_Sl
 
     # ----- DRAWING --------------------------------
 
-    def draw_common(self, context: Context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw_common(self, context: Context, rect: RectTransform, style: SliderLinear_Style, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+
         if self.clamp_slider:
             value = self.get_value(context)
             if value is None:
@@ -81,40 +72,40 @@ class APNODE_Slider(APNODE_Slider_NodeProps, APNODE_Slider_StyleProps, APNODE_Sl
         else:
             factor = 0
 
-        if self.clamp_slider and self.handle_type == 'CIRCLE':
+        if self.clamp_slider and style.handle_type == 'CIRCLE':
             # Check which factor is the handle radius over the slider bar width.
             handle_rad_factor = (rect.dimensions[1] * 0.5) / rect.dimensions[0]
             factor = map_value(factor, (0, 1), (handle_rad_factor, 1 - handle_rad_factor))
 
-        if self.bar_type == 'FILL':
+        if style.bar_type == 'FILL':
             draw.wg_sld_ui(
                 self, 'SLIDER',
                 factor=factor,
-                roundness=self.roundness,
-                # outline_thickness=self.outline_thickness,
-                bg_color=self.color if not hovered else Vector(self.color) * 1.2,
-                fill_color=self.fill_color if not hovered else Vector(self.fill_color) * 1.2,
+                roundness=style.roundness,
+                # outline_thickness=style.outline_thickness,
+                bg_color=style.color if not hovered else Vector(style.color) * 1.2,
+                fill_color=style.fill_color if not hovered else Vector(style.fill_color) * 1.2,
             )
-        elif self.bar_type == 'LINE':
+        elif style.bar_type == 'LINE':
             pos = rect.get_point_relative(0, 0)
-            size = Vector((rect.dimensions[0], self.bar_line_thickness * scale))
+            size = Vector((rect.dimensions[0], style.bar_line_thickness * scale))
             pos.y += (rect.dimensions[1] * 0.5 - size.y * 0.5)
             draw.rectangle(
                 self, 'SLIDER_LINE',
                 pos, size, rect.rotation,
-                # roundness=self.roundness,
-                # outline_thickness=self.outline_thickness,
-                color=self.color if not hovered else Vector(self.color) * 1.2,
+                # roundness=style.roundness,
+                # outline_thickness=style.outline_thickness,
+                color=style.color if not hovered else Vector(style.color) * 1.2,
                 origin=Vector(rect.origin)
             )
 
         if self.clamp_slider:
-            if self.handle_type == 'CIRCLE':
+            if style.handle_type == 'CIRCLE':
                 handle_size = Vector((rect.dimensions[1], rect.dimensions[1])) # * 1.5
-                roundness = self.roundness
-                outline_thickness = 0.0 if self.bar_type == 'FILL' else self.outline_thickness
+                roundness = style.roundness
+                outline_thickness = 0.0 if style.bar_type == 'FILL' else style.outline_thickness
 
-            elif self.handle_type == 'LINE':
+            elif style.handle_type == 'LINE':
                 handle_size = Vector((2, rect.dimensions[1]))
                 roundness = 0.2
                 outline_thickness = 0.0
@@ -128,7 +119,7 @@ class APNODE_Slider(APNODE_Slider_NodeProps, APNODE_Slider_StyleProps, APNODE_Sl
                 handle_pos, handle_size, rect.rotation,
                 roundness=roundness,
                 outline_thickness=outline_thickness,
-                bg_color=self.handle_color,
+                bg_color=style.handle_color,
                 # origin=Vector(rect.origin),
                 dirty=dirty_handle_pos
             )

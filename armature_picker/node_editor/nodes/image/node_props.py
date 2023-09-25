@@ -1,9 +1,16 @@
 from bpy.types import Context, UILayout, Image
 from bpy.props import PointerProperty, BoolProperty, FloatVectorProperty
 
+from armature_picker.prefs.styles import Image_Style
 
 
 class APNODE_Image_NodeProps:
+    def get_style(self, theme) -> Image_Style:
+        if self.use_override_theme:
+            return self.style
+        return getattr(theme, self.wg_type)
+
+    style: PointerProperty(name="Style", type=Image_Style)
 
     # UPDATE FUNCTIONS
     # ----------------------------------------------------------------

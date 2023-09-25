@@ -1,6 +1,6 @@
 from bpy.types import Context, Panel
 
-from ...utils.ui_layout import draw_section
+from ...utils.ui_layout import draw_section_h
 from armature_picker.node_editor.poll import poll_check
 
 
@@ -22,5 +22,6 @@ class APNODE_PT_style(Panel):
         layout = self.layout
         node = context.space_data.node_tree.nodes.active
 
-        section_style = draw_section(layout, 'Style', icon='COLOR')
-        node.draw_styles(section_style)
+        header, section_style = draw_section_h(layout, 'Style', icon='COLOR')
+        header.prop(node, 'use_override_theme', text='Override Theme', icon='RESTRICT_COLOR_ON' if node.use_override_theme else 'RESTRICT_COLOR_OFF', toggle=True)
+        node.draw_styles(layout, section_style)

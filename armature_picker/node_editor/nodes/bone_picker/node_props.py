@@ -5,10 +5,18 @@ from blf import size as set_text_size, dimensions as get_text_dimensions
 from math import ceil
 
 from ....utils.math import clamp
+from ....utils.ui_layout import draw_section
+from armature_picker.prefs.styles import BonePicker_Style
 
 
 
 class APNODE_BonePicker_NodeProps:
+    def get_style(self, theme) -> BonePicker_Style:
+        if self.use_override_theme:
+            return self.style
+        return getattr(theme, self.wg_type)
+
+    style: PointerProperty(name="Style", type=BonePicker_Style)
 
     def update_dimensions(self, context: Context) -> None:
         if self.use_image and self.image is not None:
@@ -64,6 +72,25 @@ class APNODE_BonePicker_NodeProps:
 
     # BUTTON PROPERTIES
     # ----------------------------------------------------------------
+    text_size: IntProperty(
+        name='Text Size',
+        description="Label text size",
+        default=12,
+        min=10,
+        update=lambda node, ctx: node.update_label(ctx)
+    )
+
+    text_alignment: EnumProperty(
+        name="Text Alignment",
+        items=(
+            ('LEFT', 'Left', ""),
+            ('CENTER', 'Center', ""),
+            ('RIGHT', 'Right', "")
+        ),
+        default='CENTER',
+        update=lambda node, ctx: node.update_graphics(ctx)
+    )
+
     fit_to_text: BoolProperty(
         name="Fit To Text",
         description="Whether to fit button dimensions to label text box size",
@@ -85,7 +112,6 @@ class APNODE_BonePicker_NodeProps:
         update=update_label,
         options={'TEXTEDIT_UPDATE'}
     )
-
 
     use_image: BoolProperty(
         name="Use Image",
@@ -117,7 +143,7 @@ class APNODE_BonePicker_NodeProps:
         update=update_dimensions
     )
 
-    
+
     # ------ Draw UILayout --------------------------------
 
     def draw_label_props(self, layout: UILayout) -> None:
@@ -129,3 +155,19 @@ class APNODE_BonePicker_NodeProps:
         _sub = layout.row()
         _sub.enabled = not self.fit_to_text
         _sub.prop(self, 'text_alignment')
+
+
+    def draw_styles(self, panel_layout: UILayout, section_layout: UILayout) -> None:
+        image_section = draw_section(panel_layout, 'Image Graphic', icon='IMAGE_DATA')
+        row = image_section.row(align=True, heading='Image')
+        row.prop(self, 'use_image', text="")
+        _row = row.row(align=True)
+        _row.enabled = self.use_image
+        _row = _row.row(align=True)
+        _row.prop(self, 'image', text='')
+        _row.operator('armature_picker.load_image_for_active_node', text='', icon='IMPORT')
+        
+        if self.use_image:
+            section_layout.enabled = False
+
+        super().draw_styles(panel_layout, section_layout)

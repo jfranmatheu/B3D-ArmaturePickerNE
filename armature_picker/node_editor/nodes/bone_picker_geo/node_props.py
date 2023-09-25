@@ -5,12 +5,18 @@ from blf import size as set_text_size, dimensions as get_text_dimensions
 from math import ceil
 
 from ....utils.math import clamp
-
 from ....gpu import draw_geo
+from armature_picker.prefs.styles import BonePickerGeo_Style
 
 
 
 class APNODE_BonePickerGeo_NodeProps:
+    def get_style(self, theme) -> BonePickerGeo_Style:
+        if self.use_override_theme:
+            return self.style
+        return getattr(theme, self.wg_type)
+
+    style: PointerProperty(name="Style", type=BonePickerGeo_Style)
 
     # UPDATE
     # ----------------------------------------------------------------

@@ -1,8 +1,7 @@
 from .._base import AP_Node, Node
 from .._transform_props import RectTransform
 from .._bone_picker_common import APNODE_BonePicker_Common
-from .node_props import APNODE_BonePicker_NodeProps
-from .style_props import APNODE_BonePicker_StyleProps
+from .node_props import APNODE_BonePicker_NodeProps, BonePicker_Style
 
 from bpy.types import Context, UILayout
 from mathutils import Vector, Matrix
@@ -16,10 +15,11 @@ pick_color_buffer = gpu.types.Buffer('FLOAT', 4, (0, 0, 0, 0))
 
 
 
-class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProps, APNODE_BonePicker_Common, AP_Node, Node):
+class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_Common, AP_Node, Node):
     bl_idname = 'AP_NODE_bone_picker'
     bl_label = 'Bone Picker'
     bl_icon = 'CONSTRAINT_BONE'
+    wg_type = 'bone_picker'
 
 
     def get_ikfk_pos_size(self, apply_rotation: bool = False, center: bool = False):
@@ -110,7 +110,7 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
 
     # ----- DRAWING --------------------------------
 
-    def draw_common(self, context: Context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw_common(self, context: Context, rect: RectTransform, style: BonePicker_Style, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         pos: Vector = rect.position
         size: Vector = rect.size
 
@@ -159,9 +159,9 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
 
         draw.wg_ui(
             self, 'BUTTON_BASE',
-            roundness=self.roundness,
-            outline_thickness=self.outline_thickness,
-            bg_color=self.color if not hovered else Vector(self.color) * 1.2
+            roundness=style.roundness,
+            outline_thickness=style.outline_thickness,
+            bg_color=style.color if not hovered else Vector(style.color) * 1.2
         )
 
 
@@ -196,19 +196,19 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_StyleProp
                 label_dimensions,
                 pivot=pivot if rect.rotation == 0 else (0, 0),
                 angle=rect.rotation,
-                color=self.text_color,
+                color=style.text_color,
                 origin=Vector(rect.origin)
             )
 
-    def draw__edit(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw__edit(self, context, rect: RectTransform, style: BonePicker_Style, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         if self.use_image and self.image is not None:
             return
-        super().draw__edit(context, rect, scale, active, selected, hovered)
+        super().draw__edit(context, style, rect, scale, active, selected, hovered)
 
-    def draw__pose(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw__pose(self, context, rect: RectTransform, style: BonePicker_Style, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         if self.use_image and self.image is not None:
             return
-        super().draw__pose(context, rect, scale, active, selected, hovered)
+        super().draw__pose(context, style, rect, scale, active, selected, hovered)
 
 
     # ----- UI LAYOUT DRAWING -----------------------------------------------------------

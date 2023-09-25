@@ -2,7 +2,7 @@ from bpy.types import Context, Panel
 
 from ...utils.ui_layout import draw_section
 from armature_picker.node_editor.poll import poll_check
-from ...node_editor.nodes.bone_picker.node import APNODE_BonePicker_StyleProps
+from ...node_editor.nodes.bone_picker.node import AP_BonePickerNode
 
 
 
@@ -17,7 +17,7 @@ class APNODE_PT_label(Panel):
 
     @classmethod
     def poll(cls, context: Context):
-        return poll_check(context, 'EDIT', use_active_node=APNODE_BonePicker_StyleProps)
+        return poll_check(context, 'EDIT', use_active_node=AP_BonePickerNode)
 
     def draw(self, context: Context):
         layout = self.layout

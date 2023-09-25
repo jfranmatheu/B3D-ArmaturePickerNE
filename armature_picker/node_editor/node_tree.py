@@ -15,6 +15,7 @@ from .nodes._base import AP_Node
 from ..utils.node_editor import get_node_editor_zoom, get_node_editor_view_point, get_node_editor_offset, get_node_editor_region_coord, get_node_editor_visible_view_box
 from ..utils.armature import deselect_all_bones_from_active
 from ..utils.geometry import angle_signed, rect_overlap, Box
+from armature_picker.prefs import get_active_theme_style
 
 
 # ----------------------------------------------------------------
@@ -445,6 +446,8 @@ class AP_NodeTree(NodeTree):
         sel_nodes: set[AP_Node] = self.get_selected_nodes(context)
         
         visible_view_box = get_node_editor_visible_view_box(context)
+        
+        theme_style = get_active_theme_style(context)
 
         with gpu.matrix.push_pop():
             gpu.matrix.translate(offset)
@@ -459,7 +462,7 @@ class AP_NodeTree(NodeTree):
                         continue
                     if node.dirty:
                         refresh = True
-                    node._draw(context, ui_scale, active=node==active_node, selected=node in sel_nodes, in_edit=in_edit)
+                    node._draw(context, node.get_style(theme_style), ui_scale, active=node==active_node, selected=node in sel_nodes, in_edit=in_edit)
 
 
             if self.inject_modal_draw is not None:

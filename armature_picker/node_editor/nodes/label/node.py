@@ -1,7 +1,6 @@
 from .._base import AP_Node, Node
 from .._transform_props import RectTransform
-from .node_props import APNODE_Label_NodeProps
-from .style_props import APNODE_Label_StyleProps
+from .node_props import APNODE_Label_NodeProps, Label_Style
 
 from mathutils import Vector
 
@@ -12,10 +11,11 @@ from ....gpu import draw
 from ....utils.geometry import rotate_point
 
 
-class APNODE_Label(APNODE_Label_NodeProps, APNODE_Label_StyleProps, AP_Node, Node):
+class APNODE_Label(APNODE_Label_NodeProps, AP_Node, Node):
     bl_idname = 'AP_NODE_label'
     bl_label = 'LABEL'
     bl_icon = 'FILE_FONT'
+    wg_type = 'label'
 
     interactable = False
 
@@ -29,7 +29,9 @@ class APNODE_Label(APNODE_Label_NodeProps, APNODE_Label_StyleProps, AP_Node, Nod
 
     # ----- DRAWING --------------------------------
 
-    def draw_common(self, context: Context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw_common(self, context: Context, rect: RectTransform, style: Label_Style, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+        
+
         padding = 4 * scale
         size = rect.size
         pos = rect.position
@@ -47,7 +49,7 @@ class APNODE_Label(APNODE_Label_NodeProps, APNODE_Label_StyleProps, AP_Node, Nod
             label_dimensions,
             pivot=pivot if rect.rotation == 0 else (0, 0),
             angle=rect.rotation,
-            color=self.text_color,
+            color=style.text_color,
             origin=Vector(rect.origin)
         )
 

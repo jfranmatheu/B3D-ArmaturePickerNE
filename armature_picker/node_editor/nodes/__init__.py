@@ -2,9 +2,9 @@ from .bone_picker.node import AP_BonePickerNode
 from .bone_picker_geo.node import APNODE_BonePickerGeo
 from .image.node import APNODE_Image
 from .label.node import APNODE_Label
-from .sliders.lineal.node import APNODE_Slider
+from .sliders.linear.node import APNODE_SliderLinear
 from .sliders.radial.node import APNODE_SliderRadial
-from .sliders.lineal_2d.node import APNODE_Slider2D
+from .sliders.linear_2d.node import APNODE_SliderLinear2D
 
 NODES = (
     {
@@ -19,9 +19,9 @@ NODES = (
     {
         'name': 'Sliders',
         'items': (
-            APNODE_Slider,
+            APNODE_SliderLinear,
             APNODE_SliderRadial,
-            APNODE_Slider2D,
+            APNODE_SliderLinear2D,
         )
     }
 )

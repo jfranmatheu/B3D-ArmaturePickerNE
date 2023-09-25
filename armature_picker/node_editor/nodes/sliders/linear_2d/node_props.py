@@ -1,8 +1,9 @@
 from bpy.types import Context, UILayout, PropertyGroup
-from bpy.props import PointerProperty
+from bpy.props import PointerProperty, BoolProperty
 
 from .....utils.ui_layout import draw_section
 from ..._slider_common import APNODE_Slider_DataConstraintsProps, RectTransform
+from armature_picker.prefs.styles import SliderLinear2D_Style
 
 
 class Axis(APNODE_Slider_DataConstraintsProps, PropertyGroup):
@@ -19,6 +20,13 @@ class Axis(APNODE_Slider_DataConstraintsProps, PropertyGroup):
 
 
 class APNODE_Slider2D_NodeProps:
+    def get_style(self, theme) -> SliderLinear2D_Style:
+        if self.use_override_theme:
+            return self.style
+        return getattr(theme, self.wg_type)
+
+    style: PointerProperty(name="Style", type=SliderLinear2D_Style)
+
     x_axis: PointerProperty(name="X Axis", type=Axis)
     y_axis: PointerProperty(name="Y Axis", type=Axis)
     

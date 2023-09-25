@@ -7,17 +7,6 @@ from ...gpu import draw
 from ...utils.armature import deselect_all_bones_from_active
 
 
-class APNODE_BonePicker_CommonStyle:
-    color: FloatVectorProperty(
-        name="Background Color",
-        description="Background Color of the button",
-        default=(.9, .52, .41, 1.0),
-        size=4,
-        min=0.0,
-        max=1.0,
-        subtype='COLOR'
-    )
-
 
 class APNODE_BonePicker_CommonProps:
     
@@ -121,7 +110,7 @@ class APNODE_BonePicker_CommonProps:
 
 
 
-class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps, APNODE_BonePicker_CommonStyle):
+class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps):
     draw_layer = 10
 
 
@@ -195,7 +184,7 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps, APNODE_BonePicker_
 
     # ------ DRAWING --------------------------------
 
-    def draw__pose(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw__pose(self, context, rect: RectTransform, style, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         if active:
             draw.box_ui(
                 self, 'BUTTON_BOX_ACTIVE',

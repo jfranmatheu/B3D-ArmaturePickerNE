@@ -2,25 +2,21 @@ from .._base import AP_Node, Node
 from .._transform_props import RectTransform
 from .._bone_picker_common import APNODE_BonePicker_Common
 
-from .node_props import APNODE_BonePickerGeo_NodeProps
-from .style_props import APNODE_BonePickerGeo_StyleProps
+from .node_props import APNODE_BonePickerGeo_NodeProps, BonePickerGeo_Style
 
 from bpy.types import Context, Armature, Bone, Event, UILayout, Object, Mesh
-from mathutils import Vector, Matrix
-import gpu
-
-import numpy as np
+from mathutils import Vector
 
 from ....gpu import draw, draw_geo
-from ....utils.geometry import rotate_point, point_inside_rect, get_center, point_inside_circle
-from ....utils.armature import deselect_all_bones_from_active
+from ....utils.geometry import point_inside_rect, get_center, point_inside_circle
 
 
 
-class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePickerGeo_StyleProps, APNODE_BonePicker_Common, AP_Node, Node):
+class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Common, AP_Node, Node):
     bl_idname = 'AP_NODE_bone_picker_geo'
     bl_label = 'Bone Picker Geo'
     bl_icon = 'CONSTRAINT_BONE'
+    wg_type = 'bone_picker_geo'
 
 
     def init(self, context):
@@ -59,7 +55,7 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePickerGeo_
 
     # ----- DRAWING --------------------------------
 
-    def draw_common(self, context: Context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw_common(self, context: Context, rect: RectTransform, style: BonePickerGeo_Style, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         geo = draw_geo.Geometry.get(self)
         if geo is None:
             draw.rectangle_ui(

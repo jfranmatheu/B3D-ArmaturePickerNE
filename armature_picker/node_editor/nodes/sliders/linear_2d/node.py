@@ -2,13 +2,10 @@ from armature_picker.utils.event import Mouse
 from ..._base import AP_Node, Node
 from ..._transform_props import RectTransform
 from ..._slider_common import APNODE_Slider_CommonNode
-from .node_props import APNODE_Slider2D_NodeProps
-from .style_props import APNODE_Slider2D_StyleProps
+from .node_props import APNODE_Slider2D_NodeProps, SliderLinear2D_Style
 
 from bpy.types import Context, Event, UILayout
 from mathutils import Vector
-
-from math import sin
 
 from .....gpu import draw
 from .....utils.geometry import point_inside_rect, get_center
@@ -18,20 +15,14 @@ from .....utils.operator import OpsReturn
 
 
 
-class APNODE_Slider2D(APNODE_Slider2D_NodeProps, APNODE_Slider2D_StyleProps, APNODE_Slider_CommonNode, AP_Node, Node):
+class APNODE_SliderLinear2D(APNODE_Slider2D_NodeProps, APNODE_Slider_CommonNode, AP_Node, Node):
     bl_idname = 'AP_NODE_slider_2d'
     bl_label = 'Slider 2D'
     bl_icon = 'PROPERTIES'
-
-    def init(self, context):
-        super().init(context)
-
-        self.rect_transform.dimensions = (40, 40)
-        self.roundness = 0.25
-        self.handle_scale = 0.75
-        self.outline_thickness = 0.5
-        self.color = (0.212, 0.63, 1.0, 0.9)
-        self.handle_color = (.95, .9, .84, 1.0)
+    wg_type = 'slider_linear_2d'
+    
+    default_width = 40
+    default_height = 40
 
 
     def get_value(self, context: Context) -> tuple | None:
@@ -81,12 +72,14 @@ class APNODE_Slider2D(APNODE_Slider2D_NodeProps, APNODE_Slider2D_StyleProps, APN
 
     # ----- DRAWING --------------------------------
 
-    def draw_common(self, context: Context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw_common(self, context: Context, rect: RectTransform, style: SliderLinear2D_Style, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+        
+
         draw.wg_grid_ui(
             self, 'SLIDER_2D',
-            roundness=self.roundness,
-            outline_thickness=self.outline_thickness,
-            bg_color=self.color
+            roundness=style.roundness,
+            outline_thickness=style.outline_thickness,
+            bg_color=style.color
         )
 
         factor_x, factor_y = 0, 0
@@ -97,7 +90,7 @@ class APNODE_Slider2D(APNODE_Slider2D_NodeProps, APNODE_Slider2D_StyleProps, APN
             factor_y = map_value(values[1], self.y_axis.range, (0, 1))
 
         # Check which factor is the handle radius over the slider bar width.
-        handle_radius = 5 * scale * self.handle_scale
+        handle_radius = 5 * scale * style.handle_scale
         handle_rad_factor_x = handle_radius / rect.dimensions[0]
         handle_rad_factor_y = handle_radius / rect.dimensions[1]
         factor_x = map_value(factor_x, (0, 1), (handle_rad_factor_x, 1 - handle_rad_factor_x))
@@ -113,7 +106,7 @@ class APNODE_Slider2D(APNODE_Slider2D_NodeProps, APNODE_Slider2D_StyleProps, APN
             handle_pos, handle_size, rect.rotation,
             roundness=1.0,
             outline_thickness=1.0,
-            bg_color=self.handle_color,
+            bg_color=style.handle_color,
             # origin=Vector(rect.origin),
             dirty=dirty_handle_pos
         )

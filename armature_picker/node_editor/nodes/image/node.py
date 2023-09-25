@@ -1,6 +1,6 @@
 from .._base import AP_Node, Node
 from .._transform_props import RectTransform
-from .node_props import APNODE_Image_NodeProps
+from .node_props import APNODE_Image_NodeProps, Image_Style
 
 import bpy
 from bpy.types import Context, Event, UILayout
@@ -14,6 +14,7 @@ class APNODE_Image(APNODE_Image_NodeProps, AP_Node, Node):
     bl_idname = 'AP_NODE_image'
     bl_label = 'Image'
     bl_icon = 'IMAGE_DATA'
+    wg_type = 'image'
     
     interactable: bool = False
 
@@ -31,7 +32,9 @@ class APNODE_Image(APNODE_Image_NodeProps, AP_Node, Node):
 
     # ----- DRAWING --------------------------------
 
-    def draw_common(self, context: Context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw_common(self, context: Context, rect: RectTransform, style: Image_Style, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+        # 
+
         if self.image is not None:
             draw.image_ui(
                 self, 'IMAGE',

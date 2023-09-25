@@ -71,6 +71,9 @@ class AP_Node(NodeTransformProps):
     # Internal Properties.
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
+    default_width = 20
+    default_height = 20
+
     interactable: bool = True
 
     # Properties to store in Node datablock.
@@ -111,6 +114,10 @@ class AP_Node(NodeTransformProps):
                             description="Defines the depth this element should be drawn. The greater the value, the more preference will have over the rest of elements",
                             default=0, min=-1000, max=1000, options={'HIDDEN'})
 
+    use_override_theme: BoolProperty(name="Override Theme", default=False)
+
+    def get_style(self, theme):
+        raise NotImplementedError
 
     def update_graphics(self, context: Context) -> None:
         # Set Dirty.
@@ -197,6 +204,9 @@ class AP_Node(NodeTransformProps):
         self.hide = True
         self.dirty_label = True
 
+        if self.default_width != 20 and self.default_height != 20:
+            self.rect_transform.edit_dimensions = (self.default_width, self.default_height)
+
         print("New node ", self)
 
     # Copy function to initialize a copied node from an existing one.
@@ -217,8 +227,10 @@ class AP_Node(NodeTransformProps):
     def draw_visibility(self, layout: UILayout) -> None:
         layout.prop(self, 'picker_layer', expand=False)
 
-    def draw_styles(self, layout: UILayout) -> None:
-        pass
+    def draw_styles(self, panel_layout: UILayout, section_layout: UILayout) -> None:
+        ''' From Node. '''
+        section_layout.enabled = self.use_override_theme
+        self.style.draw(section_layout, in_prefs_space=False)
 
 
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -362,11 +374,11 @@ class AP_Node(NodeTransformProps):
 
     # ----- DRAWING --------------------------------
 
-    def draw__pose(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw__pose(self, context: Context, rect: RectTransform, style, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         ''' Specific drawing for POSE mode '''
         pass
 
-    def draw__edit(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw__edit(self, context: Context, rect: RectTransform, style, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         ''' Specific drawing for EDIT mode. '''
         if active or selected:
             if self.locked:
@@ -380,19 +392,19 @@ class AP_Node(NodeTransformProps):
                 color=color
             )
 
-    def draw_common(self, context, rect: RectTransform, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw_common(self, context: Context, rect: RectTransform, style, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         ''' Shader drawing between POSE and EDIT. '''
         pass
 
-    def _draw(self, context, scale: float, active: bool, selected: bool, in_edit: bool) -> None:
+    def _draw(self, context: Context, style, scale: float, active: bool, selected: bool, in_edit: bool) -> None:
         ''' Internal. '''
         hovered = self.is_hovered()
         rect = self.rect_transform
-        self.draw_common(context, rect, scale, active, selected, hovered)
+        self.draw_common(context, rect, style, scale, active, selected, hovered)
         if in_edit:
-            self.draw__edit(context, rect, scale, active, selected, hovered)
+            self.draw__edit(context, rect, style, scale, active, selected, hovered)
         else:
-            self.draw__pose(context, rect, scale, active, selected, hovered)
+            self.draw__pose(context, rect, style, scale, active, selected, hovered)
 
         if self.dirty:
             set_dirty_state(self.uuid, False)

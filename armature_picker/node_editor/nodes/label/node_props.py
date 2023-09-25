@@ -1,10 +1,17 @@
 from bpy.types import Context, UILayout, Armature
-from bpy.props import StringProperty, IntProperty, FloatProperty, BoolProperty, FloatVectorProperty, EnumProperty
+from bpy.props import StringProperty, IntProperty, PointerProperty, BoolProperty
 from blf import size as set_text_size, dimensions as get_text_dimensions
 
+from armature_picker.prefs.styles import Label_Style
 
 
 class APNODE_Label_NodeProps:
+    def get_style(self, theme) -> Label_Style:
+        if self.use_override_theme:
+            return self.style
+        return getattr(theme, self.wg_type)
+
+    style: PointerProperty(name="Style", type=Label_Style)
 
     # UPDATE FUNCTIONS
     # ----------------------------------------------------------------
@@ -26,6 +33,15 @@ class APNODE_Label_NodeProps:
         update=update_label,
         options={'TEXTEDIT_UPDATE'}
     )
+    
+    text_size: IntProperty(
+        name='Text Size',
+        description="Label text size",
+        default=24,
+        min=10,
+        update=update_label
+    )
 
     def draw_buttons_ext(self, context: Context, layout: UILayout) -> None:
         layout.prop(self, 'text')
+        layout.prop(self, 'text_size')
