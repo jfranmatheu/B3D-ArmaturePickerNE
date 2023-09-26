@@ -308,14 +308,14 @@ class AP_NodeTree(NodeTree):
                                       modal_draw_callback=self.modal__box_select__draw)
                 return {'RUNNING_MODAL'}
 
-        if event.type == 'A' and event.value == 'PRESS' and event.shift:
+        if event.type == 'A' and event.value == 'RELEASE' and event.shift:
             from .ops.add_node.pie_menu import MT_add_node
             # context.window_manager.popup_menu_pie(event, MT_add_node.draw)
             bpy.ops.wm.call_menu_pie('INVOKE_DEFAULT', name=MT_add_node.bl_idname)
             return {'FINISHED'}
 
-        if event.type == 'D' and event.value == 'PRESS' and event.shift:
-            bpy.ops.node.duplicate()
+        if event.type == 'D' and event.value == 'RELEASE' and event.shift:
+            bpy.ops.node.duplicate('INVOKE_DEFAULT', False)
             sel_nodes = self.get_selected_nodes(context, include_active=True)
             if len(sel_nodes) == 0:
                 return {'CANCELLED'}
