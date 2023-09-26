@@ -314,10 +314,24 @@ class AP_NodeTree(NodeTree):
             bpy.ops.wm.call_menu_pie('INVOKE_DEFAULT', name=MT_add_node.bl_idname)
             return {'FINISHED'}
 
+        if event.type == 'D' and event.value == 'PRESS' and event.shift:
+            bpy.ops.node.duplicate()
+            sel_nodes = self.get_selected_nodes(context, include_active=True)
+            if len(sel_nodes) == 0:
+                return {'CANCELLED'}
+            ensure_nodes_cache(self)
+            self.modal_nodes = sel_nodes
+            self.set_inject_modal(context, event,
+                                  modal_callback=self.modal__move_node__update,
+                                  modal_enter_callback=self.modal__move_node__enter,
+                                  modal_exit_callback=self.modal__move_node__exit)
+            return {'RUNNING_MODAL'}
+
         if G_hovered_node is not None:
             hovered_node: AP_Node = self.nodes.get(G_hovered_node, None)
 
         sel_nodes = self.get_selected_nodes(context, include_active=True)
+
         # print("Selected nodes", sel_nodes)
 
         if self.nodes.active is not None:

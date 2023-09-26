@@ -211,8 +211,10 @@ class AP_Node(NodeTransformProps):
 
     # Copy function to initialize a copied node from an existing one.
     def copy(self, node):
-        self.uuid = uuid4().hex
+        self.name = self.uuid = uuid4().hex
         self.dirty = True
+        self.dirty_label = True
+        self.rect_transform.node_idname = self.uuid
         print("Copying from node ", node)
 
     # Free function to clean up on removal.
