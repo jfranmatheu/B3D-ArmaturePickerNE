@@ -4,11 +4,21 @@ from bpy.props import CollectionProperty, IntProperty, PointerProperty, EnumProp
 from ..ackit._globals import __main_package__
 from .themes import PG_ArmaturePickerTheme
 from ..utils.ui_layout import draw_section_h
+from ..utils.node_editor import get_armature_picker_editor
 
 
 class ArmaturePickerPreferences(AddonPreferences):
     bl_idname = __main_package__
     
+    def update_active_theme(self, context: Context) -> None:
+        if area := get_armature_picker_editor(context, ret_area=True):
+            node_editor = area.spaces[0]
+            node_tree = node_editor.node_tree
+            for node in node_tree.nodes:
+                node.dirty = True
+                node.dirty_label = True
+            area.tag_redraw()
+
     def get_themes(self, context: Context) -> tuple:
         if (self.user_themes) == 0:
             return (('DEFAULT', "Default", ""),)
@@ -19,7 +29,8 @@ class ArmaturePickerPreferences(AddonPreferences):
     user_themes: CollectionProperty(type=PG_ArmaturePickerTheme)
     active_theme_id: EnumProperty(
         name="Active Theme",
-        items=get_themes
+        items=get_themes,
+        update=update_active_theme
     )
     
     @property
