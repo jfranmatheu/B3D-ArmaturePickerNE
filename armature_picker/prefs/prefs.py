@@ -14,6 +14,8 @@ class ArmaturePickerPreferences(AddonPreferences):
         if area := get_armature_picker_editor(context, ret_area=True):
             node_editor = area.spaces[0]
             node_tree = node_editor.node_tree
+            if node_tree is None:
+                return
             for node in node_tree.nodes:
                 node.dirty = True
                 node.dirty_label = True
