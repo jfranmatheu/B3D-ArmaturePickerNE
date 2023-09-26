@@ -652,7 +652,7 @@ class AP_NodeTree(NodeTree):
             self.box.pos, self.box.size,
             padding=0,
             line_thickness=2.0,
-            color=(1, .3, .1, .92)
+            color=(1, 1, 1, .92)
         )
 
 
