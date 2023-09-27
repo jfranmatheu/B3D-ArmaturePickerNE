@@ -51,7 +51,7 @@ def subscribe_to_rna_change_based_on_context(data_path: str, attr_name: str, per
         options = set()
         if persistent:
             options.add('PERSISTENT')
-        ctx = bpy.context
+        # ctx = bpy.context
         ctx_rna_listeners[owner] = {
             'key': data_path + '.' + attr_name,
             'owner': owner,

@@ -46,7 +46,7 @@ class Handlers(Enum):
 
     def __call__(self, persistent: bool = False):
         ''' Use as a decorator. Only 1 parameter is required in target function, which is context. '''
-        print(f"[UVFLOW] Registering... {self.name} Handler!")
+        print(f"[ArmaturePicker] Registering {self.name} Handler...")
         def decorator(deco_fun):
 
             def callback_deco(_deco_fun):
