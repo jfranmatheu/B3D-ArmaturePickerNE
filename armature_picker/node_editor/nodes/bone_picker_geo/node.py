@@ -23,6 +23,7 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Com
         super().init(context)
 
         self.dirty_geo = True
+        self.use_override_theme = True
 
 
     @property
@@ -65,7 +66,7 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Com
             return
 
         if self.object is not None:
-            if self.display_on_hover_only and not hovered and self.node_tree.picker_mode in {'POSE'}:
+            if style.display_on_hover_only and not hovered and self.node_tree.picker_mode in {'POSE'}:
                 pass
             else:
                 geo.draw(self, hovered=hovered)

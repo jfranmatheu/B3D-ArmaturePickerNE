@@ -8,6 +8,7 @@ class PG_ArmaturePickerTheme(PropertyGroup):
     name: StringProperty(default='Theme')
 
     bone_picker: PointerProperty(type=BonePicker_Style)
+    bone_picker_geo: PointerProperty(type=BonePickerGeo_Style)
 
     slider_linear: PointerProperty(type=SliderLinear_Style)
     slider_radial: PointerProperty(type=SliderRadial_Style)

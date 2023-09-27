@@ -8,13 +8,13 @@ class PG_ArmaturePickerTheme__BonePickerGeo(StyleBase, PropertyGroup):
     color: FloatVectorProperty(
         name="Background Color",
         description="Background Color of the button",
-        default=(.9, .52, .41, 1.0),
+        default=(.05, .51, .95, 1.0),
         size=4,
         min=0.0,
         max=1.0,
         subtype='COLOR'
     )
-    
+
     display_on_hover_only: BoolProperty(name="Show only on hover", description="(While in POSE mode) Display this element only when hovering over it", default=False)
 
     def draw(self, layout: UILayout, in_prefs_space: bool) -> None:
