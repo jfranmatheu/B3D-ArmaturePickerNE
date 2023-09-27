@@ -436,3 +436,15 @@ class AP_Node(NodeTransformProps):
 
     def draw_ui__edit(self, context: Context, layout: UILayout) -> None:
         pass
+
+
+
+def reset_globals():
+    # Reset All globals.
+    global _hovered_node
+    _hovered_node = None
+    
+    _dirty_cache.clear()
+    _state_cache.clear()
+    _dirty_label_cache.clear()
+    _in_modal_cache.clear()

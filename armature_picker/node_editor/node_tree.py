@@ -41,6 +41,8 @@ sorted_nodes_cache: Dict[str, List[List[AP_Node]]] = defaultdict(list)
 def ensure_nodes_cache(node_tree: 'AP_NodeTree'):
     # Empty cache? Probably first time?
     if len(sorted_nodes_cache[node_tree.uuid]) == 0:
+        node_tree.active_node = None
+        node_tree.modal_nodes = None
         return refresh_nodes_cache(node_tree)
     # Invalid cached nodes?
     first_cached_node = sorted_nodes_cache[node_tree.uuid][0][0]
@@ -183,7 +185,11 @@ class AP_NodeTree(NodeTree):
         if active_node is not None and G_active_node != active_node.uuid:
             # Active Node is updated !
             G_active_node = active_node.uuid
-            refresh_nodes_cache(self)
+            if self.uuid in sorted_nodes_cache:
+                refresh_nodes_cache(self)
+            else:
+                # Cache was refreshed! (on_load_post or dev environment reload)
+                ensure_nodes_cache(self)
         else:
             ensure_nodes_cache(self)
 
@@ -432,7 +438,7 @@ class AP_NodeTree(NodeTree):
                 color=(.8, .3, .75, 1.0)
             )
             draw.text(
-                Vector((context.region.width * 0.5, ipos.y - h * 0.5)), # Vector((context.region.width * 0.5, context.region.height - 40)), # 
+                Vector((context.region.width * 0.5, ipos.y - h * 0.5)), # Vector((context.region.width * 0.5, context.region.height - 40)), #
                 "Pose me please :'v",
                 24,
                 (0.5, 1.0),
@@ -458,9 +464,9 @@ class AP_NodeTree(NodeTree):
 
         active_node: AP_Node = self.nodes.active
         sel_nodes: set[AP_Node] = self.get_selected_nodes(context)
-        
+
         visible_view_box = get_node_editor_visible_view_box(context)
-        
+
         theme_style = get_active_theme_style(context)
 
         with gpu.matrix.push_pop():
@@ -655,6 +661,33 @@ class AP_NodeTree(NodeTree):
             color=(1, 1, 1, .92)
         )
 
+    def reset(self):
+        self.active_node = None
+        self.modal_nodes = None
+        self.inject_modal = None
+        self.inject_modal_draw = None
+        self.inject_modal_exit = None
+
+
+# ----------------------------------------------------------------
+
+def reset_globals():
+    # Reset All globals.
+    sorted_nodes_cache.clear()
+    graphic_users.clear()
+
+    global G_active_node
+    global G_hovered_node
+    global nodes_count
+    G_active_node = ''
+    G_hovered_node = ''
+    nodes_count = -1
+
+    from .nodes._base import reset_globals as reset_node_globals
+    reset_node_globals()
+
+
+# ----------------------------------------------------------------
 
 def register():
     NodeTree.uuid = StringProperty()
@@ -668,14 +701,16 @@ def register():
         ),
         default='EDIT'
     )
-    
+
     NodeTree.picker_update_flags = set()
 
+
 def unregister():
+    reset_globals()
+
+
     del NodeTree.uuid
     del NodeTree.dirty
     del NodeTree.picker_mode
-    
+
     del NodeTree.picker_update_flags
-    
-    sorted_nodes_cache.clear()
