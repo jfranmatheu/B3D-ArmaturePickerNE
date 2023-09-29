@@ -105,6 +105,6 @@ class PG__BonePickerGeo__Style(StyleBase, PropertyGroup):
             return color_tag.color
         return (1, 1, 1, 1)
 
-    def draw(node, layout: UILayout, _in_prefs_space__dummy: bool = False) -> None:
+    def draw(node, layout: UILayout, in_prefs_space: bool = False) -> None:
         row = layout.row(align=True)
         row.prop(node, 'color_tag')
