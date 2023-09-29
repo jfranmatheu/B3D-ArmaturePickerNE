@@ -4,13 +4,12 @@ from gpu import state
 from gpu.types import GPUShader, GPUBatch
 from gpu_extras.batch import batch_for_shader
 from mathutils import Vector, geometry
-from bgl import glEnable, GL_POLYGON_SMOOTH, glDisable
 
 import numpy as np
 
 from ..utils.geometry import is_inside_triangle, check_point_in_convex_hull
 from ..utils.iter import iter_grouper
-from .draw import RGBA, SHADER_UNIFORM_COLOR, SHADERS #, get_batch_from_cache, set_batch_to_cache
+from .draw import RGBA, SHADERS #, get_batch_from_cache, set_batch_to_cache
 
 # ----------------------------------------------------------------
 
@@ -72,7 +71,7 @@ class Geometry:
         coords_list = self.coords.tolist()
         # print(self.coords)
         self.batch = batch_for_shader(
-            SHADER_UNIFORM_COLOR, 'TRIS',
+            SHADERS.COLOR_UNIFORM, 'TRIS',
             {"pos": coords_list}, # , "color": vertex_colors
             indices=self.indices.tolist(),
         )
@@ -107,7 +106,7 @@ class Geometry:
         return False
 
 
-    def draw(self, node, color, hovered: bool) -> None:
+    def draw(self, node, color: RGBA, hovered: bool) -> None:
         state.blend_set('ALPHA')
-        SHADER_UNIFORM_COLOR.uniform_float('color', Vector(color) * 1.2 if hovered else color)
-        self.batch.draw(SHADER_UNIFORM_COLOR)
+        SHADERS.COLOR_UNIFORM.uniform_float('u_color', Vector(color) * 1.2 if hovered else color)
+        self.batch.draw(SHADERS.COLOR_UNIFORM)
