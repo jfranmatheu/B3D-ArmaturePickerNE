@@ -184,7 +184,7 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps):
 
     # ------ DRAWING --------------------------------
 
-    def draw__pose(self, context, rect: RectTransform, style, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw__pose(self, context, rect: RectTransform, style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         if active:
             draw.box_ui(
                 self, 'BUTTON_BOX_ACTIVE',

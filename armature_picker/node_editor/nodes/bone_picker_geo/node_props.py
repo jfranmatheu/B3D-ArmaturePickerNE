@@ -6,17 +6,18 @@ from math import ceil
 
 from ....utils.math import clamp
 from ....gpu import draw_geo
-from armature_picker.prefs.styles import BonePickerGeo_Style
-
+from armature_picker.prefs.styles import BonePickerGeo_LocalStyle, BonePickerGeo_Style
+from armature_picker.prefs.settings import BonePickerGeo_Settings
 
 
 class APNODE_BonePickerGeo_NodeProps:
     def get_style(self, theme) -> BonePickerGeo_Style:
-        if self.use_override_theme:
-            return self.style
-        return getattr(theme, self.wg_type)
+        return super().get_style(theme)
 
-    style: PointerProperty(name="Style", type=BonePickerGeo_Style)
+    style: PointerProperty(name="Style", type=BonePickerGeo_LocalStyle)
+
+    def get_settings(self, prefs_wg_settings) -> BonePickerGeo_Settings:
+        return super().get_settings(prefs_wg_settings)
 
     # UPDATE
     # ----------------------------------------------------------------
@@ -33,7 +34,7 @@ class APNODE_BonePickerGeo_NodeProps:
     def update_object(self, context: Context) -> None:
         if self.object is None:
             return
-        
+
         scale = self.geo_scale
         dim = self.object.dimensions
         self.rect_transform.dimensions = (

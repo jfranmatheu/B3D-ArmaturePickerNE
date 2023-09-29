@@ -2,7 +2,7 @@ from .._base import AP_Node, Node
 from .._transform_props import RectTransform
 from .._bone_picker_common import APNODE_BonePicker_Common
 
-from .node_props import APNODE_BonePickerGeo_NodeProps, BonePickerGeo_Style
+from .node_props import APNODE_BonePickerGeo_NodeProps, BonePickerGeo_Style, BonePickerGeo_LocalStyle, BonePickerGeo_Settings
 
 from bpy.types import Context, Armature, Bone, Event, UILayout, Object, Mesh
 from mathutils import Vector
@@ -56,7 +56,9 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Com
 
     # ----- DRAWING --------------------------------
 
-    def draw_common(self, context: Context, rect: RectTransform, style: BonePickerGeo_Style, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw_common(self, context: Context, rect: RectTransform, theme_style: BonePickerGeo_Style, wg_settings: BonePickerGeo_Settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+        local_style: BonePickerGeo_LocalStyle = self.style
+
         geo = draw_geo.Geometry.get(self)
         if geo is None:
             draw.rectangle_ui(
@@ -66,11 +68,10 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Com
             return
 
         if self.object is not None:
-            if style.display_on_hover_only and not hovered and self.node_tree.picker_mode in {'POSE'}:
+            if wg_settings.display_on_hover_only and not hovered and self.node_tree.picker_mode in {'POSE'}:
                 pass
             else:
-                geo.draw(self, hovered=hovered)
-
+                geo.draw(self, color=local_style.get_color(theme_style), hovered=hovered)
 
         if self.use_ik_fk and geo:
             ikfk_size = Vector((self.ik_fk_size, self.ik_fk_size))

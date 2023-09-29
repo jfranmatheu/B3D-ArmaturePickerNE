@@ -15,7 +15,7 @@ from .nodes._base import AP_Node
 from ..utils.node_editor import get_node_editor_zoom, get_node_editor_view_point, get_node_editor_offset, get_node_editor_region_coord, get_node_editor_visible_view_box
 from ..utils.armature import deselect_all_bones_from_active
 from ..utils.geometry import angle_signed, rect_overlap, Box
-from armature_picker.prefs import get_active_theme_style
+from armature_picker.prefs import get_active_theme_style, get_prefs_wg_settings
 
 
 # ----------------------------------------------------------------
@@ -41,8 +41,8 @@ sorted_nodes_cache: Dict[str, List[List[AP_Node]]] = defaultdict(list)
 def ensure_nodes_cache(node_tree: 'AP_NodeTree'):
     # Empty cache? Probably first time?
     if len(sorted_nodes_cache[node_tree.uuid]) == 0:
-        node_tree.active_node = None
-        node_tree.modal_nodes = None
+        # node_tree.active_node = None
+        # node_tree.modal_nodes = None
         return refresh_nodes_cache(node_tree)
     # Invalid cached nodes?
     first_cached_node = sorted_nodes_cache[node_tree.uuid][0][0]
@@ -468,6 +468,7 @@ class AP_NodeTree(NodeTree):
         visible_view_box = get_node_editor_visible_view_box(context)
 
         theme_style = get_active_theme_style(context)
+        wg_settings = get_prefs_wg_settings(context)
 
         with gpu.matrix.push_pop():
             gpu.matrix.translate(offset)
@@ -482,7 +483,7 @@ class AP_NodeTree(NodeTree):
                         continue
                     if node.dirty:
                         refresh = True
-                    node._draw(context, node.get_style(theme_style), ui_scale, active=node==active_node, selected=node in sel_nodes, in_edit=in_edit)
+                    node._draw(context, node.get_style(theme_style), node.get_settings(wg_settings), ui_scale, active=node==active_node, selected=node in sel_nodes, in_edit=in_edit)
 
             if self.active_node is not None and self.active_node.in_modal:
                 draw_callback = self.active_node.modal_draw__edit if in_edit else self.active_node.modal_draw__pose

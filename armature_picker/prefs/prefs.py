@@ -3,13 +3,19 @@ from bpy.props import CollectionProperty, IntProperty, PointerProperty, EnumProp
 
 from ..ackit._globals import __main_package__
 from .themes import PG_ArmaturePickerTheme
-from ..utils.ui_layout import draw_section_h
+from .settings import PG_ArmaturePicker_WidgetSettings
+from ..utils.ui_layout import draw_section_h, draw_section
 from ..utils.node_editor import get_armature_picker_editor
 
 
 class ArmaturePickerPreferences(AddonPreferences):
     bl_idname = __main_package__
-    
+
+
+    # ----------------------------------------------------------------
+    # THEMES
+    # ----------------------------------------------------------------
+
     def update_active_theme(self, context: Context) -> None:
         if area := get_armature_picker_editor(context, ret_area=True):
             node_editor = area.spaces[0]
@@ -34,15 +40,24 @@ class ArmaturePickerPreferences(AddonPreferences):
         items=get_themes,
         update=update_active_theme
     )
-    
+
     @property
     def active_theme(self) -> PG_ArmaturePickerTheme:
         if self.active_theme_id == 'DEFAULT':
             return self.default_theme
         return self.user_themes[self.active_theme_id]
 
+
+    # ----------------------------------------------------------------
+    # WIDGET SETTINGS
+    # ----------------------------------------------------------------
+
+    wg_settings: PointerProperty(type=PG_ArmaturePicker_WidgetSettings)
+
     def draw(self, context: Context) -> None:
-        
+        wg_settings_section = draw_section(self.layout, 'Widget Settings', icon='COLOR')
+        self.wg_settings.draw(wg_settings_section)
+
         themes_header, theme_section = draw_section_h(self.layout, 'Themes', icon='COLOR')
         themes_header.scale_y = 1.5
         themes_header.prop(self, 'active_theme_id', text='')

@@ -75,6 +75,7 @@ class AP_Node(NodeTransformProps):
     default_height = 20
 
     interactable: bool = True
+    wg_type: str = 'NONE'
 
     # Properties to store in Node datablock.
     uuid: StringProperty(name="UUID", default='')
@@ -117,7 +118,10 @@ class AP_Node(NodeTransformProps):
     use_override_theme: BoolProperty(name="Override Theme", default=False)
 
     def get_style(self, theme):
-        raise NotImplementedError
+        return getattr(theme, self.wg_type)
+
+    def get_settings(self, prefs_wg_settings):
+        return getattr(prefs_wg_settings, self.wg_type)
 
     def update_graphics(self, context: Context) -> None:
         # Set Dirty.
@@ -376,11 +380,11 @@ class AP_Node(NodeTransformProps):
 
     # ----- DRAWING --------------------------------
 
-    def draw__pose(self, context: Context, rect: RectTransform, style, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw__pose(self, context: Context, rect: RectTransform, style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         ''' Specific drawing for POSE mode '''
         pass
 
-    def draw__edit(self, context: Context, rect: RectTransform, style, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw__edit(self, context: Context, rect: RectTransform, style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         ''' Specific drawing for EDIT mode. '''
         if active or selected:
             if self.locked:
@@ -394,19 +398,19 @@ class AP_Node(NodeTransformProps):
                 color=color
             )
 
-    def draw_common(self, context: Context, rect: RectTransform, style, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw_common(self, context: Context, rect: RectTransform, style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         ''' Shader drawing between POSE and EDIT. '''
         pass
 
-    def _draw(self, context: Context, style, scale: float, active: bool, selected: bool, in_edit: bool) -> None:
+    def _draw(self, context: Context, style, wg_settings, scale: float, active: bool, selected: bool, in_edit: bool) -> None:
         ''' Internal. '''
         hovered = self.is_hovered()
         rect = self.rect_transform
-        self.draw_common(context, rect, style, scale, active, selected, hovered)
+        self.draw_common(context, rect, style, wg_settings, scale, active, selected, hovered)
         if in_edit:
-            self.draw__edit(context, rect, style, scale, active, selected, hovered)
+            self.draw__edit(context, rect, style, wg_settings, scale, active, selected, hovered)
         else:
-            self.draw__pose(context, rect, style, scale, active, selected, hovered)
+            self.draw__pose(context, rect, style, wg_settings, scale, active, selected, hovered)
 
         if self.dirty:
             set_dirty_state(self.uuid, False)
@@ -443,7 +447,7 @@ def reset_globals():
     # Reset All globals.
     global _hovered_node
     _hovered_node = None
-    
+
     _dirty_cache.clear()
     _state_cache.clear()
     _dirty_label_cache.clear()

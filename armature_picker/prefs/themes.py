@@ -23,6 +23,7 @@ class PG_ArmaturePickerTheme(PropertyGroup):
         items=(
             ('label', 'Label', ""),
             ('bone_picker', 'Bone Picker', ""),
+            ('bone_picker_geo', 'Bone Picker Geo', ""),
             ('slider_linear', 'Slider Lineal', ""),
             ('slider_radial', 'Slider Radial', ""),
             ('slider_linear_2d', 'Slider Lineal 2D', ""),

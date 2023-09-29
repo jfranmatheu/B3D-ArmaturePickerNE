@@ -23,5 +23,6 @@ class APNODE_PT_style(Panel):
         node = context.space_data.node_tree.nodes.active
 
         header, section_style = draw_section_h(layout, 'Style', icon='COLOR')
-        header.prop(node, 'use_override_theme', text='Override Theme', icon='RESTRICT_COLOR_ON' if node.use_override_theme else 'RESTRICT_COLOR_OFF', toggle=True)
+        if node.wg_type not in {'bone_picker_geo'}:
+            header.prop(node, 'use_override_theme', text='Override Theme', icon='RESTRICT_COLOR_ON' if node.use_override_theme else 'RESTRICT_COLOR_OFF', toggle=True)
         node.draw_styles(layout, section_style)

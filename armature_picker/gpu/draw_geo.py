@@ -107,7 +107,7 @@ class Geometry:
         return False
 
 
-    def draw(self, node, hovered: bool) -> None:
+    def draw(self, node, color, hovered: bool) -> None:
         state.blend_set('ALPHA')
-        SHADER_UNIFORM_COLOR.uniform_float('color', Vector(node.style.color) * 1.2 if hovered else node.style.color)
+        SHADER_UNIFORM_COLOR.uniform_float('color', Vector(color) * 1.2 if hovered else color)
         self.batch.draw(SHADER_UNIFORM_COLOR)
