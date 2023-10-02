@@ -122,7 +122,8 @@ class AutoLoad:
             return
         if auto_load:
             for cls in ordered_classes:
-                bpy.utils.register_class(cls)
+                if not getattr(cls, "is_registered", False):
+                    bpy.utils.register_class(cls)
         for module in modules:
             if hasattr(module, "register"):
                 module.register()
@@ -144,7 +145,8 @@ class AutoLoad:
             return
         if auto_load:
             for cls in reversed(ordered_classes):
-                bpy.utils.unregister_class(cls)
+                if getattr(cls, "is_registered", False):
+                    bpy.utils.unregister_class(cls)
         for module in modules:
             if hasattr(module, "unregister"):
                 module.unregister()
