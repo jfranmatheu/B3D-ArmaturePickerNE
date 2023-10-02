@@ -15,8 +15,8 @@ bl_info = {
     "name" : "Armature Picker Editor",
     "author" : "J. Fran Matheu (@jfranmatheu)",
     "description" : "",
-    "blender" : (3, 6, 2),
-    "version" : (1, 0, 15),
+    "blender" : (3, 6, 5),
+    "version" : (1, 0, 16),
     "location" : "",
     "warning" : "Alpha Version!",
     "category" : "Generic"
