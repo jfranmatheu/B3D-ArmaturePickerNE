@@ -1,4 +1,4 @@
-from bpy.types import AddonPreferences, Context
+from bpy.types import AddonPreferences, Context, UILayout
 from bpy.props import CollectionProperty, IntProperty, PointerProperty, EnumProperty
 
 from ..ackit._globals import __main_package__
@@ -7,10 +7,51 @@ from .settings import PG_ArmaturePicker_WidgetSettings
 from ..utils.ui_layout import draw_section_h, draw_section
 from ..utils.node_editor import get_armature_picker_editor
 
+from armature_picker.ackit import better_prefs
+
+
+'''
+@better_prefs.new_panel(tab='WIDGET_SETTINGS', label='BonePickerGeo', order=1)
+def draw__bone_picker_geo__setttings(panel, layout: UILayout, prefs: 'ArmaturePickerPreferences') -> None:
+    prefs.wg_settings.bone_picker_geo.draw(layout)
+
+@better_prefs.new_panel(tab='THEMES', label='BonePicker', order=0)
+def draw__bone_picker__theme(panel, layout: UILayout, prefs: 'ArmaturePickerPreferences') -> None:
+    prefs.active_theme.bone_picker.draw(layout, in_prefs_space=True)
+
+@better_prefs.new_panel(tab='THEMES', label='BonePickerGeo', order=1)
+def draw__bone_picker_geo__theme(panel, layout: UILayout, prefs: 'ArmaturePickerPreferences') -> None:
+    prefs.active_theme.bone_picker_geo.draw(layout, in_prefs_space=True)
+
+@better_prefs.new_panel(tab='THEMES', label='Label', order=2)
+def draw__label__theme(panel, layout: UILayout, prefs: 'ArmaturePickerPreferences') -> None:
+    prefs.active_theme.label.draw(layout, in_prefs_space=True)
+
+@better_prefs.new_panel(tab='THEMES', label='Image', order=3)
+def draw__image__theme(panel, layout: UILayout, prefs: 'ArmaturePickerPreferences') -> None:
+    prefs.active_theme.image.draw(layout, in_prefs_space=True)
+'''
+
+
+@better_prefs.new_panel(tab='WIDGET_SETTINGS', label='Main', order=0, hide_header=True, default_closed=False)
+def draw__wg_setttings(panel, layout: UILayout, prefs: 'ArmaturePickerPreferences') -> None:
+    prefs.wg_settings.draw(layout)
+
+@better_prefs.new_panel(tab='THEMES', label='Main', order=0, hide_header=True, default_closed=False)
+def draw__theme(panel, layout: UILayout, prefs: 'ArmaturePickerPreferences') -> None:
+    prefs.active_theme.draw(layout)
+
 
 class ArmaturePickerPreferences(AddonPreferences):
     bl_idname = __main_package__
 
+    better_tabs: EnumProperty(
+        name="Sections",
+        items=(
+            ('WIDGET_SETTINGS', 'Widget Settings', ''),
+            ('THEMES', 'Themes', '')
+        )
+    )
 
     # ----------------------------------------------------------------
     # THEMES
