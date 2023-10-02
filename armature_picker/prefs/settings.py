@@ -33,6 +33,8 @@ class PG_ArmaturePicker_WidgetSettings(PropertyGroup):
         row = layout.split(factor=.25, align=True)
         col = row.column(align=True)
         col.use_property_split = False
+        col.scale_x = 1.2
+        col.scale_y = 1.2
         col.prop(self, 'wg_type', text=' ', icon='NONE', expand=True)
         data = getattr(self, self.wg_type)
         name = UILayout.enum_item_name(self, 'wg_type', self.wg_type)
