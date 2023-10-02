@@ -75,10 +75,11 @@ class PG_ArmaturePickerTheme__BonePickerGeo(StyleBase, PropertyGroup):
             return
         self.ensure_color_tags()
         col = layout.column()
+        col.label(text='Color Tags')
         col.use_property_split = False
         for i in range(10):
             color_tag = getattr(self, 'color_tag_' + str(i))
-            row = col.row(align=True, heading='Color Tag %i' % (i + 1))
+            row = col.row(align=True, heading='    %i' % (i + 1))
             row.prop(color_tag, 'name', text='')
             row.prop(color_tag, 'color', text='')
 
