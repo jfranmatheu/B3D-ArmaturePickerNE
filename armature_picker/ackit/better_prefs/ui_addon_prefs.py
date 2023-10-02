@@ -22,6 +22,7 @@ def draw_addon_prefs(self: USERPREF_PT_addons, context: Context):
     wm = context.window_manager
     prefs = context.preferences
     used_ext = {ext.module for ext in prefs.addons}
+    prefs_addons = prefs.addons
 
     addon_user_dirs = tuple(
         p for p in (
@@ -90,9 +91,6 @@ def draw_addon_prefs(self: USERPREF_PT_addons, context: Context):
         if info["support"] not in support:
             continue
 
-        user_addon = USERPREF_PT_addons.is_user_addon(mod, user_addon_paths)
-        wrong_b3d_version = user_addon and b3d_version != (*info["blender"][:2], 0)
-
         # check if addon should be visible with current filters
         is_visible = (
             (filter == "All") or
@@ -102,143 +100,154 @@ def draw_addon_prefs(self: USERPREF_PT_addons, context: Context):
         if show_enabled_only:
             is_visible = is_visible and is_enabled
 
-        if is_visible:
-            if search and not (
-                    (search in info["name"].lower() or
-                        search in iface_(info["name"]).lower()) or
-                    (info["author"] and (search in info["author"].lower())) or
-                    ((filter == "All") and (search in info["category"].lower() or
-                                            search in iface_(info["category"]).lower()))
-            ):
-                continue
+        if not is_visible:
+            continue
 
-            # Addon UI Code
-            col_box = col.column(align=True)
-            box = col_box.box()
-            colsub = box.column()
-            row = colsub.row(align=True)
+        if search and not (
+                (search in info["name"].lower() or
+                    search in iface_(info["name"]).lower()) or
+                (info["author"] and (search in info["author"].lower())) or
+                ((filter == "All") and (search in info["category"].lower() or
+                                        search in iface_(info["category"]).lower()))
+        ):
+            continue
 
+        user_addon = USERPREF_PT_addons.is_user_addon(mod, user_addon_paths)
+        wrong_b3d_version = user_addon and b3d_version != (*info["blender"][:2], 0)
+        # addon_prefs = prefs_addons.get(module_name, None)
+        use_better_prefs = user_addon # and addon_prefs is not None and hasattr(addon_prefs, 'better_draw') and hasattr(addon_prefs, 'better_tabs')
+
+        # Addon UI Code
+        colbox = col.column(align=True)
+        row_box = colbox.row(align=True)
+
+        if use_better_prefs and (info["warning"] or wrong_b3d_version):
+            box = row_box.box()
+            row = box.row(align=True)
+            row.alert = wrong_b3d_version
+            row.label(icon='ERROR')
+
+        box = row_box.box()
+        row = box.row(align=True)
+
+        if not use_better_prefs:
             row.operator(
                 "preferences.addon_expand",
                 icon='DOWNARROW_HLT' if info["show_expanded"] else 'RIGHTARROW',
                 emboss=False,
             ).module = module_name
 
-            row.operator(
-                "preferences.addon_disable" if is_enabled else "preferences.addon_enable",
-                icon='CHECKBOX_HLT' if is_enabled else 'CHECKBOX_DEHLT', text="",
-                emboss=False,
-            ).module = module_name
+        row.operator(
+            "preferences.addon_disable" if is_enabled else "preferences.addon_enable",
+            icon='CHECKBOX_HLT' if is_enabled else 'CHECKBOX_DEHLT', text="",
+            emboss=False,
+        ).module = module_name
 
-            sub = row.row()
-            sub.active = is_enabled
-            sub.label(text=iface_(info["name"]))
+        name = f'{iface_(info["name"])}  -  {".".join(str(x) for x in info["version"])}' if use_better_prefs else iface_(info["name"])
+        row.label(text=name)
 
-            if info["warning"] or wrong_b3d_version:
-                sub.label(icon='ERROR')
+        if not use_better_prefs:
+            row.label(text='', icon='BLENDER')
 
-            # icon showing support level.
-            sub.label(icon=self._support_icon_mapping.get(info["support"], 'QUESTION'))
+        if use_better_prefs:
+            if info["doc_url"] or info.get("tracker_url"):
+                sub = row.row(align=True)
+                if info["doc_url"]:
+                    sub.operator("wm.url_open", text="", text_ctxt="Documentation", icon='HELP').url = info["doc_url"]
+                if info.get("tracker_url"):
+                    sub.operator("wm.url_open", text="", text_ctxt="Report a Bug", icon='URL').url = info["tracker_url"]
 
-            sub.operator(BETTERPREFS_OT_show_addon_options.bl_idname, text='', icon='COLLAPSEMENU').module_name = module_name
+            box = row_box.box()
+            row = box.row(align=True)
+            row.scale_x = 1.1
+            row.emboss = 'PULLDOWN_MENU'
 
-            # Expanded UI (only if additional info is available)
-            if info["show_expanded"]:
-                if info["description"]:
-                    split = colsub.row().split(factor=0.15)
-                    split.label(text="Description:")
-                    split.label(text=tip_(info["description"]))
-                if info["location"]:
-                    split = colsub.row().split(factor=0.15)
-                    split.label(text="Location:")
-                    split.label(text=tip_(info["location"]))
-                if mod:
-                    split = colsub.row().split(factor=0.15)
-                    split.label(text="File:")
-                    split.operator('betterpreferences.show_addon_folder', text=tip_("Show in folder"), icon='FOLDER_REDIRECT').module = module_name
-                if info["author"]:
-                    split = colsub.row().split(factor=0.15)
-                    split.label(text="Author:")
-                    split.label(text=info["author"], translate=False)
-                if info["version"]:
-                    split = colsub.row().split(factor=0.15)
-                    split.label(text="Version:")
-                    split.label(text=".".join(str(x) for x in info["version"]), translate=False)
-                if info["blender"]:
-                    split = colsub.row().split(factor=0.15)
-                    split.label(text="Blender:")
-                    if wrong_b3d_version and user_addon:
-                        text = f'[Unsupported Blender Version] {info["blender"]}, please upgrade to latest version'
-                    else:
-                        text = ".".join(str(x) for x in info["blender"])
-                    split.label(text=text, translate=False)
-                if info["warning"]:
-                    split = colsub.row().split(factor=0.15)
-                    split.label(text="Warning:")
-                    split.label(text="  " + info["warning"], icon='ERROR')
+            row.operator("wm.url_open", text="", icon='PROPERTIES').url = 'blender.org'
+            row = row.row(align=True)
+            row.scale_x = 0.85
+            op = row.operator(BETTERPREFS_OT_show_addon_options.bl_idname, text='', icon='DOWNARROW_HLT')
+            op.module_name = module_name
+            op.addon_name = info['name']
+
+        # Expanded UI (only if additional info is available)
+        elif info["show_expanded"]:
+            colsub = colbox.box().column()
+            if info["description"]:
+                split = colsub.row().split(factor=0.15)
+                split.label(text="Description:")
+                split.label(text=tip_(info["description"]))
+            if info["location"]:
+                split = colsub.row().split(factor=0.15)
+                split.label(text="Location:")
+                split.label(text=tip_(info["location"]))
+            if mod:
+                split = colsub.row().split(factor=0.15)
+                split.label(text="File:")
+                split.operator('betterpreferences.show_addon_folder', text=tip_("Show in folder"), icon='FOLDER_REDIRECT').module = module_name
+            if info["author"]:
+                split = colsub.row().split(factor=0.15)
+                split.label(text="Author:")
+                split.label(text=info["author"], translate=False)
+            if info["version"]:
+                split = colsub.row().split(factor=0.15)
+                split.label(text="Version:")
+                split.label(text=".".join(str(x) for x in info["version"]), translate=False)
+            if info["blender"]:
+                split = colsub.row().split(factor=0.15)
+                split.label(text="Blender:")
+                if wrong_b3d_version and user_addon:
+                    text = f'[Unsupported Blender Version] {info["blender"]}, please upgrade to latest version'
+                else:
+                    text = ".".join(str(x) for x in info["blender"])
+                split.label(text=text, translate=False)
+            if info["warning"]:
+                split = colsub.row().split(factor=0.15)
+                split.label(text="Warning:")
+                split.label(text="  " + info["warning"], icon='ERROR')
 
 
-                if info["doc_url"] or info.get("tracker_url"):
-                    split = colsub.row().split(factor=0.15)
-                    split.label(text="Internet:")
-                    sub = split.row()
-                    if info["doc_url"]:
-                        sub.operator(
-                            "wm.url_open", text="Documentation", icon='HELP',
-                        ).url = info["doc_url"]
-                    # Only add "Report a Bug" button if tracker_url is set
-                    # or the add-on is bundled (use official tracker then).
-                    if info.get("tracker_url"):
-                        sub.operator(
-                            "wm.url_open", text="Report a Bug", icon='URL',
-                        ).url = info["tracker_url"]
-                    elif not user_addon:
-                        addon_info = (
-                            "Name: %s %s\n"
-                            "Author: %s\n"
-                        ) % (info["name"], str(info["version"]), info["author"])
-                        props = sub.operator(
-                            "wm.url_open_preset", text="Report a Bug", icon='URL',
-                        )
-                        props.type = 'BUG_ADDON'
-                        props.id = addon_info
+            if info["doc_url"] or info.get("tracker_url"):
+                split = colsub.row().split(factor=0.15)
+                split.label(text="Internet:")
+                sub = split.row()
+                if info["doc_url"]:
+                    sub.operator(
+                        "wm.url_open", text="Documentation", icon='HELP',
+                    ).url = info["doc_url"]
+                # Only add "Report a Bug" button if tracker_url is set
+                # or the add-on is bundled (use official tracker then).
+                if info.get("tracker_url"):
+                    sub.operator(
+                        "wm.url_open", text="Report a Bug", icon='URL',
+                    ).url = info["tracker_url"]
+                elif not user_addon:
+                    addon_info = (
+                        "Name: %s %s\n"
+                        "Author: %s\n"
+                    ) % (info["name"], str(info["version"]), info["author"])
+                    props = sub.operator(
+                        "wm.url_open_preset", text="Report a Bug", icon='URL',
+                    )
+                    props.type = 'BUG_ADDON'
+                    props.id = addon_info
 
-                if user_addon:
-                    # box_actions = col_box.box()
-                    # box_actions.label(text="Actions:")
-                    colsub.separator()
-                    row_actions = colsub.row()
-                    row_actions.scale_y = 1.5
-
-                    row_actions.operator(
-                        "betterpreferences.addon_remove", text="Refresh", icon='FILE_REFRESH',
-                    ).module = mod.__name__
-
-                    row_actions.operator(
-                        "betterpreferences.addon_remove", text="Remove", icon='CANCEL',
-                    ).module = mod.__name__
-
-                    row_actions.operator(
-                        "betterpreferences.addon_remove", text="Update", icon='IMPORT',
-                    ).module = mod.__name__
-
-                # Show addon user preferences
-                if is_enabled:
-                    addon_preferences = prefs.addons[module_name].preferences
-                    if addon_preferences is not None:
-                        draw = getattr(addon_preferences, "draw", None)
-                        if draw is not None:
-                            addon_preferences_class = type(addon_preferences)
-                            box_prefs = col_box.box()
-                            box_prefs.label(text="Preferences:")
-                            addon_preferences_class.layout = box_prefs
-                            try:
-                                draw(context)
-                            except:
-                                import traceback
-                                traceback.print_exc()
-                                box_prefs.label(text="Error (see console)", icon='ERROR')
-                            del addon_preferences_class.layout
+            # Show addon user preferences
+            if is_enabled:
+                addon_preferences = prefs.addons[module_name].preferences
+                if addon_preferences is not None:
+                    draw = getattr(addon_preferences, "draw", None)
+                    if draw is not None:
+                        addon_preferences_class = type(addon_preferences)
+                        box_prefs = col.box()
+                        box_prefs.label(text="Preferences:")
+                        addon_preferences_class.layout = box_prefs
+                        try:
+                            draw(context)
+                        except:
+                            import traceback
+                            traceback.print_exc()
+                            box_prefs.label(text="Error (see console)", icon='ERROR')
+                        del addon_preferences_class.layout
 
     # Append missing scripts
     # First collect scripts that are used but have no script file.

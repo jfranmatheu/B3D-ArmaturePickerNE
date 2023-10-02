@@ -18,11 +18,15 @@ class BETTERPREFS_OT_show_addon_options(Operator):
     bl_idname = 'betterprefs.show_addon_options'
 
     module_name: StringProperty()
+    addon_name: StringProperty()
 
     def invoke(self, context: Context, event: Event):
+        mouse_pos = event.mouse_x, event.mouse_y
+        context.window.cursor_warp(event.mouse_x, int(event.mouse_y - 4 * 12 * context.preferences.system.ui_scale) + 6)
         global _module_name
         _module_name = self.module_name
-        context.window_manager.popup_menu(BETTERPREFS_MT_addon_options.draw)
+        context.window_manager.popup_menu(BETTERPREFS_MT_addon_options.draw, title=self.addon_name)
+        context.window.cursor_warp(*mouse_pos)
         return {'INTERFACE'}
 
 
