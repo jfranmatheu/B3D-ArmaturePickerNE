@@ -7,7 +7,7 @@ from .settings import PG_ArmaturePicker_WidgetSettings
 from ..utils.ui_layout import draw_section_h, draw_section
 from ..utils.node_editor import get_armature_picker_editor
 
-from armature_picker.ackit import better_prefs
+# from armature_picker.ackit import better_prefs
 
 
 '''
@@ -32,7 +32,7 @@ def draw__image__theme(panel, layout: UILayout, prefs: 'ArmaturePickerPreference
     prefs.active_theme.image.draw(layout, in_prefs_space=True)
 '''
 
-
+'''
 @better_prefs.new_panel(tab='WIDGET_SETTINGS', label='Main', order=0, hide_header=True, default_closed=False)
 def draw__wg_setttings(panel, layout: UILayout, prefs: 'ArmaturePickerPreferences') -> None:
     prefs.wg_settings.draw(layout)
@@ -40,7 +40,7 @@ def draw__wg_setttings(panel, layout: UILayout, prefs: 'ArmaturePickerPreference
 @better_prefs.new_panel(tab='THEMES', label='Main', order=0, hide_header=True, default_closed=False)
 def draw__theme(panel, layout: UILayout, prefs: 'ArmaturePickerPreferences') -> None:
     prefs.active_theme.draw(layout)
-
+'''
 
 class ArmaturePickerPreferences(AddonPreferences):
     bl_idname = __main_package__
