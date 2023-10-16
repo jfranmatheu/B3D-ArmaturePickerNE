@@ -1,4 +1,8 @@
 from bpy.types import Context, Panel
+try:
+    from bl_ui.properties_data_armature import DATA_PT_bone_collections
+except ImportError as e:
+    DATA_PT_bone_collections = None
 
 from .ui_list import LIST_PickerLayers
 from armature_picker.node_editor.poll import poll_check
@@ -33,3 +37,20 @@ class PickerLayersPanel(Panel):
         actions = row.column(align=True)
         actions.operator('armature_picker.add_picker_layer', text='', icon='ADD')
         actions.operator('armature_picker.remove_picker_layer', text='', icon='REMOVE')
+
+
+
+class BoneCollectionsPanel(Panel):
+    bl_idname = 'AP_PT_bone_collections'
+    bl_label = "Bone Collections"
+    bl_space_type = 'NODE_EDITOR'
+    bl_region_type = 'UI'
+    bl_category = 'View'
+
+    @classmethod
+    def poll(cls, context: Context):
+        return poll_check(context, use_active_object=True) and DATA_PT_bone_collections is not None
+
+    def draw(self, context: Context):
+        self.armature = context.active_object.data
+        DATA_PT_bone_collections.draw(self, self)
