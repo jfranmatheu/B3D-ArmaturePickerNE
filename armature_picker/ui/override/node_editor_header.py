@@ -19,7 +19,8 @@ def draw(self, context: Context):
     layout.template_header()
     if node_tree is not None:
         layout.prop(node_tree, 'picker_mode', text='')
-
+    
+    layout.menu('AP_MT_view', text='View')
     layout.menu('AP_MT_utils', text='Utils')
 
     layout.separator_spacer()
