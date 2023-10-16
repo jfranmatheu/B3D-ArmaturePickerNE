@@ -9,7 +9,7 @@ from ...utils.armature import deselect_all_bones_from_active
 
 
 class APNODE_BonePicker_CommonProps:
-    
+
     def get_bone_names(self, context: Context) -> tuple:
         if context.active_object is not None and context.active_object.type == 'ARMATURE':
             return tuple((bone.name, bone.name, "") for bone in context.active_object.data.bones)
@@ -99,7 +99,10 @@ class APNODE_BonePicker_CommonProps:
             return
         layout.use_property_split = True
         layout.use_property_decorate = False
-        layout.prop_search(self, 'bone_name', context.active_object.pose, 'bones', text='', icon='BONE_DATA')
+
+        row = layout.row(align=True)
+        row.operator('armature_picker.asign_active_bone', text='', icon='RESTRICT_SELECT_OFF')
+        row.prop_search(self, 'bone_name', context.active_object.pose, 'bones', text='', icon='BONE_DATA')
 
         row = layout.row(align=True, heading='IK/FK')
         row.prop(self, 'use_ik_fk', text='', expand=False)
