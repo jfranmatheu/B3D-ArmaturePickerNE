@@ -260,7 +260,7 @@ def text(pos: Vector,
         return
 
     blend_state = state.blend_get()
-    blf.size(0, size, 72)
+    blf.size(0, size)
     text_dim = None
     if width != 0:
         text_dim = blf.dimensions(0, text)
