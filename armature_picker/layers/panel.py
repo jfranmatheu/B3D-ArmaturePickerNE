@@ -14,6 +14,7 @@ class PickerLayersPanel(Panel):
     bl_space_type = 'NODE_EDITOR'
     bl_region_type = 'UI'
     bl_category = 'View'
+    bl_order = 1
 
     @classmethod
     def poll(cls, context: Context):
@@ -46,6 +47,8 @@ class BoneCollectionsPanel(Panel):
     bl_space_type = 'NODE_EDITOR'
     bl_region_type = 'UI'
     bl_category = 'View'
+    bl_context = "data"
+    bl_order = 2
 
     @classmethod
     def poll(cls, context: Context):
