@@ -10,4 +10,7 @@ class DATA_PT_armature_picker(ArmatureButtonsPanel, Panel):
 
         arm = context.armature
 
-        layout.prop(arm, "picker", text='')
+        if arm.picker is not None:
+            layout.template_ID(arm, "picker")
+        else:
+            layout.prop(arm, "picker", text='')
