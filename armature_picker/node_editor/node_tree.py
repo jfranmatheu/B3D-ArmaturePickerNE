@@ -365,10 +365,12 @@ class AP_NodeTree(NodeTree):
                                       modal_draw_callback=self.modal__rotate_node__draw)
                 return {'RUNNING_MODAL'}
 
-        if G_hovered_node is not None and hovered_node is not None and hovered_node not in sel_nodes and not hovered_node.locked:
+        if G_hovered_node is not None and hovered_node is not None and hovered_node not in sel_nodes:
             if event.type == 'LEFTMOUSE' and event.value == 'CLICK_DRAG':
                 for sel_node in sel_nodes:
                     sel_node.select = False
+                if hovered_node.locked:
+                    return {'CANCELLED'}
                 self.nodes.active = hovered_node
                 hovered_node.select = True
                 return self.invoke__edit(context, event)
