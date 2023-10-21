@@ -94,10 +94,15 @@ class PG__BonePickerGeo__Style(StyleBase, PropertyGroup):
                 color_tag = getattr(th__bone_picker_geo, color_tag_prop_name)
                 color_tags.append((color_tag_prop_name, color_tag.name, ''))
         return color_tags
+    
+    def update_color(self, context: Context) -> None:
+        context.area.tag_redraw()
 
+    use_mesh_color: BoolProperty(default=False, name="Color from Mesh", description="Use color from source mesh", update=update_color)
     color_tag: EnumProperty(
         name="Color Tag",
-        items=get_color_tags
+        items=get_color_tags,
+        update=update_color
     )
 
     def get_color(self, theme_style: PG_ArmaturePickerTheme__BonePickerGeo) -> tuple:
@@ -107,5 +112,7 @@ class PG__BonePickerGeo__Style(StyleBase, PropertyGroup):
         return (1, 1, 1, 1)
 
     def draw(node, layout: UILayout, in_prefs_space: bool = False) -> None:
+        layout.prop(node, 'use_mesh_color')
         row = layout.row(align=True)
+        row.enabled = not node.use_mesh_color
         row.prop(node, 'color_tag')

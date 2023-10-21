@@ -42,8 +42,6 @@ class APNODE_BonePickerGeo_NodeProps:
             int(dim[1] * scale)
         )
 
-        self.color = self.object.color
-
         self.dirty_geo = True
         self.update_dimensions(context)
         self.dirty_geo = False

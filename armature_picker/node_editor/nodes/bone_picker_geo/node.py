@@ -71,7 +71,11 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Com
             if wg_settings.display_on_hover_only and not hovered and self.node_tree.picker_mode in {'POSE'}:
                 pass
             else:
-                geo.draw(self, color=local_style.get_color(theme_style), hovered=hovered)
+                if local_style.use_mesh_color:
+                    color = self.object.color
+                else:
+                    color = local_style.get_color(theme_style)
+                geo.draw(self, color=color, hovered=hovered)
 
         if self.use_ik_fk and geo:
             ikfk_size = Vector((self.ik_fk_size, self.ik_fk_size))
