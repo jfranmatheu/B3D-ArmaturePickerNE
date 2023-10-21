@@ -71,7 +71,7 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Com
             if wg_settings.display_on_hover_only and not hovered and self.node_tree.picker_mode in {'POSE'}:
                 pass
             else:
-                if local_style.use_mesh_color:
+                if local_style.use_object_color:
                     color = self.object.color
                 else:
                     color = local_style.get_color(theme_style)

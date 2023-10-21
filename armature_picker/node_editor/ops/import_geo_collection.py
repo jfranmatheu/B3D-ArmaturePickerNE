@@ -20,6 +20,11 @@ class AP_OT_import_geo_collection(MoveNodesModal, Operator):
         items=lambda op, ctx: [(coll.name, coll.name_full, "") for coll in ctx.scene.collection.children]
     )
 
+    use_object_color: BoolProperty(
+        name="Use Source Object Color",
+        default=False
+    )
+
     px_per_meter: IntProperty(
         name="Scale",
         description="Equivalent to aprox. Pixels/Meter * 2 (when zoom-in to max).",
@@ -157,6 +162,7 @@ class AP_OT_import_geo_collection(MoveNodesModal, Operator):
 
         for node in nodes:
             node.select = True
+            node.style.use_object_color = self.use_object_color
 
         self.modal_nodes = nodes
         self.modal__move_node__enter(context, self.event, None)
