@@ -4,6 +4,7 @@ from bpy.props import BoolProperty, EnumProperty, StringProperty
 from mathutils import Vector
 import gpu
 
+from time import time
 from uuid import uuid4
 from typing import List, Tuple, Type, Dict, Set, Union
 from collections import defaultdict
@@ -115,6 +116,9 @@ class AP_NodeTree(NodeTree):
     inject_modal_exit: callable = None
     inject_modal_draw: callable = None
     picker_mode: str
+    last_event_type: str = 'NONE'
+    last_event_value: str = 'NONE'
+    last_time_event: float = time()
 
     dirty: bool
 
@@ -251,6 +255,15 @@ class AP_NodeTree(NodeTree):
         if event.type == 'A' and not event.shift and event.value == 'PRESS':
             bpy.ops.node.select_all(action='TOGGLE')
             return {'FINISHED'}
+
+        # TO FIX A WEIRD BUG WHERE THE SAME EVENT IS SPAMMED TWICE...
+        curr_time_event = time()
+        if self.last_event_type == event.type and self.last_event_value == event.value and (curr_time_event - self.last_time_event) <= .2:
+            return {'FINISHED'}
+
+        self.last_time_event = curr_time_event
+        self.last_event_type = event.type
+        self.last_event_value = event.value
 
         self.mouse_pos = Vector((event.mouse_region_x, event.mouse_region_y))
 
