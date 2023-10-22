@@ -17,7 +17,7 @@ BUILD_DIRNAME = 'build' # Your build/output directory name.
 # V = Addon Version. (V:1, V:2, V:3)
 # B = Blender Version. (B:1, B:2, B:3)
 # MODULE_NAME:u (upper-case). MODULE_NAME:l (lower-case). MODULE_NAME:t (title-like).
-VERSION_FORMAT = '{MODULE_NAME:t}_v{V:1}.{V:2}.{V:3}-b{B:1}.{B:2}.x [ALPHA]'
+VERSION_FORMAT = '{MODULE_NAME:t}_v{V:1}.{V:2}.{V:3}-b{B:1}.{B:2}.x [BETA]'
 
 # Flags.
 USE_MINIFIER = True
