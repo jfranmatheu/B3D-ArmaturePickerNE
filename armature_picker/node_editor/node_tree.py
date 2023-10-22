@@ -370,7 +370,9 @@ class AP_NodeTree(NodeTree):
                 if all([node.locked for node in sel_nodes]):
                     # All nodes are locked!
                     return {'CANCELLED'}
-                self.modal_nodes = sel_nodes
+                self.modal_nodes = [node for node in sel_nodes if node.wg_type != 'bone_picker_geo']
+                if len(self.modal_nodes) == 0:
+                    return {'CANCELLED'}
                 self.set_inject_modal(context, event,
                                       modal_callback=self.modal__rotate_node__update,
                                       modal_enter_callback=self.modal__rotate_node__enter,
