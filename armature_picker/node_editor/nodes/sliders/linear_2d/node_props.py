@@ -19,7 +19,7 @@ class Axis(APNODE_Slider_DataConstraintsProps, PropertyGroup):
 
 
 
-class APNODE_Slider2D_NodeProps:    
+class APNODE_Slider2D_NodeProps:
     def get_style(self, theme) -> SliderLinear2D_Style:
         if self.use_override_theme:
             return self.style
@@ -42,9 +42,14 @@ class APNODE_Slider2D_NodeProps:
         self.x_axis.draw_ui__edit(context, draw_section(layout, "X Axis"))
         self.y_axis.draw_ui__edit(context, draw_section(layout, "Y Axis"))
 
+        if hasattr(self, 'show_text_value'):
+            layout.separator()
+            layout.prop(self, 'show_text_value')
+
     def draw_transform(self, layout: UILayout, rect_transform: RectTransform) -> None:
         layout.prop(rect_transform, 'origin')
         layout.prop(rect_transform, 'pivot')
         layout.prop(rect_transform, 'dimensions')
         layout.prop(rect_transform, 'rotation')
         layout.prop(self, 'draw_depth')
+    

@@ -292,8 +292,9 @@ class APNODE_Slider_DataConstraintsProps:
                 row.alert = True
             row.prop(self, 'data_path')
 
-        layout.separator()
-        layout.prop(self, 'show_text_value')
+        if hasattr(self, 'show_text_value'):
+            layout.separator()
+            layout.prop(self, 'show_text_value')
 
 
 class APNODE_Slider_CommonNode:
