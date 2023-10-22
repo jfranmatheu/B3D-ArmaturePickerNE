@@ -326,7 +326,6 @@ class AP_Node(NodeTransformProps):
     def invoke__edit(self, context: Context, event: Event, mouse_pos: Vector) -> set[str] | None:
         ''' Invoke method in EDIT mode context. '''
         if event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
-            print("select!")
             if self.locked:
                 bpy.ops.node.select_all(False, action='DESELECT')
                 self.node_tree.nodes.active = self
