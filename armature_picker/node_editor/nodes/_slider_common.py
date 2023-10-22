@@ -133,12 +133,6 @@ class APNODE_Slider_DataConstraintsProps:
 
 
     # ----- PROPERTIES --------------------------------
-    
-    show_text_value: BoolProperty(
-        name="Show Value",
-        description="Show text value",
-        default=True
-    )
 
     data_source: EnumProperty(
         name="Data Source",
@@ -271,7 +265,7 @@ class APNODE_Slider_DataConstraintsProps:
         # col.enabled = not self.clamp_slider
         # col.prop(self, 'step')
 
-    
+
     def draw_ui__edit(self, context: Context, layout: UILayout) -> None:
         layout.use_property_split = True
         layout.use_property_decorate = False
@@ -297,7 +291,7 @@ class APNODE_Slider_DataConstraintsProps:
             except Exception as e:
                 row.alert = True
             row.prop(self, 'data_path')
-            
+
         layout.separator()
         layout.prop(self, 'show_text_value')
 
@@ -305,6 +299,11 @@ class APNODE_Slider_DataConstraintsProps:
 class APNODE_Slider_CommonNode:
     draw_layer = 11
 
+    show_text_value: BoolProperty(
+        name="Show Value",
+        description="Show text value",
+        default=True
+    )
 
     @property
     def dirty_handle_pos(self) -> bool:
@@ -351,8 +350,8 @@ class APNODE_Slider_CommonNode:
 
 
     # ------ DRAWING --------------------------------
-    
-    
+
+
     # ----- DRAW UI LAYOUT --------------------------------
 
     def draw_ui__pose(self, context: Context, layout: UILayout) -> None:
