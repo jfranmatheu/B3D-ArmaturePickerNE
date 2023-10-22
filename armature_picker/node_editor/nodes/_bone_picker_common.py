@@ -1,10 +1,12 @@
 from bpy.types import Context, Armature, Bone, Event, UILayout
 from mathutils import Vector
 from bpy.props import StringProperty, IntProperty, FloatProperty, BoolProperty, FloatVectorProperty, EnumProperty, PointerProperty
+from bpy import ops as OPS
 
 from ._transform_props import RectTransform
 from ...gpu import draw
 from ...utils.armature import deselect_all_bones_from_active
+from ...utils.view3d import get_view3d_context
 
 
 
@@ -181,8 +183,37 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps):
             if self.get_state('ik_fk_hovered'):
                 self.toggle_ik_fk(context)
                 return
+
             self.select_node(context, deselect_all=not event.shift)
             self.select_bone(context, deselect_all=not event.shift)
+
+        if event.type == 'LEFTMOUSE' and event.value == 'PRESS':
+            active_tool: str = context.window_manager.armature_picker.active_tool
+
+            if active_tool == 'SELECT':
+                return
+
+            self.select_node(context, deselect_all=not event.shift)
+            self.select_bone(context, deselect_all=not event.shift)
+
+            v3d_context = get_view3d_context(context)
+            if v3d_context is None:
+                return
+
+            with context.temp_override(**v3d_context):
+                if active_tool == 'MOVE':
+                    OPS.transform.translate('INVOKE_DEFAULT', release_confirm=True)
+
+                elif active_tool == 'ROTATE':
+                    OPS.transform.rotate('INVOKE_DEFAULT', release_confirm=True)
+
+                elif active_tool == 'SCALE':
+                    OPS.transform.resize('INVOKE_DEFAULT', release_confirm=True)
+
+                elif active_tool == 'GIMBALL':
+                    OPS.transform.trackball('INVOKE_DEFAULT', release_confirm=True)
+
+                return {'RUNNING_MODAL'}
 
 
     # ------ DRAWING --------------------------------
