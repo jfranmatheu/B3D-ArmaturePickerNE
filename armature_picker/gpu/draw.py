@@ -393,6 +393,9 @@ def image_ui(node: object, graphic_id: str, image: Image | GPUTexture, origin: V
     if not set_image(image, _shader): return
     draw_node(node, graphic_id, _shader, use_uv=True, **extra_uniforms)
 
+def image_ui_opa(node: object, graphic_id: str, image: Image | GPUTexture, opa: float, _shader=SHADERS.IMA_OPA, **extra_uniforms) -> None:
+    image_ui(node, graphic_id, image, None, _shader, o=opa)
+
 
 def image_ui_outline(node: object, graphic_id: str, image: Image | GPUTexture, outline_color: RGBA, origin: Vector | None = None, _shader=SHADERS.IMA_OUTLINE) -> None:
     image_ui(node, graphic_id, image, origin, _shader, u_outline_color=outline_color)
