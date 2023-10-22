@@ -133,6 +133,12 @@ class APNODE_Slider_DataConstraintsProps:
 
 
     # ----- PROPERTIES --------------------------------
+    
+    show_text_value: BoolProperty(
+        name="Show Value",
+        description="Show text value",
+        default=True
+    )
 
     data_source: EnumProperty(
         name="Data Source",
@@ -265,17 +271,39 @@ class APNODE_Slider_DataConstraintsProps:
         # col.enabled = not self.clamp_slider
         # col.prop(self, 'step')
 
+    
+    def draw_ui__edit(self, context: Context, layout: UILayout) -> None:
+        layout.use_property_split = True
+        layout.use_property_decorate = False
+
+        layout.row().prop(self, 'data_source', expand=True)
+
+        if self.data_source == 'BONE':
+            layout.prop(self, 'bone_name', text='Bone', icon='BONE_DATA')
+
+            if self.bone_name and self.bone_name != 'NONE':
+                layout.row().prop(self, 'bone_data_source', expand=True, text=" ")
+
+                if self.bone_data_source == 'ATTR':
+                    layout.prop(self, 'bone_attr', text=" ")
+                elif self.bone_data_source == 'CUSTOM_PROPERTY':
+                    layout.prop(self, 'bone_custom_property', text=" ")
+
+        elif self.data_source == 'DATA_PATH':
+            row = layout.row()
+            try:
+                if self.data_path != '':
+                    context.active_object.path_resolve(self.data_path, True)
+            except Exception as e:
+                row.alert = True
+            row.prop(self, 'data_path')
+            
+        layout.separator()
+        layout.prop(self, 'show_text_value')
 
 
 class APNODE_Slider_CommonNode:
     draw_layer = 11
-    
-    
-    show_text_value: BoolProperty(
-        name="Show Value",
-        description="Show text value",
-        default=True
-    )
 
 
     @property
@@ -291,7 +319,6 @@ class APNODE_Slider_CommonNode:
         super().init(context)
 
         self.dirty_handle_pos = True
-        self.rect_transform.dimensions = (100, 12)
 
 
     # ------ ON HOVER --------------------------------
@@ -332,35 +359,6 @@ class APNODE_Slider_CommonNode:
         # Draw data_path property field...
         pass
 
-    def draw_ui__edit(self, context: Context, layout: UILayout) -> None:
-        layout.use_property_split = True
-        layout.use_property_decorate = False
-
-        layout.row().prop(self, 'data_source', expand=True)
-
-        if self.data_source == 'BONE':
-            layout.prop(self, 'bone_name', text='Bone', icon='BONE_DATA')
-
-            if self.bone_name and self.bone_name != 'NONE':
-                layout.row().prop(self, 'bone_data_source', expand=True, text=" ")
-
-                if self.bone_data_source == 'ATTR':
-                    layout.prop(self, 'bone_attr', text=" ")
-                elif self.bone_data_source == 'CUSTOM_PROPERTY':
-                    layout.prop(self, 'bone_custom_property', text=" ")
-
-        elif self.data_source == 'DATA_PATH':
-            row = layout.row()
-            try:
-                if self.data_path != '':
-                    context.active_object.path_resolve(self.data_path, True)
-            except Exception as e:
-                row.alert = True
-            row.prop(self, 'data_path')
-            
-        layout.separator()
-        layout.prop(self, 'show_text_value')
-
 
     # ----- TRANSFORM -----------------------------------------------------------
 
@@ -369,10 +367,10 @@ class APNODE_Slider_CommonNode:
         rect = self.rect_transform
         w, h = rect.edit_dimensions
 
-        if self.bar_type == 'LINE':
-            if h > 15:
-                rect.edit_dimensions = (w, 15)
-                return
+        # if self.bar_type == 'LINE':
+        #     if h > 15:
+        #         rect.edit_dimensions = (w, 15)
+        #         return
 
         if w < 20:
             rect.edit_dimensions = (20, 10)

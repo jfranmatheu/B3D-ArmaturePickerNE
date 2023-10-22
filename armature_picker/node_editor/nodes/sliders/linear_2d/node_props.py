@@ -16,10 +16,10 @@ class Axis(APNODE_Slider_DataConstraintsProps, PropertyGroup):
         elif self.unit_type == 'ANGLE':
             col.prop(self, 'min_angle')
             col.prop(self, 'max_angle')
-        
 
 
-class APNODE_Slider2D_NodeProps:
+
+class APNODE_Slider2D_NodeProps:    
     def get_style(self, theme) -> SliderLinear2D_Style:
         if self.use_override_theme:
             return self.style
@@ -29,7 +29,7 @@ class APNODE_Slider2D_NodeProps:
 
     x_axis: PointerProperty(name="X Axis", type=Axis)
     y_axis: PointerProperty(name="Y Axis", type=Axis)
-    
+
     def draw_slider_constraints_props(self, layout: UILayout) -> None:
         self.x_axis.draw_slider_constraints_props(draw_section(layout, "X Axis"))
         self.y_axis.draw_slider_constraints_props(draw_section(layout, "Y Axis"))

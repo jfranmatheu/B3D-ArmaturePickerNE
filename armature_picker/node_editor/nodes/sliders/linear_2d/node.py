@@ -30,6 +30,9 @@ class APNODE_SliderLinear2D(APNODE_Slider2D_NodeProps, APNODE_Slider_CommonNode,
 
         self.show_text_value = False
 
+    def update_dimensions(self, context: Context) -> None:
+        self.rect_transform.dimensions = self.rect_transform.edit_dimensions
+
 
     def update_handle_pos(self, context: Context) -> None:
         self.set_state('dirty_handle_pos', True)
