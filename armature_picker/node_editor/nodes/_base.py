@@ -309,11 +309,15 @@ class AP_Node(NodeTransformProps):
             return {'FINISHED'}
 
         if ret == OpsReturn.RUN:
+            def _modal_exit_wrapper(*args, **kwargs):
+                self.in_modal = False
+                modal_exit(*args, **kwargs)
+            
             # --- MODAL ENTER ---
             self.update_mouse(context, event)
             self.modal_enter = modal_enter
             self.modal = modal
-            self.modal_exit = modal_exit
+            self.modal_exit = _modal_exit_wrapper
             self.modal_enter(context, event, self.mouse)
             self.in_modal = True
 

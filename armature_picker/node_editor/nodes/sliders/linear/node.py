@@ -138,6 +138,8 @@ class APNODE_SliderLinear(APNODE_Slider_NodeProps, APNODE_Slider_Common, AP_Node
     def modal_draw__pose(self, context: Context, rect: RectTransform, style: SliderLinear_Style, ui_scale: float) -> None:
         if not self.show_text_value:
             return
+        if not self.in_modal:
+            return
 
         if style.handle_type == 'CIRCLE':
             handle_size = Vector((rect.dimensions[1], rect.dimensions[1]))
