@@ -522,8 +522,9 @@ class AP_NodeTree(NodeTree):
     # ----------------------------------------------------------------
 
     def modal__move_node__enter(self, context: Context, event: Event, mouse_pos: Vector) -> None:
-        self.prev_node_location = [get_node_editor_region_coord(context, node.rect_transform.origin) for node in self.modal_nodes]
-        self.node_location_offset = [prev_node_loc - mouse_pos for prev_node_loc in self.prev_node_location]
+        self.prev_node_location = [tuple(node.rect_transform.origin) for node in self.modal_nodes]
+        node_region_location = [get_node_editor_region_coord(context, node.rect_transform.origin) for node in self.modal_nodes]
+        self.node_location_offset = [prev_node_loc - mouse_pos for prev_node_loc in node_region_location]
 
     def modal__move_node__update(self, context: Context, event: Event, mouse_pos: Vector) -> int:
         if self.modal_nodes is None or (event.type == 'LEFTMOUSE' and event.value == 'RELEASE'):
