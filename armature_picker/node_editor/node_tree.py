@@ -255,11 +255,17 @@ class AP_NodeTree(NodeTree):
         if event.type == 'A' and not event.shift and event.value == 'PRESS':
             bpy.ops.node.select_all(action='TOGGLE')
             return {'FINISHED'}
+        
+        global G_hovered_node
 
         # TO FIX A WEIRD BUG WHERE THE SAME EVENT IS SPAMMED TWICE...
         curr_time_event = time()
         if self.last_event_type == event.type and self.last_event_value == event.value and (curr_time_event - self.last_time_event) <= .2:
-            return {'FINISHED'}
+            if event.type == 'LEFTMOUSE' and event.value == 'PRESS' and self.picker_mode == 'POSE' and G_hovered_node is not None:
+                # An exception... to have the pose tools working...
+                pass
+            else:
+                return {'FINISHED'}
 
         self.last_time_event = curr_time_event
         self.last_event_type = event.type
@@ -277,8 +283,6 @@ class AP_NodeTree(NodeTree):
 
         if ret is not None:
             return ret
-
-        global G_hovered_node
 
         if G_hovered_node is None:
             return {'FINISHED'}
