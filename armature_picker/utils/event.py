@@ -87,11 +87,14 @@ class Mouse:
     view_delta: Vector
 
     dir: Vector       # direction of mouse taking into account previous position.
+    
+    error: object | None | str | bool
 
 
     @staticmethod
     def init(event: Event, context: Context | None = None, local_space__rect: _RectTransform | None = None) -> 'Mouse':
         mouse = Mouse()
+        mouse.error = False
         mouse_region_pos = Vector((event.mouse_region_x, event.mouse_region_y))
 
         mouse.start = mouse_region_pos
@@ -120,6 +123,11 @@ class Mouse:
         return mouse
 
     def update(self, event: Event, context: Context | None = None, local_space__rect: _RectTransform | None = None) -> None:
+        if self.error:
+            self.init(event, context, local_space__rect)
+            self.error = False
+            return
+
         self.prev.x = self.current.x
         self.prev.y = self.current.y
         self.current.x = event.mouse_region_x
@@ -175,11 +183,23 @@ class Mouse:
         l_hor = bottom_right - l_co
         l_ver = top_left - l_co
 
-        A = Matrix((
-            (l_hor.x, l_ver.x),
-            (l_hor.y, l_ver.y)
-        ))
-        A.invert()
+        # A = Matrix((
+        #     (l_hor.x, l_ver.x), # a b
+        #     (l_hor.y, l_ver.y)  # c d
+        # ))
+        # A.invert()
+
+        a, b = l_hor.x, l_ver.x
+        c, d = l_hor.y, l_ver.y
+
+        A_det = a * d - b * c
+        if A_det == 0:
+            self.error = True
+            return
+
+        # A_adj = ((d, -b), (-c, a))
+        k = (1 / A_det)
+        A = Matrix(((k*d, k*-b), (k*-c, k*a)))
 
         Q = self.current - l_co
 
