@@ -18,7 +18,7 @@ bl_info = {
     "blender" : (3, 6, 5),
     "version" : (1, 0, 17),
     "location" : "",
-    "warning" : "Beta Version!",
+    "warning" : "Alpha Version!",
     "category" : "Generic"
 }
 
