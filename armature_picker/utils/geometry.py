@@ -37,11 +37,11 @@ class Box:
 
     @property
     def width(self) -> int:
-        return self.max_x - self.min_x
+        return self.x_max - self.x_min
 
     @property
     def height(self) -> int:
-        return self.max_y - self.min_y
+        return self.y_max - self.y_min
 
     @property
     def size(self) -> Vector:
@@ -57,19 +57,19 @@ class Box:
 
     @property
     def top_left(self) -> Vector:
-        return Vector((self.min_x, self.max_y))
+        return Vector((self.x_min, self.y_max))
 
     @property
     def bottom_left(self) -> Vector:
-        return Vector((self.min_x, self.min_y))
+        return Vector((self.x_min, self.y_min))
 
     @property
     def bottom_right(self) -> Vector:
-        return Vector((self.max_x, self.min_y))
+        return Vector((self.x_max, self.y_min))
 
     @property
     def top_right(self) -> Vector:
-        return Vector((self.max_x, self.max_y))
+        return Vector((self.x_max, self.y_max))
     
     @property
     def coords(self) -> list[Vector]:
