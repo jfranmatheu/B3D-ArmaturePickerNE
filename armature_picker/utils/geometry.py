@@ -36,8 +36,45 @@ class Box:
         return Vector((self.x_max, self.y_max))
 
     @property
+    def width(self) -> int:
+        return self.max_x - self.min_x
+
+    @property
+    def height(self) -> int:
+        return self.max_y - self.min_y
+
+    @property
     def size(self) -> Vector:
-        return Vector((self.x_max - self.x_min, self.y_max - self.y_min))
+        return Vector((self.width, self.height))
+
+    @property
+    def center_t(self) -> tuple[int, int]:
+        return int(self.width / 2), int(self.height / 2)
+
+    @property
+    def center(self) -> Vector:
+        return Vector(self.center_t)
+
+    @property
+    def top_left(self) -> Vector:
+        return Vector((self.min_x, self.max_y))
+
+    @property
+    def bottom_left(self) -> Vector:
+        return Vector((self.min_x, self.min_y))
+
+    @property
+    def bottom_right(self) -> Vector:
+        return Vector((self.max_x, self.min_y))
+
+    @property
+    def top_right(self) -> Vector:
+        return Vector((self.max_x, self.max_y))
+    
+    @property
+    def coords(self) -> list[Vector]:
+        ''' 'U' shape Order: Top-Left, Bot-Left, Bot-Right, Top-Right. '''
+        return [self.top_left, self.bottom_left, self.bottom_right, self.top_right]
 
 
 def distance_between(_p1, _p2):
