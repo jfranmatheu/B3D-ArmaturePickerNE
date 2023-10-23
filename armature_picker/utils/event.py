@@ -183,12 +183,6 @@ class Mouse:
         l_hor = bottom_right - l_co
         l_ver = top_left - l_co
 
-        # A = Matrix((
-        #     (l_hor.x, l_ver.x), # a b
-        #     (l_hor.y, l_ver.y)  # c d
-        # ))
-        # A.invert()
-
         a, b = l_hor.x, l_ver.x
         c, d = l_hor.y, l_ver.y
 
@@ -197,9 +191,15 @@ class Mouse:
             self.error = True
             return
 
+        A = Matrix((
+            (a, b), # a b
+            (c, d)  # c d
+        ))
+        A.invert()
+
         # A_adj = ((d, -b), (-c, a))
-        k = (1 / A_det)
-        A = Matrix(((k*d, k*-b), (k*-c, k*a)))
+        ## k = (1 / A_det)
+        ## A = Matrix(((k*d, k*-b), (k*-c, k*a)))
 
         Q = self.current - l_co
 
