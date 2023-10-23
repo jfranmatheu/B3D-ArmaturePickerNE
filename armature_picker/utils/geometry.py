@@ -1,5 +1,5 @@
-from math import hypot, dist, cos, sin, acos
-from mathutils import Vector, Matrix
+from math import hypot, dist, cos, sin, acos, sqrt
+from mathutils import Vector, Matrix, geometry
 from dataclasses import dataclass
 from bpy.types import Object
 import bmesh
@@ -8,6 +8,12 @@ from bmesh.types import BMesh, BMFace
 import numpy as np
 
 from .math import dotproduct, length, cross
+
+
+# Constant integers for directions
+RIGHT = 1
+LEFT = -1
+ZERO = 0
 
 
 @dataclass
@@ -38,6 +44,32 @@ def distance_between(_p1, _p2):
     return dist(_p1, _p2)
     return hypot(_p1[0] - _p2[0], _p1[1] - _p2[1])
 
+
+def directionOfPoint(A: Vector, B: Vector, P: Vector):
+    global RIGHT, LEFT, ZERO
+
+    # Subtracting co-ordinates of
+    # point A from B and P, to
+    # make A as origin
+    B.x -= A.x
+    B.y -= A.y
+    P.x -= A.x
+    P.y -= A.y
+
+    # Determining cross Product
+    cross_product = B.x * P.y - B.y * P.x
+
+    # Return RIGHT if cross product is positive
+    if (cross_product > 0):
+        return RIGHT
+
+    # Return LEFT if cross product is negative
+    if (cross_product < 0):
+        return LEFT
+
+    # Return ZERO if cross product is zero
+    return ZERO
+
 def point_inside_circle(point, c, radius):
     return distance_between(point, c) < radius
 
@@ -59,6 +91,46 @@ def get_point_in_rect_space(p: Vector, rect, invert: bool = False) -> Vector:
         _p = p.copy()
 
     return _p
+
+
+def distance_to_line_segment(A: Vector, B: Vector, P: Vector) -> float:
+    x, y = P
+    x1, y1 = A
+    x2, y2 = B
+
+    # Calculate the direction vector of the segment
+    dx = x2 - x1
+    dy = y2 - y1
+
+    # Calculate the length of the direction vector
+    segment_length = sqrt(dx * dx + dy * dy)
+
+    # Avoid division by zero
+    if segment_length == 0:
+        return sqrt((x - x1) ** 2 + (y - y1) ** 2)
+
+    # Calculate the normalized direction vector
+    dx /= segment_length
+    dy /= segment_length
+
+    # Calculate the vector from the start point to the point
+    vx = x - x1
+    vy = y - y1
+
+    # Calculate the dot product of the vector and the direction vector
+    dot_product = vx * dx + vy * dy
+
+    if dot_product <= 0:
+        # The point is before the segment
+        return sqrt((x - x1) ** 2 + (y - y1) ** 2)
+
+    if dot_product >= segment_length:
+        # The point is after the segment
+        return sqrt((x - x2) ** 2 + (y - y2) ** 2)
+
+    # The point is on the segment
+    distance = sqrt((x - (x1 + dx * dot_product)) ** 2 + (y - (y1 + dy * dot_product)) ** 2)
+    return distance
 
 
 def rect_overlap(rect_A, rect_B) -> bool:
