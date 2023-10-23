@@ -178,7 +178,7 @@ def draw_point(owner: object, graphic_id: str, pos: Vector, psize: float, angle:
         pass
     else:
         batch = batch_for_shader(shader, 'POINTS',
-                                {'pos': pos})
+                                {'pos': [pos]})
         set_batch_to_cache(owner.uuid, graphic_id, batch)
     _draw_batch(batch, shader, **uniforms)
 
@@ -407,7 +407,7 @@ def offscreen(node: object, graphic_id: str, off: GPUOffScreen, origin: Vector |
 
 
 def just_a_point(pos: Vector, radius: int, color: RGBA, _shader=SHADER_UNIFORM_COLOR) -> None:
-    batch: GPUBatch = batch_for_shader(_shader, 'POINTS', {'pos': pos})
+    batch: GPUBatch = batch_for_shader(_shader, 'POINTS', {'pos': [pos]})
     _shader.uniform_float('color', color)
     state.point_size_set(int(radius*2))
     batch.draw(_shader)
