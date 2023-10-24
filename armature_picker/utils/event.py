@@ -5,6 +5,8 @@ from .geometry import rotate_point
 from .node_editor import get_node_editor_zoom, get_node_editor_region_coord
 from .math import clamp
 
+from math import trunc, modf
+
 
 class EventValue:
     ANY = 'ANY'
@@ -79,6 +81,8 @@ class Mouse:
     local_offset: Vector
     local_delta: Vector
     local_dir: Vector
+    local_delta_int: Vector # Same as local_delta but it always returns a integer value, with cumulative effect.
+    local_delta_acummulative: Vector # Exclusively used for 'local_delta_int' as a cumulative delta value.
 
     view_current: Vector
     view_prev: Vector
@@ -257,12 +261,19 @@ class Mouse:
             self.local_offset = Vector((0, 0))
             self.local_delta = Vector((0, 0))
             self.local_dir = Vector((0, 0))
+            self.local_delta_int = Vector((0, 0))
+            self.local_delta_acummulative = Vector((0, 0))
         else:
             self.local_prev.x = self.local_current.x
             self.local_prev.y = self.local_current.y
             self.local_current = local_abs_mouse
             self.local_delta.x = self.local_current.x - self.local_prev.x
             self.local_delta.y = self.local_current.y - self.local_prev.y
+
+            cummulative = self.local_delta_acummulative + self.local_delta
+            self.local_delta_acummulative.x, self.local_delta_int.x = modf(cummulative.x) # NOTE: CAN CAUSE FLOATINT POINT ROUNDING ERROR.
+            self.local_delta_acummulative.y, self.local_delta_int.y = modf(cummulative.y) # NOTE: CAN CAUSE FLOATINT POINT ROUNDING ERROR.
+
             # self.local_delta = rotate_point(self.local_delta, Vector((0, 0)), local_space__rect.rotation)
             self.local_offset.x = self.local_current.x - self.local_start.x
             self.local_offset.y = self.local_current.y - self.local_start.y
