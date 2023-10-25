@@ -5,7 +5,7 @@ from mathutils import Vector
 
 from collections import defaultdict
 from uuid import uuid4
-from math import degrees, radians
+from math import degrees, radians, pi
 
 from ...utils.event import Mouse, EventType, EventValue
 from ...utils.operator import OpsReturn
@@ -481,6 +481,8 @@ class AP_Node(NodeTransformProps):
 
             # GIZMO HANDLES FOR INTERACTIVE RE-DIMENSION.
             if active and not self.locked:
+                view_zoom = get_node_editor_zoom(context)
+
                 border_id = self.get_state('HOVERED_BORDER', 'NONE')
                 in_modal = self.in_modal
 
@@ -488,19 +490,19 @@ class AP_Node(NodeTransformProps):
 
                 handles = {
                     'LEFT': (
-                        rect.get_point_relative(0.0, 0.5, offset=Vector((-2, 0)), apply_rotation=True, rotate_from_origin=True),
+                        rect.get_point_relative(0.0, 0.5, offset=Vector((-3, 0)), apply_rotation=True, rotate_from_origin=True),
                         radians(rotation_angle + 180)
                     ),
                     'RIGHT': (
-                        rect.get_point_relative(1.0, 0.5, offset=Vector((2, 0)), apply_rotation=True, rotate_from_origin=True),
+                        rect.get_point_relative(1.0, 0.5, offset=Vector((3, 0)), apply_rotation=True, rotate_from_origin=True),
                         radians(rotation_angle)
                     ),
                     'BOTTOM': (
-                        rect.get_point_relative(0.5, 0.0, offset=Vector((0, -2)), apply_rotation=True, rotate_from_origin=True),
+                        rect.get_point_relative(0.5, 0.0, offset=Vector((0, -3)), apply_rotation=True, rotate_from_origin=True),
                         radians(rotation_angle + 270)
                     ),
                     'TOP': (
-                        rect.get_point_relative(0.5, 1.0, offset=Vector((0, 2)), apply_rotation=True, rotate_from_origin=True),
+                        rect.get_point_relative(0.5, 1.0, offset=Vector((0, 3)), apply_rotation=True, rotate_from_origin=True),
                         radians(rotation_angle + 90)
                     ),
                 }
@@ -508,19 +510,27 @@ class AP_Node(NodeTransformProps):
 
                 for handle_id, (handle_pos, handle_orientation) in handles.items():
                     handle_hovered = border_id==handle_id
-                    if in_modal and handle_hovered:
+                    if in_modal and not handle_hovered:
                         continue
 
-                    draw.just_a_point(
+                    # draw.just_a_point(
+                    #     handle_pos,
+                    #     radius=4.0,
+                    #     color=(1, 1, 0, 1) if handle_hovered else (1, 1, 1, 1),
+                    #     rotation=rect.rotation,
+                    # )
+
+                    draw_shape.chevron(
                         handle_pos,
-                        radius=4.0,
-                        color=(1, 1, 0, 1) if handle_hovered else (1, 1, 1, 1),
-                        rotation=rect.rotation,
+                        handle_orientation, # pi-(handle_orientation+pi*0.5),
+                        3 * view_zoom if handle_hovered else 2.5 * view_zoom,
+                        (0, 0, 0, 1),
+                        (1, 1, 1, 1) if handle_hovered else (1, 1, 1, .64),
+                        line_width=1 * view_zoom,
+                        antialias=1,
                     )
 
-                    if handle_hovered:
-                        view_zoom = get_node_editor_zoom(context)
-
+                    if handle_hovered and not in_modal:
                         draw_shape.arrow_ang_90(
                             view_loc,
                             handle_orientation,
