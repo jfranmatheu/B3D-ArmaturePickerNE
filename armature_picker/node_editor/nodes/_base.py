@@ -5,7 +5,7 @@ from mathutils import Vector
 
 from collections import defaultdict
 from uuid import uuid4
-from math import degrees
+from math import degrees, radians
 
 from ...utils.event import Mouse, EventType, EventValue
 from ...utils.operator import OpsReturn
@@ -484,15 +484,29 @@ class AP_Node(NodeTransformProps):
                 border_id = self.get_state('HOVERED_BORDER', 'NONE')
                 in_modal = self.in_modal
 
+                rotation_angle = degrees(rect.rotation)
 
                 handles = {
-                    'LEFT': rect.get_point_relative(0.0, 0.5, offset=Vector((-2, 0)), apply_rotation=True, rotate_from_origin=True),
-                    'RIGHT': rect.get_point_relative(1.0, 0.5, offset=Vector((2, 0)), apply_rotation=True, rotate_from_origin=True),
-                    'BOTTOM': rect.get_point_relative(0.5, 0.0, offset=Vector((0, -2)), apply_rotation=True, rotate_from_origin=True),
-                    'TOP': rect.get_point_relative(0.5, 1.0, offset=Vector((0, 2)), apply_rotation=True, rotate_from_origin=True),
+                    'LEFT': (
+                        rect.get_point_relative(0.0, 0.5, offset=Vector((-2, 0)), apply_rotation=True, rotate_from_origin=True),
+                        radians(rotation_angle + 180)
+                    ),
+                    'RIGHT': (
+                        rect.get_point_relative(1.0, 0.5, offset=Vector((2, 0)), apply_rotation=True, rotate_from_origin=True),
+                        radians(rotation_angle)
+                    ),
+                    'BOTTOM': (
+                        rect.get_point_relative(0.5, 0.0, offset=Vector((0, -2)), apply_rotation=True, rotate_from_origin=True),
+                        radians(rotation_angle + 270)
+                    ),
+                    'TOP': (
+                        rect.get_point_relative(0.5, 1.0, offset=Vector((0, 2)), apply_rotation=True, rotate_from_origin=True),
+                        radians(rotation_angle + 90)
+                    ),
                 }
 
-                for handle_id, handle_pos in handles.items():
+
+                for handle_id, (handle_pos, handle_orientation) in handles.items():
                     handle_hovered = border_id==handle_id
                     if in_modal and handle_hovered:
                         continue
@@ -507,23 +521,9 @@ class AP_Node(NodeTransformProps):
                     if handle_hovered:
                         view_zoom = get_node_editor_zoom(context)
 
-                        if rect.rotation == 0:
-                            orientation = 0
-                        else:
-                            # WEIRD STUFF... but it does the work lol.
-                            rotation_angle = degrees(rect.rotation)
-                            if border_id == 'RIGHT':
-                                orientation = 360 - rotation_angle
-                            elif border_id == 'LEFT':
-                                orientation = (360 - rotation_angle) + 90 + rotation_angle
-                            elif border_id == 'TOP':
-                                orientation = - (360 - rotation_angle) - 90 - rotation_angle
-                            elif border_id == 'BOTTOM':
-                                orientation = - (360 - rotation_angle)
-
                         draw_shape.arrow_ang_90(
                             view_loc,
-                            orientation,
+                            handle_orientation,
                             6 * view_zoom,
                             (0, 0, 0, 1),
                             (0, 0, 0, 1),
@@ -533,7 +533,7 @@ class AP_Node(NodeTransformProps):
 
                         draw_shape.arrow_ang_90(
                             view_loc,
-                            orientation,
+                            handle_orientation,
                             7 * view_zoom,
                             (1, 1, 1, 1),
                             (1, 1, 1, 1),
