@@ -479,6 +479,7 @@ class AP_Node(NodeTransformProps):
                 color=color
             )
 
+            # GIZMO HANDLES FOR INTERACTIVE RE-DIMENSION.
             if active and not self.locked:
                 border_id = self.get_state('HOVERED_BORDER', 'NONE')
                 in_modal = self.in_modal
@@ -533,10 +534,10 @@ class AP_Node(NodeTransformProps):
                         draw_shape.arrow_ang_90(
                             view_loc,
                             orientation,
-                            6 * view_zoom,
+                            7 * view_zoom,
                             (1, 1, 1, 1),
                             (1, 1, 1, 1),
-                            line_width=1.5 * view_zoom,
+                            line_width=1 * view_zoom,
                             antialias=1.0,
                         )
 
