@@ -2,6 +2,7 @@ from ..utils.gpu import load_shader as new_sh
 
 
 class SHADERS:
+    ARR_ANG_90 = new_sh('BASIC', 'ARR_ANG_90') # ADVANCE_POINT_GRAPHIC
     COLOR_UNIFORM = new_sh('BASIC', 'COLOR_UNIFORM')
     IMA = new_sh('IMA', 'IMA')
     IMA_OPA = new_sh('IMA', 'IMA_OPA')

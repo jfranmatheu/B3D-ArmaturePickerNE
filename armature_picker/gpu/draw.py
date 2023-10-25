@@ -406,7 +406,7 @@ def offscreen(node: object, graphic_id: str, off: GPUOffScreen, origin: Vector |
     image_ui(node, graphic_id, off.texture_color, origin=origin)
 
 
-def just_a_point(pos: Vector, radius: int, color: RGBA, rotation: float = 0, _shader=SHADER_UNIFORM_COLOR) -> None:
+def just_a_point(pos: Vector, radius: int, color: RGBA = None, rotation: float = 0, shader=SHADER_UNIFORM_COLOR, **uniforms) -> None:
     with gpu.matrix.push_pop():
         # gpu.matrix.translate(Vector(pos) * -1)
         # gpu.matrix.multiply_matrix(Matrix.Rotation(rotation, 4, 'Z'))
@@ -418,8 +418,11 @@ def just_a_point(pos: Vector, radius: int, color: RGBA, rotation: float = 0, _sh
         vbo = GPUVertBuf(len=1, format=fmt)
         vbo.attr_fill(id=pos_id, data=[(0, 0)])
         batch = GPUBatch(type='POINTS', buf=vbo)
-        batch.program_set(_shader)
-        _shader.uniform_float("color", color)
+        batch.program_set(shader)
+        if color is not None:
+            shader.uniform_float("color", color)
+        for key, value in uniforms.items():
+            shader.uniform_float(key, value)
         batch.draw()
         state.point_size_set(1.0)
 
