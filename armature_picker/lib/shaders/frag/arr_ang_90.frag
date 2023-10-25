@@ -3,6 +3,7 @@
 
 const float PI = 3.14159265358979323846264;
 const float SQRT_2 = 1.4142135623730951;
+const float SQRT_5 = 0.70710678118
 
 out vec4 fragColor;
 
@@ -14,8 +15,147 @@ uniform vec2 u_rotation;
 // varying vec2 v_size;
 
 
+// ----------------------------------------------------------------
+//transforms
+
+vec2 transform_rotate(vec2 position, float rotation)
+{
+    float angle = rotation * PI * 2 * -1;
+    float sine, cosine;
+    sine = sin(angle);
+    cosine = cos(angle);
+    return vec2(cosine * position.x + sine * position.y, cosine * position.y - sine * position.x);
+}
+
+vec2 transform_translate(vec2 position, float2 offset)
+{
+    //move samplepoint in the opposite direction that we want to move shapes in
+    return position - offset;
+}
+
+vec2 transform_scale(vec2 position, float scale)
+{
+    return position / scale;
+}
+
+
+// ----------------------------------------------------------------
+// SDF Combination Ops.
+
+float sdf_op_merge(float shape1, float shape2)
+{
+    return min(shape1, shape2);
+}
+
+float sdf_op_merge_round(float shape1, float shape2, float radius)
+{
+    /* Step 1:
+    vec2 intersectionSpace = vec2(shape1, shape2);
+    intersectionSpace = min(intersectionSpace, 0);
+    return length(intersectionSpace) - radius;
+    */
+    /* Step 2:
+    vec2 intersectionSpace = vec2(shape1 - radius, shape2 - radius);
+    intersectionSpace = min(intersectionSpace, 0);
+    return length(intersectionSpace);
+    */
+    /* Step 3:
+    vec2 intersectionSpace = vec2(shape1 - radius, shape2 - radius);
+    intersectionSpace = min(intersectionSpace, 0);
+    return length(intersectionSpace) - radius;
+    */
+    // Step 4:
+    vec2 intersectionSpace = vec2(shape1 - radius, shape2 - radius);
+    intersectionSpace = min(intersectionSpace, 0);
+    float insideDistance = -length(intersectionSpace);
+    float simpleUnion = sdf_op_merge(shape1, shape2);
+    float outsideDistance = max(simpleUnion, radius);
+    return insideDistance + outsideDistance;
+}
+
+float sdf_op_merge_champfer(float shape1, float shape2, float champferSize)
+{
+    float simpleMerge = sdf_op_merge(shape1, shape2);
+    float champfer = (shape1 + shape2) * SQRT_5 - champferSize;
+    return sdf_op_merge(simpleMerge, champfer);
+}
+
+
+float sdf_op_intersect(float shape1, float shape2)
+{
+    return max(shape1, shape2);
+}
+
+float sdf_op_intersect_round(float shape1, float shape2, float radius)
+{
+    vec2 intersectionSpace = vec2(shape1 + radius, shape2 + radius);
+    intersectionSpace = max(intersectionSpace, 0);
+    float insideDistance = -length(intersectionSpace);
+    float simpleIntersection = sdf_op_intersect(shape1, shape2);
+    float outsideDistance = min(simpleIntersection, -radius);
+    return insideDistance + outsideDistance;
+}
+
+float sdf_op_intersect_champfer(float shape1, float shape2, float champferSize)
+{
+    float simpleIntersect = sdf_op_intersect(shape1, shape2);
+    float champfer = (shape1 + shape2) * SQRT_5 + champferSize;
+    return sdf_op_intersect(simpleIntersect, champfer);
+}
+
+
+float sdf_op_substract(float base, float substraction)
+{
+    return intersect(base, -substraction)
+}
+
+float sdf_op_substract_round(float base, float substraction, float radius)
+{
+    return sdf_op_intersect_round(base, -substraction, radius)
+}
+
+float sdf_op_substract_champfer(float shape1, float shape2, float champferSize)
+{
+    return sdf_op_intersect_champfer(shape1, -shape2, champferferfer)
+}
+
+
+float sdf_op_interpolate(float shape1, float shape2, float amount)
+{
+    return lerp(shape1, shape2, amount);
+}
+
+
+float sdf_op_border_round(float shape1, float shape2, float radius)
+{
+    vec2 position = vec2(shape1, shape2);
+    float distanceFromBorderIntersection = length(position);
+    return distanceFromBorderIntersection - radius;
+}
+
+float sdf_op_border_groove(float base, float groove, float width, float depth)
+{
+    /* STEP 1:
+    float circleBorder = abs(groove) - width;
+    return circleBorder;
+    */
+    /* STEP 2:
+    float circleBorder = abs(groove) - width;
+    float grooveBorder = sdf_op_substract(circleBorder, base + depth);
+    return grooveBorder;
+    */
+    float circleBorder = abs(groove) - width;
+    float grooveBorder = sdf_op_substract(circleBorder, base + depth);
+    return sdf_op_substract(base, grooveBorder);
+}
+
+
+// ----------------------------------------------------------------
+
+
 // Computes the signed distance from a line
-float line_distance(vec2 p, vec2 p1, vec2 p2) {
+float line_distance(vec2 p, vec2 p1, vec2 p2)
+{
     vec2 center = (p1 + p2) * 0.5;
     float len = length(p2 - p1);
     vec2 dir = (p2 - p1) / len;
@@ -25,7 +165,8 @@ float line_distance(vec2 p, vec2 p1, vec2 p2) {
 
 
 // Computes the signed distance from a line segment
-float segment_distance(vec2 p, vec2 p1, vec2 p2) {
+float segment_distance(vec2 p, vec2 p1, vec2 p2)
+{
     vec2 center = (p1 + p2) * 0.5;
     float len = length(p2 - p1);
     vec2 dir = (p2 - p1) / len;
