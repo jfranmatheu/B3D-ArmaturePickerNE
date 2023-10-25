@@ -203,12 +203,12 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_Common, A
     def draw__edit(self, context, view_loc: Vector, rect: RectTransform, style: BonePicker_Style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         if self.use_image and self.image is not None:
             return
-        super().draw__edit(context, rect, style, wg_settings, scale, active, selected, hovered)
+        super().draw__edit(context, view_loc, rect, style, wg_settings, scale, active, selected, hovered)
 
     def draw__pose(self, context, view_loc: Vector, rect: RectTransform, style: BonePicker_Style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         if self.use_image and self.image is not None:
             return
-        super().draw__pose(context, rect, style, wg_settings, scale, active, selected, hovered)
+        super().draw__pose(context, view_loc, rect, style, wg_settings, scale, active, selected, hovered)
 
 
     # ----- UI LAYOUT DRAWING -----------------------------------------------------------
