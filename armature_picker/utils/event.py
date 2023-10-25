@@ -214,6 +214,8 @@ class Mouse:
             local_rel_mouse.y * reg_size.y
         ))
 
+        # print("> LocalRelMouse:", local_rel_mouse)
+        # print("> LocalAbsMouse:", local_abs_mouse)
 
         '''
         rotation = local_space__rect.rotation
@@ -255,9 +257,9 @@ class Mouse:
         self.local_rel = local_rel_mouse
 
         if first_time:
-            self.local_start = local_abs_mouse
-            self.local_current = self.local_start.copy()
-            self.local_prev = self.local_start.copy()
+            self.local_start = local_abs_mouse.copy()
+            self.local_current = local_abs_mouse.copy()
+            self.local_prev = local_abs_mouse.copy()
             self.local_offset = Vector((0, 0))
             self.local_delta = Vector((0, 0))
             self.local_dir = Vector((0, 0))
@@ -266,9 +268,11 @@ class Mouse:
         else:
             self.local_prev.x = self.local_current.x
             self.local_prev.y = self.local_current.y
-            self.local_current = local_abs_mouse
-            self.local_delta.x = self.local_current.x - self.local_prev.x
-            self.local_delta.y = self.local_current.y - self.local_prev.y
+            self.local_current.x = local_abs_mouse.x
+            self.local_current.y = local_abs_mouse.y
+
+            self.local_delta.x = local_abs_mouse.x - self.local_prev.x
+            self.local_delta.y = local_abs_mouse.y - self.local_prev.y
 
             cummulative = self.local_delta_acummulative + self.local_delta
             self.local_delta_acummulative.x, self.local_delta_int.x = modf(cummulative.x) # NOTE: CAN CAUSE FLOATINT POINT ROUNDING ERROR.
