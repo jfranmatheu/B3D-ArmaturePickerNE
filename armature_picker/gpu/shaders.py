@@ -2,7 +2,6 @@ from ..utils.gpu import load_shader as new_sh
 
 
 class SHADERS:
-    SHAPE_ARR_ANG_90 = new_sh('BASIC', 'SHAPE_ARR_ANG_90', 'SDF') # ADVANCE_POINT_GRAPHIC
     COLOR_UNIFORM = new_sh('BASIC', 'COLOR_UNIFORM')
     IMA = new_sh('IMA', 'IMA')
     IMA_OPA = new_sh('IMA', 'IMA_OPA')
@@ -12,3 +11,5 @@ class SHADERS:
     WG_SLD = new_sh('UV', 'WG_SLD')
     WG_SLD_RNG = new_sh('UV', 'WG_SLD_RNG')
     NODE = new_sh('UV', 'NODE')
+    SHAPE_ARR_ANG_90 = new_sh('BASIC', 'SHAPE_ARR_ANG_90', 'SDF')
+    SHAPE_CHEVRON = new_sh('BASIC', 'SHAPE_CHEVRON', 'SDF')
