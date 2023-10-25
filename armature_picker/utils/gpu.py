@@ -15,5 +15,5 @@ def load_shader(vert_id: str, frag_id: str, lib_id: str | None = None) -> GPUSha
                 with open(Paths.LIB_SHADERS('lib', lib_id.lower() + '.glsl'), 'r', encoding='utf-8') as f_lib:
                     libcode_cache[lib_id] = libcode = f_lib.read()
         else:
-            libcode = None
+            libcode = ''
         return GPUShader(f_vert.read(), f_frag.read(), libcode=libcode)

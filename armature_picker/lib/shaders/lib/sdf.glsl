@@ -18,7 +18,11 @@ uniform vec2 u_rotation;
 
 // HLSL support functions.
 float fmod(float x, float y) {
-    return x - y * trunc(x/y);
+    return mod(x, y); // x - y * trunc(x/y);
+}
+
+vec2 fmod(vec2 x, vec2 y) {
+    return mod(x, y); // x - y * trunc(x/y);
 }
 
 float lerp(float a, float b, float factor) {
@@ -36,7 +40,7 @@ vec2 transform_rotate(vec2 position, float rotation)
     return vec2(cosine * position.x + sine * position.y, cosine * position.y - sine * position.x);
 }
 
-vec2 transform_translate(vec2 position, float2 offset)
+vec2 transform_translate(vec2 position, vec2 offset)
 {
     //move samplepoint in the opposite direction that we want to move shapes in
     return position - offset;
@@ -62,7 +66,7 @@ void cells(inout vec2 position, vec2 period)
 }
 
 // Returns the cell index...
-float cells_index(vec2 position, vec2 period)
+vec2 cells_index(vec2 position, vec2 period)
 {
     position = fmod(position, period);
     //negative positions lead to negative modulo
@@ -71,46 +75,46 @@ float cells_index(vec2 position, vec2 period)
     position = fmod(position, period);
     //second mod doesn't change values between 0 and period, but brings down values that are above period.
 
-    float2 cellIndex = position / period;
+    vec2 cellIndex = position / period;
     cellIndex = floor(cellIndex);
     return cellIndex;
 }
 
-void cells_radial(inout float2 position, float cells)
+/*void cells_radial(inout vec2 position, float cells)
 {
     float cellSize = PI * 2 / cells;
-    float2 radialPosition = float2(atan2(position.x, position.y), length(position));
+    vec2 radialPosition = vec2(atan2(position.x, position.y), length(position));
     radialPosition.x = fmod(fmod(radialPosition.x, cellSize) + cellSize, cellSize);
 
     sincos(radialPosition.x, position.x, position.y);
     position = position * radialPosition.y;
-}
+}*/
 
 // Returns the cell index...
-void cells_radial_index(inout float2 position, float cells)
+/*float cells_radial_index(inout vec2 position, float cells)
 {
     float cellSize = PI * 2 / cells;
-    float2 radialPosition = float2(atan2(position.x, position.y), length(position));
+    vec2 radialPosition = vec2(atan2(position.x, position.y), length(position));
 
     float cellIndex = fmod(floor(radialPosition.x / cellSize) + cells, cells);
 
     radialPosition.x = fmod(fmod(radialPosition.x, cellSize) + cellSize, cellSize);
 
-    if (mirrorEverySecondCell) {
-        float flip = fmod(cellIndex, 2);
-        flip = abs(flip-1);
-        radialPosition.x = lerp(cellSize - radialPosition.x, radialPosition.x, flip);
-    }
+    //if (mirrorEverySecondCell) {
+    //    float flip = fmod(cellIndex, 2);
+    //    flip = abs(flip-1);
+    //    radialPosition.x = lerp(cellSize - radialPosition.x, radialPosition.x, flip);
+    //}
 
     sincos(radialPosition.x, position.x, position.y);
     position = position * radialPosition.y;
 
     return cellIndex;
-}
+}*/
 
-void wobble(inout float2 position, float2 frequency, float2 amount)
+void wobble(inout vec2 position, vec2 frequency, vec2 amount)
 {
-    float2 wobble = sin(position.yx * frequency) * amount;
+    vec2 wobble = sin(position.yx * frequency) * amount;
     position = position + wobble;
 }
 
@@ -167,17 +171,17 @@ float sdf_op_intersect_champfer(float shape1, float shape2, float champferSize)
 
 float sdf_op_substract(float base, float substraction)
 {
-    return intersect(base, -substraction)
+    return sdf_op_intersect(base, -substraction);
 }
 
 float sdf_op_substract_round(float base, float substraction, float radius)
 {
-    return sdf_op_intersect_round(base, -substraction, radius)
+    return sdf_op_intersect_round(base, -substraction, radius);
 }
 
 float sdf_op_substract_champfer(float shape1, float shape2, float champferSize)
 {
-    return sdf_op_intersect_champfer(shape1, -shape2, champferferfer)
+    return sdf_op_intersect_champfer(shape1, -shape2, champferSize);
 }
 
 
