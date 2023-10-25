@@ -5,13 +5,15 @@ from mathutils import Vector
 
 from collections import defaultdict
 from uuid import uuid4
+from math import degrees
 
 from ...utils.event import Mouse, EventType, EventValue
 from ...utils.operator import OpsReturn
 from ...utils.armature import deselect_all_bones_from_active
 from ...utils.geometry import point_inside_rect, distance_to_line_segment, point_inside_circle
+from ...utils.node_editor import get_node_editor_zoom
 from armature_picker.node_editor.poll import poll_check
-from armature_picker.gpu import draw
+from armature_picker.gpu import draw, draw_shape
 from armature_picker.utils.cursor import Cursor, CursorIcon
 
 from ._transform_props import NodeTransformProps, RectTransform
@@ -310,16 +312,16 @@ class AP_Node(NodeTransformProps):
 
         if point_inside_circle(view_loc, bottom_handle, rad): ## distance_to_line_segment(bot_left, bot_right, view_loc) < threshold:
             self.set_state('HOVERED_BORDER', 'BOTTOM')
-            Cursor.set_icon(context, CursorIcon.MOVE_Y)
+            Cursor.set_icon(context, CursorIcon.NONE) # CursorIcon.MOVE_Y)
         elif point_inside_circle(view_loc, left_handle, rad): ## distance_to_line_segment(bot_left, top_left, view_loc) < threshold:
             self.set_state('HOVERED_BORDER', 'LEFT')
-            Cursor.set_icon(context, CursorIcon.MOVE_X)
+            Cursor.set_icon(context, CursorIcon.NONE) # CursorIcon.MOVE_X)
         elif point_inside_circle(view_loc, right_handle, rad): ## distance_to_line_segment(bot_right, top_right, view_loc) < threshold:
             self.set_state('HOVERED_BORDER', 'RIGHT')
-            Cursor.set_icon(context, CursorIcon.MOVE_X)
+            Cursor.set_icon(context, CursorIcon.NONE) #  CursorIcon.MOVE_X)
         elif point_inside_circle(view_loc, top_handle, rad): ## distance_to_line_segment(top_left, top_right, view_loc) < threshold:
             self.set_state('HOVERED_BORDER', 'TOP')
-            Cursor.set_icon(context, CursorIcon.MOVE_Y)
+            Cursor.set_icon(context, CursorIcon.NONE) # CursorIcon.MOVE_Y)
         else:
             self.set_state('HOVERED_BORDER', 'NONE')
             Cursor.set_icon(context, CursorIcon.DEFAULT)
@@ -481,6 +483,7 @@ class AP_Node(NodeTransformProps):
                 border_id = self.get_state('HOVERED_BORDER', 'NONE')
                 in_modal = self.in_modal
 
+
                 handles = {
                     'LEFT': rect.get_point_relative(0.0, 0.5, offset=Vector((-2, 0)), apply_rotation=True, rotate_from_origin=True),
                     'RIGHT': rect.get_point_relative(1.0, 0.5, offset=Vector((2, 0)), apply_rotation=True, rotate_from_origin=True),
@@ -489,14 +492,53 @@ class AP_Node(NodeTransformProps):
                 }
 
                 for handle_id, handle_pos in handles.items():
-                    if in_modal and handle_id != border_id:
+                    handle_hovered = border_id==handle_id
+                    if in_modal and handle_hovered:
                         continue
+
                     draw.just_a_point(
                         handle_pos,
                         radius=4.0,
-                        color=(1, 1, 0, 1) if border_id==handle_id else (1, 1, 1, 1),
+                        color=(1, 1, 0, 1) if handle_hovered else (1, 1, 1, 1),
                         rotation=rect.rotation,
                     )
+
+                    if handle_hovered:
+                        view_zoom = get_node_editor_zoom(context)
+
+                        if rect.rotation == 0:
+                            orientation = 0
+                        else:
+                            # WEIRD STUFF... but it does the work lol.
+                            rotation_angle = degrees(rect.rotation)
+                            if border_id == 'RIGHT':
+                                orientation = 360 - rotation_angle
+                            elif border_id == 'LEFT':
+                                orientation = (360 - rotation_angle) + 90 + rotation_angle
+                            elif border_id == 'TOP':
+                                orientation = - (360 - rotation_angle) - 90 - rotation_angle
+                            elif border_id == 'BOTTOM':
+                                orientation = - (360 - rotation_angle)
+
+                        draw_shape.arrow_ang_90(
+                            view_loc,
+                            orientation,
+                            6 * view_zoom,
+                            (0, 0, 0, 1),
+                            (0, 0, 0, 1),
+                            line_width=2 * view_zoom,
+                            antialias=1,
+                        )
+
+                        draw_shape.arrow_ang_90(
+                            view_loc,
+                            orientation,
+                            6 * view_zoom,
+                            (1, 1, 1, 1),
+                            (1, 1, 1, 1),
+                            line_width=1.5 * view_zoom,
+                            antialias=1.0,
+                        )
 
 
     def draw_common(self, context: Context, view_loc: Vector, rect: RectTransform, style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
