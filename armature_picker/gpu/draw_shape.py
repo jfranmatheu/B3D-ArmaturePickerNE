@@ -11,7 +11,7 @@ def arrow_ang_90(o: Vector, orientation: float, psize: float, stroke_color: RGBA
 
     just_a_point(
         o, v_size * 0.5,
-        shader=SHADERS.ARR_ANG_90,
+        shader=SHADERS.SHAPE_ARR_ANG_90,
         u_rotation=u_rotation,
         u_size=v_size,
         u_line_width=line_width,
