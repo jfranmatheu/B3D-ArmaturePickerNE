@@ -29,6 +29,9 @@ G_active_node = ''
 G_hovered_node = ''
 nodes_count: int = -1
 
+region_loc: Vector = Vector((-1, -1))
+view_loc: Vector = Vector((-100000, -100000))
+
 # ----------------------------------------------------------------
 
 @dataclass
@@ -135,9 +138,6 @@ class AP_NodeTree(NodeTree):
     bl_use_spherical_stereo = False
     bl_use_texture_preview = False
     
-    region_loc: Vector = Vector((-1, -1))
-    view_loc: Vector = Vector((-100000, -100000))
-
 
     # @classmethod
     # def poll(cls, context: Context) -> bool:
@@ -176,7 +176,7 @@ class AP_NodeTree(NodeTree):
         refresh_nodes_cache(self)
 
 
-    def _test_select(self, context: Context, region_loc) -> int:
+    def _test_select(self, context: Context, loc) -> int:
         if self.dirty:
             context.area.tag_redraw()
 
@@ -184,13 +184,13 @@ class AP_NodeTree(NodeTree):
         ui_scale = context.preferences.system.ui_scale
         region = context.region
         scroll_bar_thickness = 10 * ui_scale
-        if region_loc[0] > (region.width - scroll_bar_thickness):
+        if loc[0] > (region.width - scroll_bar_thickness):
             return -1
-        if region_loc[1] < scroll_bar_thickness:
+        if loc[1] < scroll_bar_thickness:
             return -1
 
-        region_loc = Vector(region_loc)
-        self.region_loc = region_loc
+        global region_loc
+        region_loc = Vector(loc)
 
         global G_active_node
         active_node = self.nodes.active
@@ -208,10 +208,10 @@ class AP_NodeTree(NodeTree):
         in_pose = self.picker_mode == 'POSE'
 
         global G_hovered_node
+        global view_loc
         view_zoom = get_node_editor_zoom(context)
         region_offset = get_node_editor_offset(context)
         view_loc = get_node_editor_view_point(context, region_loc)
-        self.view_loc = view_loc
 
         for node_layer_nodes in reversed(sorted_nodes_cache[self.uuid]):
             for node in reversed(node_layer_nodes):
@@ -519,7 +519,8 @@ class AP_NodeTree(NodeTree):
         zoom = get_node_editor_zoom(context)
         offset = get_node_editor_offset(context)
         ui_scale = context.preferences.system.ui_scale
-        view_loc = self.view_loc
+
+        global view_loc
 
         active_node: AP_Node = self.nodes.active
         sel_nodes: set[AP_Node] = self.get_selected_nodes(context)
