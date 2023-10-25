@@ -1,6 +1,6 @@
 const float PI = 3.14159265358979323846264;
 const float SQRT_2 = 1.4142135623730951;
-const float SQRT_5 = 0.70710678118
+const float SQRT_5 = 0.70710678118;
 
 /* IMPORTANT! USE THESE IN YOUR CUSTOM SHADER:
 out vec4 fragColor;
