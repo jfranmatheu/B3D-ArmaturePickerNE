@@ -3,10 +3,10 @@ import gpu
 import blf
 from bpy.types import Image
 from gpu import state
-from gpu.types import GPUShader, GPUBatch, GPUTexture, GPUOffScreen
+from gpu.types import GPUShader, GPUBatch, GPUTexture, GPUOffScreen, GPUVertFormat, GPUVertBuf
 from gpu_extras.batch import batch_for_shader
 from gpu_extras.presets import draw_circle_2d
-from mathutils import Vector, Matrix, Euler
+from mathutils import Vector, Matrix, Euler, Quaternion
 from gpu.texture import from_image as get_gputex_from_image
 
 from colorsys import rgb_to_hsv
@@ -406,12 +406,28 @@ def offscreen(node: object, graphic_id: str, off: GPUOffScreen, origin: Vector |
     image_ui(node, graphic_id, off.texture_color, origin=origin)
 
 
-def just_a_point(pos: Vector, radius: int, color: RGBA, _shader=SHADER_UNIFORM_COLOR) -> None:
-    batch: GPUBatch = batch_for_shader(_shader, 'POINTS', {'pos': [pos]})
-    _shader.uniform_float('color', color)
-    state.point_size_set(int(radius*2))
-    batch.draw(_shader)
-    state.point_size_set(1.0)
+def just_a_point(pos: Vector, radius: int, color: RGBA, rotation: float = 0, _shader=SHADER_UNIFORM_COLOR) -> None:
+    with gpu.matrix.push_pop():
+        # gpu.matrix.translate(Vector(pos) * -1)
+        # gpu.matrix.multiply_matrix(Matrix.Rotation(rotation, 4, 'Z'))
+        gpu.matrix.translate(pos)
+        gpu.matrix.scale_uniform(radius)
+        state.point_size_set(int(radius*2))
+        fmt = GPUVertFormat()
+        pos_id = fmt.attr_add(id="pos", comp_type='F32', len=2, fetch_mode='FLOAT')
+        vbo = GPUVertBuf(len=1, format=fmt)
+        vbo.attr_fill(id=pos_id, data=[(0, 0)])
+        batch = GPUBatch(type='POINTS', buf=vbo)
+        batch.program_set(_shader)
+        _shader.uniform_float("color", color)
+        batch.draw()
+        state.point_size_set(1.0)
+
+    # batch: GPUBatch = batch_for_shader(_shader, 'POINTS', {'pos': [pos]})
+    # _shader.uniform_float('color', color)
+    # state.point_size_set(int(radius*2))
+    # batch.draw(_shader)
+    # state.point_size_set(1.0)
 
 
 # ----------------------------------------------------------------
