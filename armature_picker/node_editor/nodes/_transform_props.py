@@ -300,7 +300,7 @@ class RectTransform(PropertyGroup):
     @x_min.setter
     def x_min(self, value: int) -> None:
         new_width = self.x_max - value
-        print("Set[x_min]:", value, new_width)
+        ## print("Set[x_min]:", value, new_width)
         if new_width < 20:
             return
         with CM_BlockUpdates(self):
