@@ -523,31 +523,58 @@ class AP_Node(NodeTransformProps):
                     draw_shape.chevron(
                         handle_pos,
                         handle_orientation, # pi-(handle_orientation+pi*0.5),
-                        3 * view_zoom if handle_hovered else 2.5 * view_zoom,
-                        (0, 0, 0, 1),
+                        2 * view_zoom if handle_hovered else 2.5 * view_zoom,
+                        (0, 0, 0, .92),
                         (1, 1, 1, 1) if handle_hovered else (1, 1, 1, .64),
                         line_width=1 * view_zoom,
                         antialias=1,
                     )
 
                     if handle_hovered and not in_modal:
+                        if handle_orientation <= 0:
+                            opp_handle_orientation = pi + handle_orientation
+                        else:
+                            opp_handle_orientation = handle_orientation - pi
+
+                        # BACK.
                         draw_shape.arrow_ang_90(
                             view_loc,
                             handle_orientation,
-                            6 * view_zoom,
+                            12 * scale, # * view_zoom,
                             (0, 0, 0, 1),
                             (0, 0, 0, 1),
-                            line_width=2 * view_zoom,
+                            line_width=3.6 * scale, #  * view_zoom,
                             antialias=1,
                         )
 
                         draw_shape.arrow_ang_90(
                             view_loc,
+                            opp_handle_orientation,
+                            12 * scale, #  * view_zoom,
+                            (0, 0, 0, 1),
+                            (0, 0, 0, 1),
+                            line_width=3.6 * scale, #  * view_zoom,
+                            antialias=1.0,
+                        )
+
+                        # FRONT.
+                        draw_shape.arrow_ang_90(
+                            view_loc,
                             handle_orientation,
-                            7 * view_zoom,
+                            12 * scale, # * view_zoom,
                             (1, 1, 1, 1),
                             (1, 1, 1, 1),
-                            line_width=1 * view_zoom,
+                            line_width=2.4 * scale, #  * view_zoom,
+                            antialias=1,
+                        )
+
+                        draw_shape.arrow_ang_90(
+                            view_loc,
+                            opp_handle_orientation,
+                            12 * scale, #  * view_zoom,
+                            (1, 1, 1, 1),
+                            (1, 1, 1, 1),
+                            line_width=2.4 * scale, #  * view_zoom,
                             antialias=1.0,
                         )
 
