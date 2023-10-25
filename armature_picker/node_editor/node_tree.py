@@ -134,6 +134,9 @@ class AP_NodeTree(NodeTree):
     bl_use_shading_nodes_custom = False
     bl_use_spherical_stereo = False
     bl_use_texture_preview = False
+    
+    region_loc: Vector = Vector((-1, -1))
+    view_loc: Vector = Vector((-100000, -100000))
 
 
     # @classmethod
@@ -187,6 +190,7 @@ class AP_NodeTree(NodeTree):
             return -1
 
         region_loc = Vector(region_loc)
+        self.region_loc = region_loc
 
         global G_active_node
         active_node = self.nodes.active
@@ -207,6 +211,7 @@ class AP_NodeTree(NodeTree):
         view_zoom = get_node_editor_zoom(context)
         region_offset = get_node_editor_offset(context)
         view_loc = get_node_editor_view_point(context, region_loc)
+        self.view_loc = view_loc
 
         for node_layer_nodes in reversed(sorted_nodes_cache[self.uuid]):
             for node in reversed(node_layer_nodes):
