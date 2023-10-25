@@ -37,7 +37,7 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Com
 
     # ----- ON HOVER --------------------------------
 
-    def on_hover(self, context: Context, rect: RectTransform, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
+    def on_hover(self, context: Context, in_edit: bool, rect: RectTransform, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
         if point_inside_rect(view_loc, rect.bottom_left, rect.size, rect.rotation, origin=Vector(rect.origin)):
             # CHECK point_inside_circle with center in rect.origin and the user specified radius (a default of over 12).
             if self.use_ik_fk and point_inside_circle(view_loc, Vector(rect.origin), self.ik_fk_size * 0.5):

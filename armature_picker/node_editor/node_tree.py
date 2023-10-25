@@ -9,10 +9,13 @@ from uuid import uuid4
 from typing import List, Tuple, Type, Dict, Set, Union
 from collections import defaultdict
 from dataclasses import dataclass
+from math import cos, sin
 
+from armature_picker.utils.cursor import Cursor, CursorIcon
+from armature_picker.utils.event import Mouse, EventType, EventValue
 from armature_picker.paths import Paths
 from ..gpu import draw
-from .nodes._base import AP_Node
+from .nodes._base import AP_Node, RectTransform
 from ..utils.node_editor import get_node_editor_zoom, get_node_editor_view_point, get_node_editor_offset, get_node_editor_region_coord, get_node_editor_visible_view_box
 from ..utils.armature import deselect_all_bones_from_active
 from ..utils.geometry import angle_signed, rect_overlap, Box
@@ -115,6 +118,7 @@ class AP_NodeTree(NodeTree):
     inject_modal: callable = None
     inject_modal_exit: callable = None
     inject_modal_draw: callable = None
+    inject_modal_mouse: Mouse = None
     picker_mode: str
     last_event_type: str = 'NONE'
     last_event_value: str = 'NONE'
@@ -210,7 +214,7 @@ class AP_NodeTree(NodeTree):
                     continue
                 if in_pose and not node.interactable:
                     continue
-                if node._test_select(context, region_loc, view_loc, view_zoom, region_offset):
+                if node._test_select(context, not in_pose, region_loc, view_loc, view_zoom, region_offset):
                     G_hovered_node = node.uuid
                     #### print("hovered_node", node.label)
                     return 1
@@ -221,13 +225,28 @@ class AP_NodeTree(NodeTree):
 
     # ----------------------------------------------------------------
 
+    def set_inject_modal(self,
+                         context: Context,
+                         event: Event,
+                         modal_callback: callable,
+                         modal_enter_callback: callable = None,
+                         modal_exit_callback: callable = None,
+                         modal_draw_callback: callable = None,
+                         use_advanced_mouse: bool = False) -> None:
 
-    def set_inject_modal(self, context: Context, event: Event, modal_callback: callable, modal_enter_callback: callable = None, modal_exit_callback: callable = None, modal_draw_callback: callable = None) -> None:
-        self.inject_modal = modal_callback
+        if use_advanced_mouse and self.active_node is not None:
+            self.inject_modal_mouse = Mouse.init(event, context, local_space__rect=self.active_node.rect_transform)
+            def _modal_update_wrapper(context: Context, event: Event, mouse_pos: Vector):
+                self.inject_modal_mouse.update(event, context, local_space__rect=self.active_node.rect_transform)
+                return modal_callback(context, event, self.inject_modal_mouse)
+            self.inject_modal = _modal_update_wrapper
+        else:
+            self.inject_modal = modal_callback
         self.inject_modal_exit = modal_exit_callback
         self.inject_modal_draw = modal_draw_callback
         if modal_enter_callback is not None:
             modal_enter_callback(context, event, self.mouse_pos)
+
 
     def _invoke(self, context: Context, event: Event) -> set[str]:
         # Skip navigation km.
@@ -255,7 +274,7 @@ class AP_NodeTree(NodeTree):
         if event.type == 'A' and not event.shift and event.value == 'PRESS':
             bpy.ops.node.select_all(action='TOGGLE')
             return {'FINISHED'}
-        
+
         global G_hovered_node
 
         # TO FIX A WEIRD BUG WHERE THE SAME EVENT IS SPAMMED TWICE...
@@ -363,6 +382,17 @@ class AP_NodeTree(NodeTree):
                 if all([node.locked for node in sel_nodes]):
                     # All nodes are locked!
                     return {'CANCELLED'}
+                if hovered_node is not None:
+                    if hovered_node.locked:
+                        return {'CANCELLED'}
+                    if hovered_node == self.nodes.active and hovered_node.get_state('HOVERED_BORDER', 'NONE') != 'NONE':
+                        self.active_node = hovered_node
+                        self.set_inject_modal(context, event,
+                                        modal_callback=self.modal__resize_node__update,
+                                        modal_enter_callback=self.modal__resize_node__enter,
+                                        modal_exit_callback=self.modal__resize_node__exit,
+                                        use_advanced_mouse=True)
+                        return {'RUNNING_MODAL'}
                 self.modal_nodes = sel_nodes
                 self.set_inject_modal(context, event,
                                       modal_callback=self.modal__move_node__update,
@@ -421,6 +451,8 @@ class AP_NodeTree(NodeTree):
             self.inject_modal_exit = None
         elif self.active_node is not None and self.active_node.in_modal:
             self.active_node.modal_exit(context, cancel)
+        if self.inject_modal_mouse is not None:
+            self.inject_modal_mouse = None
 
 
     # ----------------------------------------------------------------
@@ -532,6 +564,8 @@ class AP_NodeTree(NodeTree):
         node_region_location = [get_node_editor_region_coord(context, node.rect_transform.origin) for node in self.modal_nodes]
         self.node_location_offset = [prev_node_loc - mouse_pos for prev_node_loc in node_region_location]
 
+        Cursor.set_icon(context, CursorIcon.HAND)
+
     def modal__move_node__update(self, context: Context, event: Event, mouse_pos: Vector) -> int:
         if self.modal_nodes is None or (event.type == 'LEFTMOUSE' and event.value == 'RELEASE'):
             return -1
@@ -555,6 +589,8 @@ class AP_NodeTree(NodeTree):
             del self.node_location_offset
 
         self.modal_nodes = None
+
+        Cursor.set_icon(context, CursorIcon.DEFAULT)
 
 
     # MODAL: Rotate Selected Nodes.
@@ -613,6 +649,124 @@ class AP_NodeTree(NodeTree):
         )
 
 
+    # MODAL: Resize Selected Nodes.
+    # ----------------------------------------------------------------
+
+    def modal__resize_node__enter(self, context: Context, event: Event, mouse_pos: Vector) -> None:
+        node = self.active_node
+        rect: RectTransform = node.rect_transform
+        node.in_modal = True
+
+        self.prev_node_coords = list(rect.coords)
+        self.node_border_id: str =node.get_state('HOVERED_BORDER', 'NONE')
+        self.node_reg_loc = get_node_editor_region_coord(context, rect.origin)
+        self.node_reg_loc_offset = self.node_reg_loc - mouse_pos
+
+        self.node_bbox = Box(rect.x_min, rect.y_min, rect.x_max, rect.y_max)
+
+        if self.node_border_id == 'LEFT':
+            self.rect_border_attr = 'x_min'
+            self.node_start_min = rect.x_min
+        elif self.node_border_id == 'BOTTOM':
+            self.rect_border_attr = 'y_min'
+            self.node_start_min = rect.y_min
+
+
+    def modal__resize_node__update(self, context: Context, event: Event, mouse: Mouse) -> int:
+        if self.active_node is None or (event.type == 'LEFTMOUSE' and event.value == 'RELEASE'):
+            return -1
+
+        if event.type not in {EventType.MOUSEMOVE, EventType.INBETWEEN_MOUSEMOVE}:
+            return 1
+
+        border_id = self.node_border_id
+        is_hor_border = border_id in {'LEFT', 'RIGHT'}
+        is_vert_border = border_id in {'BOTTOM', 'TOP'}
+        is_max_border = border_id in {'RIGHT', 'TOP'}
+        is_min_border = border_id in {'LEFT', 'BOTTOM'}
+
+        if is_hor_border and mouse.local_dir.x == 0:
+            return 1
+        if is_vert_border and mouse.local_dir.y == 0:
+            return 1
+
+        node = self.active_node
+        rect: RectTransform = node.rect_transform
+
+        zoom = get_node_editor_zoom(context)
+        inv_zoom = 1/zoom
+        offset = get_node_editor_offset(context)
+
+        # OLD METHOD
+        # BUG ISSUE: looks like local_rect_space Mouse type stuff is wiggling around when modifying the minimum values (x_min, y_min).
+        # It works for maximum values (x_max, y_max) tho.
+
+        # print("local_current_prev ->", mouse.local_prev.x, "->", mouse.local_current.x)
+        # print("local_delta_int.x ->", mouse.local_delta_int.x)
+        # print("local_offset.x ->", mouse.local_offset.x)
+
+        if is_hor_border:
+            rect_dir_v = (rect.bottom_right - rect.bottom_left).normalized()
+            if is_min_border:
+                rect.x_min = get_node_editor_view_point(context, mouse.current).x ## rect.x_min + mouse.local_delta_int.x * inv_zoom ## self.node_start_min + mouse.local_offset.x * inv_zoom
+            elif is_max_border:
+                if rect.rotation == 0:
+                    rect.x_max = get_node_editor_view_point(context, mouse.current).x
+                else:
+                    rect.x_max = rect.x_max + mouse.local_delta_int.x * inv_zoom
+
+        elif is_vert_border:
+            rect_dir_v = (rect.top_right - rect.top_left).normalized()
+            if is_min_border:
+                rect.y_min = get_node_editor_view_point(context, mouse.current).y ## rect.y_min + mouse.local_delta_int.y * inv_zoom ## self.node_start_min + mouse.local_offset.y * inv_zoom
+            elif is_max_border:
+                if rect.rotation == 0:
+                    rect.y_max = get_node_editor_view_point(context, mouse.current).y
+                else:
+                    rect.y_max = rect.y_max + mouse.local_delta_int.y * inv_zoom
+
+        # rect.update_from_coords(context)
+        node.update_graphics(context)
+        return 1
+
+    def modal__resize_node__exit(self, context: Context, mouse_pos: Vector, cancel: bool) -> None:
+        if cancel:
+            self.active_node.rect_transform.coords = self.prev_node_coords
+            self.active_node.rect_transform.update_from_coords(context)
+
+        elif self.active_node.rect_transform.rotation != 0:
+            rect: RectTransform = self.active_node.rect_transform
+
+            v_dir_angle = (Vector(rect.coords_rotated[2]) - Vector(rect.coords_rotated[1])).normalized()
+
+            width, height = rect.dimensions
+
+            origin_in_local = Vector((
+                rect.pivot[0] * (width - 2),
+                rect.pivot[1] * (height - 1)
+            ))
+            rotation_angle = rect.rotation
+            rotated_offset_x = origin_in_local.x * cos(rotation_angle) - origin_in_local.y * sin(rotation_angle)
+            rotated_offset_y = origin_in_local.x * sin(rotation_angle) + origin_in_local.y * cos(rotation_angle)
+
+            rect.origin = (
+                int(rect.coords_rotated[1][0] + rotated_offset_x - v_dir_angle.x * .25),
+                int(rect.coords_rotated[1][1] + rotated_offset_y - v_dir_angle.y * .25)
+            )
+
+        if hasattr(self, 'node_start_min'):
+            del self.rect_border_attr
+            del self.node_start_min
+        del self.node_border_id
+        del self.prev_node_coords
+        del self.node_reg_loc
+        del self.node_reg_loc_offset
+        del self.node_bbox
+
+        self.active_node.in_modal = False
+        self.active_node = None
+
+
     # ----------------------------------------------------------------
 
     def modal__box_select__enter(self, context: Context, event: Event, mouse_pos: Vector) -> None:
@@ -620,6 +774,8 @@ class AP_NodeTree(NodeTree):
         self.box_origin = mouse_pos.copy()
         self.dummy_node = DummyNode('MODAL_BOX_SELECT')
         self.prev_sel_nodes = self.get_selected_nodes(context, include_active=True)
+
+        Cursor.set_icon(context, CursorIcon.CROSS)
 
     def modal__box_select__update(self, context: Context, event: Event, mouse_pos: Vector) -> int:
         if event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
@@ -667,11 +823,12 @@ class AP_NodeTree(NodeTree):
                 self.nodes.active = sel_nodes.pop()
                 del sel_nodes
 
+        Cursor.set_icon(context, CursorIcon.DEFAULT)
+
         del self.box
         del self.box_origin
         del self.dummy_node
         del self.prev_sel_nodes
-
 
     def modal__box_select__draw(self, context: Context, ui_scale: float, sel_nodes: list[Node], in_edit: bool, in_view2d: bool) -> None:
         if in_view2d or not in_edit:

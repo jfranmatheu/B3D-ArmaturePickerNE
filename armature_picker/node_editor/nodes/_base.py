@@ -9,9 +9,10 @@ from uuid import uuid4
 from ...utils.event import Mouse, EventType, EventValue
 from ...utils.operator import OpsReturn
 from ...utils.armature import deselect_all_bones_from_active
-from ...utils.geometry import point_inside_rect
+from ...utils.geometry import point_inside_rect, distance_to_line_segment, point_inside_circle
 from armature_picker.node_editor.poll import poll_check
 from armature_picker.gpu import draw
+from armature_picker.utils.cursor import Cursor, CursorIcon
 
 from ._transform_props import NodeTransformProps, RectTransform
 
@@ -132,10 +133,10 @@ class AP_Node(NodeTransformProps):
 
     # Temporal State variables.
     # ----------------------------------------------------------------
-    def set_state(self, state_name: str, state_value: bool) -> None:
+    def set_state(self, state_name: str, state_value: bool | str) -> None:
         _state_cache[self.uuid][state_name] = state_value
 
-    def get_state(self, state_name: str, default: bool = False) -> None:
+    def get_state(self, state_name: str, default: bool | str = False) -> None:
         if self.uuid not in _state_cache:
             return default
         return _state_cache[self.uuid].get(state_name, default)
@@ -207,6 +208,7 @@ class AP_Node(NodeTransformProps):
         self.mute = True
         self.hide = True
         self.dirty_label = True
+        self.set_state('HOVERED_BORDER', None)
 
         if self.default_width != 20 and self.default_height != 20:
             self.rect_transform.edit_dimensions = (self.default_width, self.default_height)
@@ -257,9 +259,10 @@ class AP_Node(NodeTransformProps):
 
     # ----- ON HOVER --------------------------------
 
-    def _test_select(self, context: Context, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
+    def _test_select(self, context: Context, in_edit: bool, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
         ''' Internal. '''
-        if self.on_hover(context, self.rect_transform, region_loc, view_loc, view_zoom, reg_offset):
+        if (in_edit and self.test_bbox(context, in_edit, self.rect_transform, view_loc, view_zoom)) or\
+            (not in_edit and self.on_hover(context, in_edit, self.rect_transform, region_loc, view_loc, view_zoom, reg_offset)):
             context.region.tag_redraw()
             self.set_hovered(True)
             self.on_hover_enter(context, region_loc, view_loc)
@@ -270,14 +273,59 @@ class AP_Node(NodeTransformProps):
             self.on_hover_exit(context)
         return False
 
-    def on_hover(self, context: Context, rect: RectTransform, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
+    def on_hover(self, context: Context, in_edit: bool, rect: RectTransform, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
         return point_inside_rect(view_loc, rect.bottom_left, rect.size, rect.rotation)
+
+    def test_bbox(self, context: Context, in_edit: bool, rect: RectTransform, view_loc: Vector, view_zoom: float) -> bool:
+        is_active = self == self.node_tree.nodes.active
+        # Why 3? is the margin of the selection cage (2) + half the cage line thickness (2/2).
+        ok = point_inside_rect(view_loc, rect.bottom_left - Vector((3, 3)) if is_active else rect.bottom_left, rect.size + Vector((6, 6)) if is_active else rect.size, rect.rotation)
+        if in_edit and is_active:
+            if self.test_borders(context, rect, view_loc, view_zoom):
+                ok = True
+        elif self.get_state('HOVERED_BORDER', 'NONE') != 'NONE':
+            self.set_state('HOVERED_BORDER', 'NONE')
+            Cursor.set_icon(context, CursorIcon.DEFAULT)
+        return ok
 
     def on_hover_enter(self, context: Context, region_loc: Vector, view_loc: Vector) -> None:
         pass
 
     def on_hover_exit(self, context: Context | None = None) -> None:
         pass
+
+    def test_borders(self, context: Context, rect: RectTransform, view_loc: Vector, view_zoom: float) -> bool:
+        rad = 4 # * view_zoom # to match selection box.
+        ## threshold = 4 # * view_zoom # double the pad.
+
+        ## top_left =  Vector(rect.coords_rotated[0]) + Vector((pad, -pad))
+        ## bot_left = Vector(rect.coords_rotated[1]) + Vector((-pad, -pad))
+        ## bot_right =  Vector(rect.coords_rotated[2]) + Vector((-pad, pad))
+        ## top_right =  Vector(rect.coords_rotated[3]) + Vector((pad, pad))
+
+        left_handle   = rect.get_point_relative(0.0, 0.5, offset=Vector((-2,  0)), apply_rotation=True, rotate_from_origin=True)
+        right_handle  = rect.get_point_relative(1.0, 0.5, offset=Vector(( 2,  0)), apply_rotation=True, rotate_from_origin=True)
+        bottom_handle = rect.get_point_relative(0.5, 0.0, offset=Vector(( 0, -2)), apply_rotation=True, rotate_from_origin=True)
+        top_handle    = rect.get_point_relative(0.5, 1.0, offset=Vector(( 0,  2)), apply_rotation=True, rotate_from_origin=True)
+
+        if point_inside_circle(view_loc, bottom_handle, rad): ## distance_to_line_segment(bot_left, bot_right, view_loc) < threshold:
+            self.set_state('HOVERED_BORDER', 'BOTTOM')
+            Cursor.set_icon(context, CursorIcon.MOVE_Y)
+        elif point_inside_circle(view_loc, left_handle, rad): ## distance_to_line_segment(bot_left, top_left, view_loc) < threshold:
+            self.set_state('HOVERED_BORDER', 'LEFT')
+            Cursor.set_icon(context, CursorIcon.MOVE_X)
+        elif point_inside_circle(view_loc, right_handle, rad): ## distance_to_line_segment(bot_right, top_right, view_loc) < threshold:
+            self.set_state('HOVERED_BORDER', 'RIGHT')
+            Cursor.set_icon(context, CursorIcon.MOVE_X)
+        elif point_inside_circle(view_loc, top_handle, rad): ## distance_to_line_segment(top_left, top_right, view_loc) < threshold:
+            self.set_state('HOVERED_BORDER', 'TOP')
+            Cursor.set_icon(context, CursorIcon.MOVE_Y)
+        else:
+            self.set_state('HOVERED_BORDER', 'NONE')
+            Cursor.set_icon(context, CursorIcon.DEFAULT)
+            return False
+        return True
+
 
     # ----- INTERNAL UTILS --------------------------------
 
@@ -312,7 +360,7 @@ class AP_Node(NodeTransformProps):
             def _modal_exit_wrapper(*args, **kwargs):
                 self.in_modal = False
                 modal_exit(*args, **kwargs)
-            
+
             # --- MODAL ENTER ---
             self.update_mouse(context, event)
             self.modal_enter = modal_enter
@@ -405,12 +453,51 @@ class AP_Node(NodeTransformProps):
                 color = (.5, .5, .5, .5)
             else:
                 color = (1.0, 1.0, .1, 1.0) if active else (1.0, .6, .1, 1.0)
+
+            draw.just_a_point(
+                rect.origin,
+                radius=3.0,
+                color=(0, 0, 0, .75),
+                rotation=rect.rotation,
+            )
+            draw.just_a_point(
+                rect.origin,
+                radius=1.5,
+                color=(1, 1, 0, .75),
+                rotation=rect.rotation,
+            )
+
+            # draw.box(
+            #     self, 'ANY_BOX', rect.bottom_left, rect.size, 0, 2.0, (1, 0, 0, .64)
+            # )
             draw.box_ui(
                 self, 'SELECT_CAGE',
                 margin=2,
                 line_thickness=2 * scale,
                 color=color
             )
+
+            if active and not self.locked:
+                border_id = self.get_state('HOVERED_BORDER', 'NONE')
+                in_modal = self.in_modal
+
+                handles = {
+                    'LEFT': rect.get_point_relative(0.0, 0.5, offset=Vector((-2, 0)), apply_rotation=True, rotate_from_origin=True),
+                    'RIGHT': rect.get_point_relative(1.0, 0.5, offset=Vector((2, 0)), apply_rotation=True, rotate_from_origin=True),
+                    'BOTTOM': rect.get_point_relative(0.5, 0.0, offset=Vector((0, -2)), apply_rotation=True, rotate_from_origin=True),
+                    'TOP': rect.get_point_relative(0.5, 1.0, offset=Vector((0, 2)), apply_rotation=True, rotate_from_origin=True),
+                }
+
+                for handle_id, handle_pos in handles.items():
+                    if in_modal and handle_id != border_id:
+                        continue
+                    draw.just_a_point(
+                        handle_pos,
+                        radius=4.0,
+                        color=(1, 1, 0, 1) if border_id==handle_id else (1, 1, 1, 1),
+                        rotation=rect.rotation,
+                    )
+
 
     def draw_common(self, context: Context, rect: RectTransform, style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         ''' Shader drawing between POSE and EDIT. '''

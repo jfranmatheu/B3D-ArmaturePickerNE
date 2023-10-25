@@ -54,7 +54,7 @@ class APNODE_SliderLinear2D(APNODE_Slider2D_NodeProps, APNODE_Slider_CommonNode,
 
     # ----- ON HOVER --------------------------------
 
-    def on_hover(self, context: Context, rect: RectTransform, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
+    def on_hover(self, context: Context, in_edit: bool, rect: RectTransform, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
         if point_inside_rect(view_loc, rect.bottom_left, rect.size, rect.rotation, origin=Vector(rect.origin)):
             return True
         return False

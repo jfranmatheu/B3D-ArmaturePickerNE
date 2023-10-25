@@ -2,10 +2,23 @@ from bpy.types import Context, UILayout, PropertyGroup, Node, NodeTree
 from bpy.props import StringProperty, IntProperty, FloatProperty, BoolProperty, FloatVectorProperty, IntVectorProperty, EnumProperty, PointerProperty
 from mathutils import Vector
 
-from math import pi
+from math import pi, cos, sin
 
 from ...utils.geometry import rotate_point, point_inside_rect
 from ...utils.node_editor import get_node_editor_region_coord, get_node_editor_zoom
+
+
+class CM_BlockUpdates:
+    def __init__(self, rect: 'RectTransform') -> None:
+        self.rect = rect
+
+    def __enter__(self) -> 'RectTransform':
+        self.rect.block_updates = True
+        return self.rect
+
+    def __exit__(self, exc_type, exc_value, trace) -> None:
+        self.rect.block_updates = False
+        self.rect = None
 
 
 class RectTransform(PropertyGroup):
@@ -35,8 +48,19 @@ class RectTransform(PropertyGroup):
         node: 'NodeTransformProps' = self.node
 
         # DO THE CALCULATIONS HERE...
-        if node: node.on_update_rect_pre(context, self)
+        if node:
+            node.on_update_rect_pre(context, self)
 
+        self.update_coords()
+
+        # Do extra stuff per Node if needed...
+        if node:
+            node.on_update_rect_post(context, self)
+            node.update_graphics(context)
+
+        self.block_updates = False
+
+    def update_coords(self) -> None:
         origin = Vector(self.origin)
         bot_left = Vector((
             int(origin.x - self.pivot[0] * self.dimensions[0]),
@@ -52,19 +76,37 @@ class RectTransform(PropertyGroup):
             bot_left + size
         )
 
-        if self.rotation != 0:
-            self.coords_rotated = [
-                rotate_point(co, origin, self.rotation) for co in coords
-            ]
-        else:
-            self.coords_rotated = coords
-
         self.coords = coords
 
-        # Do extra stuff per Node if needed...
-        if node: node.on_update_rect_post(context, self)
+        self.update_rotated()
 
-        if node: node.update_graphics(context)
+    def update_rotated(self) -> None:
+        if self.rotation != 0:
+            origin = Vector(self.origin)
+            self.coords_rotated = [
+                rotate_point(Vector(co), origin, self.rotation) for co in self.coords
+            ]
+        else:
+            self.coords_rotated = self.coords
+
+    def update_from_coords(self, context: Context) -> None:
+        self.block_updates = True
+
+        self.dimensions = (
+            int(self.x_max - self.x_min),
+            int(self.y_max - self.y_min)
+        )
+
+        if self.rotation == 0:
+            bot_left = self.bottom_left # from self.coords.
+            self.origin = (
+                int(bot_left.x + self.pivot[0] * self.dimensions[0]),
+                int(bot_left.y + self.pivot[1] * self.dimensions[1])
+            )
+        self.update_rotated()
+
+        if node := self.node:
+            node.update_graphics(context)
 
         self.block_updates = False
 
@@ -179,19 +221,19 @@ class RectTransform(PropertyGroup):
 
     @property
     def x_min(self) -> float:
-        return min(self.coords_rotated, key=lambda v: v[0])[0]
+        return min(self.coords, key=lambda v: v[0])[0]
 
     @property
     def x_max(self) -> float:
-        return max(self.coords_rotated, key=lambda v: v[0])[0]
+        return max(self.coords, key=lambda v: v[0])[0]
 
     @property
     def y_min(self) -> float:
-        return min(self.coords_rotated, key=lambda v: v[1])[1]
+        return min(self.coords, key=lambda v: v[1])[1]
 
     @property
     def y_max(self) -> float:
-        return max(self.coords_rotated, key=lambda v: v[1])[1]
+        return max(self.coords, key=lambda v: v[1])[1]
 
     @property
     def min(self) -> Vector:
@@ -250,6 +292,166 @@ class RectTransform(PropertyGroup):
             max_x - min_x,
             max_y - min_y
         ))
+
+
+    # ----------------------------------------
+    ''' BBOX SETTERS. '''
+
+    @x_min.setter
+    def x_min(self, value: int) -> None:
+        new_width = self.x_max - value
+        print("Set[x_min]:", value, new_width)
+        if new_width < 20:
+            return
+        with CM_BlockUpdates(self):
+            self.coords[0][0] = self.coords[1][0] = value
+
+            delta_x_min = self.dimensions[0] - new_width
+            width, height = self.dimensions
+            self.dimensions[0] = int(new_width)
+
+            if self.rotation == 0:
+                self.origin[0] = int(self.coords[1][0] + self.pivot[0] * new_width)
+            else:
+                # This works and center the origin BUT... it doesn't center so that the coords stays the same.
+                # rect_dir_v = (Vector(self.coords_rotated[2]) - Vector(self.coords_rotated[1])).normalized()
+                # self.origin = (
+                #     int(self.coords[1][0] + self.pivot[0] * (width  + rect_dir_v.x * delta_x_min)),
+                #     int(self.coords[1][1] + self.pivot[1] * (height + rect_dir_v.y * delta_x_min))
+                # )
+                ## self.origin = (
+                ##     int(self.coords_rotated[1][0] + self.pivot[0] * (width  + rect_dir_v.x * delta_x_min)),
+                ##     int(self.coords_rotated[1][1] + self.pivot[1] * (height + rect_dir_v.y * delta_x_min))
+                ## )
+
+                pass
+                '''
+                width, height = self.dimensions
+
+                origin_in_local = Vector((
+                    self.pivot[0] * width,
+                    self.pivot[1] * height
+                ))
+                rotation_angle = self.rotation
+                rotated_offset_x = origin_in_local.x * cos(rotation_angle) - origin_in_local.y * sin(rotation_angle)
+                rotated_offset_y = origin_in_local.x * sin(rotation_angle) + origin_in_local.y * cos(rotation_angle)
+
+                self.origin = (
+                    int(self.coords_rotated[1][0] + rotated_offset_x),
+                    int(self.coords_rotated[1][1] + rotated_offset_y)
+                )
+                '''
+
+            self.update_rotated()
+
+
+    @x_max.setter
+    def x_max(self, value: int) -> None:
+        new_width = value - self.x_min
+        if new_width < 20:
+            return
+        with CM_BlockUpdates(self):
+            self.coords[2][0] = self.coords[3][0] = value
+            w_delta = new_width - self.dimensions[0]
+            self.dimensions[0] = int(new_width)
+
+            if self.rotation == 0:
+                self.origin[0] = int(self.coords[1][0] + self.pivot[0] * new_width)
+
+            else:
+                pass
+                '''
+                width, height = self.dimensions
+
+                origin_in_local = Vector((
+                    self.pivot[0] * width,
+                    self.pivot[1] * height
+                ))
+                rotation_angle = self.rotation
+                rotated_offset_x = origin_in_local.x * cos(rotation_angle) - origin_in_local.y * sin(rotation_angle)
+                rotated_offset_y = origin_in_local.x * sin(rotation_angle) + origin_in_local.y * cos(rotation_angle)
+
+                self.origin = (
+                    int(self.coords_rotated[1][0] + rotated_offset_x),
+                    int(self.coords_rotated[1][1] + rotated_offset_y)
+                )
+                '''
+
+                # self.update_coords()
+
+            self.update_rotated()
+
+
+    @y_min.setter
+    def y_min(self, value: int) -> None:
+        new_height = int(self.y_max - value)
+        if new_height < 20:
+            return
+        with CM_BlockUpdates(self):
+            self.coords[1][1] = self.coords[2][1] = value
+
+            height_diff = new_height - self.dimensions[1]
+            self.dimensions[1] = new_height
+
+            if self.rotation == 0:
+                self.origin[1] = int(self.coords[1][1] + self.pivot[1] * new_height)
+            else:
+                pass
+                '''
+                width, height = self.dimensions
+
+                origin_in_local = Vector((
+                    self.pivot[0] * width,
+                    self.pivot[1] * height
+                ))
+                rotation_angle = self.rotation
+                rotated_offset_x = origin_in_local.x * cos(rotation_angle) - origin_in_local.y * sin(rotation_angle)
+                rotated_offset_y = origin_in_local.x * sin(rotation_angle) + origin_in_local.y * cos(rotation_angle)
+
+                self.origin = (
+                    int(self.coords_rotated[1][0] + rotated_offset_x),
+                    int(self.coords_rotated[1][1] + rotated_offset_y)
+                )
+                '''
+
+            self.update_rotated()
+
+
+    @y_max.setter
+    def y_max(self, value: int) -> None:
+        new_height = int(value - self.y_min)
+        if new_height < 20:
+            return
+        with CM_BlockUpdates(self):
+            self.coords[0][1] = self.coords[3][1] = value
+
+            self.dimensions[1] = new_height
+
+            if self.rotation == 0:
+                self.origin[1] = int(self.coords[1][1] + self.pivot[1] * new_height)
+            else:
+                pass
+                '''
+                width, height = self.dimensions
+
+                origin_in_local = Vector((
+                    self.pivot[0] * width,
+                    self.pivot[1] * height
+                ))
+                rotation_angle = self.rotation
+                rotated_offset_x = origin_in_local.x * cos(rotation_angle) - origin_in_local.y * sin(rotation_angle)
+                rotated_offset_y = origin_in_local.x * sin(rotation_angle) + origin_in_local.y * cos(rotation_angle)
+
+                self.origin = (
+                    int(self.coords_rotated[1][0] + rotated_offset_x),
+                    int(self.coords_rotated[1][1] + rotated_offset_y)
+                )
+                '''
+
+            self.update_rotated()
+
+
+    # ----------------------------------------
 
     def move(self, off_x, off_y) -> None:
         self.origin = (int(self.origin.x + off_x), int(self.origin.y + off_y))
