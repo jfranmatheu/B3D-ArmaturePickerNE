@@ -29,7 +29,7 @@ class APNODE_Label(APNODE_Label_NodeProps, AP_Node, Node):
 
     # ----- DRAWING --------------------------------
 
-    def draw_common(self, context: Context, rect: RectTransform, style: Label_Style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw_common(self, context: Context, view_loc: Vector, rect: RectTransform, style: Label_Style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         
 
         padding = 4 * scale

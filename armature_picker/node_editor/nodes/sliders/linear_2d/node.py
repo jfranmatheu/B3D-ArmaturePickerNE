@@ -86,7 +86,7 @@ class APNODE_SliderLinear2D(APNODE_Slider2D_NodeProps, APNODE_Slider_CommonNode,
 
     # ----- DRAWING --------------------------------
 
-    def draw_common(self, context: Context, rect: RectTransform, style: SliderLinear2D_Style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw_common(self, context: Context, view_loc: Vector, rect: RectTransform, style: SliderLinear2D_Style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
 
 
         draw.wg_grid_ui(

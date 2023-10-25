@@ -1,4 +1,4 @@
-from .._base import AP_Node, Node
+from .._base import AP_Node, Node, Vector
 from .._transform_props import RectTransform
 from .node_props import APNODE_Image_NodeProps, Image_Style
 
@@ -32,7 +32,7 @@ class APNODE_Image(APNODE_Image_NodeProps, AP_Node, Node):
 
     # ----- DRAWING --------------------------------
 
-    def draw_common(self, context: Context, rect: RectTransform, style: Image_Style, wg_settings: Image_Style, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw_common(self, context: Context, view_loc: Vector, rect: RectTransform, style: Image_Style, wg_settings: Image_Style, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         # 
 
         if self.image is not None:

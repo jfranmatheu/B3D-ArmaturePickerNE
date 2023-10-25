@@ -56,7 +56,7 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Com
 
     # ----- DRAWING --------------------------------
 
-    def draw_common(self, context: Context, rect: RectTransform, theme_style: BonePickerGeo_Style, wg_settings: BonePickerGeo_Settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw_common(self, context: Context, view_loc: Vector, rect: RectTransform, theme_style: BonePickerGeo_Style, wg_settings: BonePickerGeo_Settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         local_style: BonePickerGeo_LocalStyle = self.style
 
         geo = draw_geo.Geometry.get(self)

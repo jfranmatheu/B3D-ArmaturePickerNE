@@ -519,6 +519,7 @@ class AP_NodeTree(NodeTree):
         zoom = get_node_editor_zoom(context)
         offset = get_node_editor_offset(context)
         ui_scale = context.preferences.system.ui_scale
+        view_loc = self.view_loc
 
         active_node: AP_Node = self.nodes.active
         sel_nodes: set[AP_Node] = self.get_selected_nodes(context)
@@ -541,7 +542,7 @@ class AP_NodeTree(NodeTree):
                         continue
                     if node.dirty:
                         refresh = True
-                    node._draw(context, node.get_style(theme_style), node.get_settings(wg_settings), ui_scale, active=node==active_node, selected=node in sel_nodes, in_edit=in_edit)
+                    node._draw(context, view_loc, node.get_style(theme_style), node.get_settings(wg_settings), ui_scale, active=node==active_node, selected=node in sel_nodes, in_edit=in_edit)
 
             if self.active_node is not None and self.active_node.in_modal:
                 draw_callback = self.active_node.modal_draw__edit if in_edit else self.active_node.modal_draw__pose

@@ -442,11 +442,11 @@ class AP_Node(NodeTransformProps):
 
     # ----- DRAWING --------------------------------
 
-    def draw__pose(self, context: Context, rect: RectTransform, style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw__pose(self, context: Context, view_loc: Vector, rect: RectTransform, style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         ''' Specific drawing for POSE mode '''
         pass
 
-    def draw__edit(self, context: Context, rect: RectTransform, style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw__edit(self, context: Context, view_loc: Vector, rect: RectTransform, style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         ''' Specific drawing for EDIT mode. '''
         if active or selected:
             if self.locked:
@@ -499,19 +499,19 @@ class AP_Node(NodeTransformProps):
                     )
 
 
-    def draw_common(self, context: Context, rect: RectTransform, style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw_common(self, context: Context, view_loc: Vector, rect: RectTransform, style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         ''' Shader drawing between POSE and EDIT. '''
         pass
 
-    def _draw(self, context: Context, style, wg_settings, scale: float, active: bool, selected: bool, in_edit: bool) -> None:
+    def _draw(self, context: Context, view_loc: Vector, style, wg_settings, scale: float, active: bool, selected: bool, in_edit: bool) -> None:
         ''' Internal. '''
         hovered = self.is_hovered()
         rect = self.rect_transform
-        self.draw_common(context, rect, style, wg_settings, scale, active, selected, hovered)
+        self.draw_common(context, view_loc, rect, style, wg_settings, scale, active, selected, hovered)
         if in_edit:
-            self.draw__edit(context, rect, style, wg_settings, scale, active, selected, hovered)
+            self.draw__edit(context, view_loc, rect, style, wg_settings, scale, active, selected, hovered)
         else:
-            self.draw__pose(context, rect, style, wg_settings, scale, active, selected, hovered)
+            self.draw__pose(context, view_loc, rect, style, wg_settings, scale, active, selected, hovered)
 
         if self.dirty:
             set_dirty_state(self.uuid, False)

@@ -74,7 +74,7 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_Slider_Common, A
 
     # ----- DRAWING --------------------------------
 
-    def draw_common(self, context: Context, rect: RectTransform, style: SliderRadial_Style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw_common(self, context: Context, view_loc: Vector, rect: RectTransform, style: SliderRadial_Style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
 
         value = self.get_value(context)
         if value is None:
@@ -123,7 +123,7 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_Slider_Common, A
             )
 
 
-    def draw__edit(self, context, rect: RectTransform, style: SliderRadial_Style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw__edit(self, context, view_loc: Vector, rect: RectTransform, style: SliderRadial_Style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         ''' Specific drawing for EDIT mode. '''
         if active or selected:
             if self.locked:

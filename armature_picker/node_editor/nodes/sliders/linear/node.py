@@ -68,7 +68,7 @@ class APNODE_SliderLinear(APNODE_Slider_NodeProps, APNODE_Slider_Common, AP_Node
 
     # ----- DRAWING --------------------------------
 
-    def draw_common(self, context: Context, rect: RectTransform, style: SliderLinear_Style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw_common(self, context: Context, view_loc: Vector, rect: RectTransform, style: SliderLinear_Style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
 
         if self.clamp_slider:
             value = self.get_value(context)
