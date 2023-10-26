@@ -539,7 +539,7 @@ class AP_NodeTree(NodeTree):
                     if not node.visible:
                         continue
                     if not rect_overlap(visible_view_box, node.rect_transform):
-                        print("Node outside view", node.label)
+                        # print("Node outside view", node.label)
                         continue
                     if node.dirty:
                         refresh = True
