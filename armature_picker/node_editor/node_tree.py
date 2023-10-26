@@ -14,6 +14,7 @@ from math import cos, sin
 from armature_picker.utils.cursor import Cursor, CursorIcon
 from armature_picker.utils.event import Mouse, EventType, EventValue
 from armature_picker.paths import Paths
+from armature_picker.ui.context_menu import AP_MT_context_menu
 from ..gpu import draw
 from .nodes._base import AP_Node, RectTransform
 from ..utils.node_editor import get_node_editor_zoom, get_node_editor_view_point, get_node_editor_offset, get_node_editor_region_coord, get_node_editor_visible_view_box
@@ -339,6 +340,12 @@ class AP_NodeTree(NodeTree):
 
 
     def invoke__edit(self, context: Context, event: Event) -> set[str] | None:
+        if event.type == 'RIGHTMOUSE' and event.value == 'PRESS':
+            if len(context.selected_nodes) == 0 and context.active_node is None:
+                return {'FINISHED'}
+            bpy.ops.wm.call_menu('INVOKE_DEFAULT', name=AP_MT_context_menu.bl_idname)
+            return {'FINISHED'}
+
         global G_hovered_node
         ## print("hovered_node", G_hovered_node)
         if G_hovered_node is None:
