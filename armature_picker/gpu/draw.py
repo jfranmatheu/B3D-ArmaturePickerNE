@@ -473,7 +473,8 @@ def wg_ui(node: object, graphic_id: str, roundness: float, outline_thickness: fl
               u_color=bg_color, u_radius=rad, u_outline=outline_thickness, u_outline_color_factor=outline_color_factor)
 
 
-def wg_grid_ui(node: object, graphic_id: str, roundness: float, outline_thickness: float, bg_color: RGBA, _shader=SHADERS.WG_GRID) -> None:
+def wg_grid_ui(node: object, graphic_id: str, roundness: float, outline_thickness: float,
+               bg_color: RGBA, offset: Vector = Vector((0, 0)), scale: float = 1.0, _shader=SHADERS.WG_GRID) -> None:
     ''' Uniforms:
         ---------------
         - ``vec2`` u_dimensions;
@@ -487,12 +488,13 @@ def wg_grid_ui(node: object, graphic_id: str, roundness: float, outline_thicknes
     value = rgb_to_hsv(bg_color[0], bg_color[1], bg_color[2])[-1]
     outline_color_factor = 1 + pow(value, 2)
     draw_node(node, graphic_id, _shader, use_uv=True, wg=True,
-              u_color=bg_color, u_radius=rad, u_outline=outline_thickness, u_outline_color_factor=outline_color_factor)
+              u_color=bg_color, u_radius=rad, u_outline=outline_thickness, u_outline_color_factor=outline_color_factor, u_offset=offset, u_scale=scale)
 
 
 def wg_grid(owner: object, graphic_id: str,
        pos: Vector, size: Vector, rotation: float,
        roundness: float, outline_thickness: float, bg_color: RGBA,
+       offset: Vector = Vector((0, 0)), scale: float = 1.0,
        origin: Vector | None = None, dirty: bool | None = None, _shader=SHADERS.WG_GRID) -> None:
     ''' Uniforms:
         ---------------
@@ -507,7 +509,8 @@ def wg_grid(owner: object, graphic_id: str,
     value = rgb_to_hsv(bg_color[0], bg_color[1], bg_color[2])[-1]
     outline_color_factor = 1 + pow(value, 2)
     draw(owner, graphic_id, pos, size, rotation, _shader, use_uv=True, wg=True, origin=origin, dirty=dirty,
-              u_color=bg_color, u_radius=rad, u_outline=outline_thickness, u_outline_color_factor=outline_color_factor)
+              u_color=bg_color, u_radius=rad, u_outline=outline_thickness, u_outline_color_factor=outline_color_factor,
+              u_offset=offset, u_scale=scale)
 
 
 def wg_sld_ui(node: object, graphic_id: str, factor: float, roundness: float, bg_color: RGBA, fill_color: RGBA, _shader=SHADERS.WG_SLD) -> None:

@@ -11,6 +11,8 @@ uniform float u_outline_color_factor;
 uniform float u_radius;
 uniform float u_outline;
 uniform vec4 u_grid_color;
+uniform vec2 u_offset;
+uniform float u_scale; // Grid transformation.
 
 out vec4 fragColor;
 
@@ -50,6 +52,17 @@ float nice_grid(vec2 st, float res)
   return (step(res, grid.x) * step(res, grid.y));
 }
 
+vec2 transform_translate(vec2 position, vec2 offset)
+{
+    //move samplepoint in the opposite direction that we want to move shapes in
+    return position - offset;
+}
+
+vec2 transform_scale(vec2 position, float scale)
+{
+    return position / scale;
+}
+
 
 void main(void){
     vec2 coords = uv * u_dimensions;
@@ -83,6 +96,9 @@ void main(void){
     vec2 st = uv.xy * 2 - 1; // + 0.5/2.5; // gl_FragCoord.st/u_dimensions.xy;
     st.x *= u_dimensions.x/u_dimensions.y;
 
+    st = transform_translate(st, u_offset);
+    st = transform_scale(st, u_scale);
+
     vec3 color = u_color.rgb;
 
     // Grid
@@ -98,7 +114,7 @@ void main(void){
     // color *= 1.-cross(crosses_st_f,vec2(.3,.3));
     // color += vec3(.9)*cross(crosses_st_f,vec2(.2,.2));
 
-    fragColor = vec4(color, u_color.a); 
+    fragColor = vec4(color, u_color.a);
 
     //float scale = u_dimensions.x * .5;
     //float resolution = .2;
