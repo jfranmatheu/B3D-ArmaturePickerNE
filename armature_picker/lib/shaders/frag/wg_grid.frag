@@ -81,7 +81,7 @@ void main(void){
     float alpha = smoothstep(amp_radius, radius, len);
 
     vec2 st = uv.xy * 2 - 1; // + 0.5/2.5; // gl_FragCoord.st/u_dimensions.xy;
-    st.x *= 1.0; // u_dimensions.x/u_dimensions.y
+    st.x *= u_dimensions.x/u_dimensions.y;
 
     vec3 color = u_color.rgb;
 
