@@ -32,11 +32,11 @@ def draw(self, context: Context):
     layout.popover(panel="AP_PT_picker_layers", text="", icon='HIDE_OFF')
 
     # Overlay toggle & popover
-    row = layout.row(align=True)
-    row.prop(overlay, "show_overlays", icon='OVERLAY', text="")
-    sub = row.row(align=True)
-    sub.active = overlay.show_overlays
-    sub.popover(panel="NODE_PT_overlay", text="")
+    # row = layout.row(align=True)
+    # row.prop(overlay, "show_overlays", icon='OVERLAY', text="")
+    # sub = row.row(align=True)
+    # sub.active = overlay.show_overlays
+    # sub.popover(panel="NODE_PT_overlay", text="")
 
 
 def register():
