@@ -10,6 +10,13 @@ class AlignWidgetOperatorProps:
     op_id: str
     axis: str = 'X'
     align_method: str | None = None
+    
+    def draw(self, layout: UILayout) -> None:
+        op = layout.operator('armature_picker.align_widgets', text=self.name)
+        op.op = self.op_id
+        op.axis = self.axis
+        if self.align_method:
+            op.align_method = self.align_method
 
 
 align_widgets_props = (
@@ -64,11 +71,7 @@ class AP_MT_context_menu(Menu):
                 if op_props is None:
                     layout.separator()
                     continue
-                op = layout.operator('armature_picker.align_widgets', text=op_props.name)
-                op.op = op_props.op_id
-                op.axis = op_props.axis
-                if op_props.align_method:
-                    op.align_method = op_props.align_method
+                op_props.draw(layout)
 
         layout.separator()
 
