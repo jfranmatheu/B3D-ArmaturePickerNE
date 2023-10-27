@@ -218,7 +218,7 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps):
                 elif active_tool == 'GIMBALL':
                     OPS.transform.trackball('INVOKE_DEFAULT', release_confirm=True)
 
-                return {'RUNNING_MODAL'}
+                # return {'RUNNING_MODAL'}
 
 
     # ------ DRAWING --------------------------------
