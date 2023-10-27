@@ -394,7 +394,7 @@ class AP_NodeTree(NodeTree):
                 if all([node.locked for node in sel_nodes]):
                     # All nodes are locked!
                     return {'CANCELLED'}
-                if hovered_node is not None:
+                if G_hovered_node is not None and hovered_node is not None:
                     if hovered_node.locked:
                         return {'CANCELLED'}
                     if hovered_node == self.nodes.active and hovered_node.get_state('HOVERED_BORDER', 'NONE') != 'NONE':
