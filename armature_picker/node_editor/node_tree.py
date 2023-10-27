@@ -138,7 +138,7 @@ class AP_NodeTree(NodeTree):
     bl_use_shading_nodes_custom = False
     bl_use_spherical_stereo = False
     bl_use_texture_preview = False
-    
+
 
     # @classmethod
     # def poll(cls, context: Context) -> bool:
@@ -334,9 +334,23 @@ class AP_NodeTree(NodeTree):
             self.dirty = True
             return {'FINISHED'}
 
-        global G_hovered_node
-        if G_hovered_node is None:
-            deselect_all_bones_from_active(context)
+        if event.type == 'LEFTMOUSE':
+            global G_hovered_node
+
+            print(event.value, G_hovered_node)
+
+            if G_hovered_node is None:
+                if event.value == 'CLICK':
+                    deselect_all_bones_from_active(context)
+                    return {'FINISHED'}
+
+                if event.value == 'CLICK_DRAG':
+                    self.set_inject_modal(context, event,
+                                      modal_callback=self.modal__box_select__update,
+                                      modal_enter_callback=self.modal__box_select__enter,
+                                      modal_exit_callback=self.modal__box_select__exit,
+                                      modal_draw_callback=self.modal__box_select__draw)
+                    return {'RUNNING_MODAL'}
 
 
     def invoke__edit(self, context: Context, event: Event) -> set[str] | None:
@@ -788,6 +802,8 @@ class AP_NodeTree(NodeTree):
         self.box_origin = mouse_pos.copy()
         self.dummy_node = DummyNode('MODAL_BOX_SELECT')
         self.prev_sel_nodes = self.get_selected_nodes(context, include_active=True)
+        in_edit = self.picker_mode == 'EDIT'
+        self.modal_nodes = self.nodes if in_edit else [node for node in self.nodes if node.wg_type.startswith('bone_picker')]
 
         Cursor.set_icon(context, CursorIcon.CROSS)
 
@@ -795,7 +811,7 @@ class AP_NodeTree(NodeTree):
         if event.type == 'LEFTMOUSE' and event.value == 'RELEASE':
             return -1
 
-        if event.type != 'MOUSEMOVE':
+        if event.type not in {EventType.MOUSEMOVE, EventType.INBETWEEN_MOUSEMOVE}:
             return 1
 
         ori_x, ori_y = self.box_origin
@@ -816,17 +832,25 @@ class AP_NodeTree(NodeTree):
         proj_box = Box(*(get_node_editor_view_point(context, self.box.min)),
                        *(get_node_editor_view_point(context, self.box.max)))
 
-        for node in self.nodes:
+        in_pose = self.picker_mode == 'POSE'
+
+        for node in self.modal_nodes:
             rect = node.rect_transform
             if rect_overlap(proj_box, rect):
                 node.select = True
+                if in_pose:
+                    node.select_bone(context, deselect_all=False, make_active=False)
             elif node.select:
                 node.select = False
+                if in_pose:
+                    node.deselect_bone(context)
 
         context.region.tag_redraw()
         return 1
 
     def modal__box_select__exit(self, context: Context, mouse_pos: Vector, cancel: bool) -> None:
+        in_pose = self.picker_mode == 'POSE'
+
         if cancel:
             for sel_node in self.prev_sel_nodes:
                 sel_node.select = True
@@ -835,6 +859,8 @@ class AP_NodeTree(NodeTree):
             sel_nodes = self.get_selected_nodes(context)
             if len(sel_nodes) != 0:
                 self.nodes.active = sel_nodes.pop()
+                if in_pose:
+                    self.nodes.active.select_bone(context, deselect_all=False, make_active=True)
                 del sel_nodes
 
         Cursor.set_icon(context, CursorIcon.DEFAULT)
@@ -843,9 +869,11 @@ class AP_NodeTree(NodeTree):
         del self.box_origin
         del self.dummy_node
         del self.prev_sel_nodes
+        self.modal_nodes = None
+
 
     def modal__box_select__draw(self, context: Context, ui_scale: float, sel_nodes: list[Node], in_edit: bool, in_view2d: bool) -> None:
-        if in_view2d or not in_edit:
+        if in_view2d: # or not in_edit:
             return
         draw.box(
             self.dummy_node, 'BOX_SELECT',
