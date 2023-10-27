@@ -2,6 +2,7 @@ from bl_ui.space_node import NODE_HT_header
 from bpy.types import Context, UILayout
 
 from .override_cache import set_cls_attribute
+from ..header_menus.widget_types_visibility import AP_PT_widget_type_visibility
 
 
 
@@ -26,10 +27,17 @@ def draw(self, context: Context):
     layout.separator_spacer()
 
     layout.template_ID(snode, "node_tree", new="node.new_node_tree")
-
+    
+    layout.separator()
+    # Picker Layers.
+    layout.popover(panel="AP_PT_picker_layers", text="", icon='RENDERLAYERS') # 'HIDE_OFF')
+    
     layout.separator_spacer()
     
-    layout.popover(panel="AP_PT_picker_layers", text="", icon='HIDE_OFF')
+    # Viewport Settings
+    AP_PT_widget_type_visibility.draw_in_layout(context, layout)
+    
+    
 
     # Overlay toggle & popover
     # row = layout.row(align=True)

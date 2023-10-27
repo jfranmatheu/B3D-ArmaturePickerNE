@@ -1,6 +1,6 @@
 import bpy
 from bpy.types import NodeTree, Context, Event, Node, PoseBone
-from bpy.props import BoolProperty, EnumProperty, StringProperty
+from bpy.props import BoolProperty, EnumProperty, StringProperty, PointerProperty
 from mathutils import Vector
 import gpu
 
@@ -11,6 +11,8 @@ from collections import defaultdict
 from dataclasses import dataclass
 from math import cos, sin
 
+from armature_picker.data.pg.picker_view import AP_PG_PickerView
+from armature_picker.ui.header_menus.widget_types_visibility import attr_widget_types
 from armature_picker.utils.cursor import Cursor, CursorIcon
 from armature_picker.utils.event import Mouse, EventType, EventValue
 from armature_picker.paths import Paths
@@ -106,6 +108,45 @@ def refresh_nodes_cache(node_tree: 'AP_NodeTree'):
 
 # ----------------------------------------------------------------
 
+def select_node(node_tree: 'AP_NodeTree', node: AP_Node, make_active: bool = False) -> None:
+    if test_node_sel_locked(node_tree, node):
+        return
+    node.select = True
+    if make_active:
+        node_tree.nodes.active = node
+
+def test_node_sel_locked(node_tree: 'AP_NodeTree', node: AP_Node) -> bool:
+    return not node.locked and getattr(node_tree.picker_view, 'show_widget_select_' + node.wg_type)
+
+def test_node_sel(node_tree: 'AP_NodeTree', node: AP_Node) -> bool:
+    return getattr(node_tree.picker_view, 'show_widget_select_' + node.wg_type)
+
+def test_node_visibility(node_tree: 'AP_NodeTree', node: AP_Node) -> bool:
+    return getattr(node_tree.picker_view, 'show_widget_' + node.wg_type) # node.visible and
+
+def get_visible_widget_types(node_tree: 'AP_NodeTree') -> set[str]:
+    picker_view = node_tree.picker_view
+    visible_widget_types = set()
+    for (wg_type, _attr_name) in attr_widget_types:
+        if wg_type is None:
+            continue
+        if getattr(picker_view, 'show_widget_' + wg_type):
+            visible_widget_types.add(wg_type)
+    return visible_widget_types
+
+def get_selectable_widget_types(node_tree: 'AP_NodeTree') -> set[str]:
+    picker_view = node_tree.picker_view
+    selectable_widget_types = set()
+    for (wg_type, _attr_name) in attr_widget_types:
+        if wg_type is None:
+            continue
+        if getattr(picker_view, 'show_widget_select_' + wg_type):
+            selectable_widget_types.add(wg_type)
+    return selectable_widget_types
+
+
+# ----------------------------------------------------------------
+
 
 class AP_NodeTree(NodeTree):
     # Description string
@@ -116,6 +157,14 @@ class AP_NodeTree(NodeTree):
     bl_label = "Armature Picker"
     # Icon identifier
     bl_icon = 'OUTLINER_OB_ARMATURE' # CON_ARMATURE
+
+
+    #----------------------------------------------------------------
+    # ID Properties.
+
+    picker_view: PointerProperty(name='Picker View', type=AP_PG_PickerView)
+
+    #----------------------------------------------------------------
 
     active_node: Union[AP_Node, Node] = None
     modal_nodes: Union[List[AP_Node], List[Node]] = None
@@ -394,6 +443,8 @@ class AP_NodeTree(NodeTree):
             sel_nodes = self.get_selected_nodes(context, include_active=True)
             if len(sel_nodes) == 0:
                 return {'CANCELLED'}
+            for sel_node in sel_nodes:
+                sel_node.locked = False
             ensure_nodes_cache(self)
             self.modal_nodes = sel_nodes
             self.set_inject_modal(context, event,
@@ -406,15 +457,13 @@ class AP_NodeTree(NodeTree):
             hovered_node: AP_Node = self.nodes.get(G_hovered_node, None)
 
         sel_nodes = self.get_selected_nodes(context, include_active=True)
+        sel_nodes = {_node for _node in sel_nodes if test_node_sel_locked(self, _node)}
 
         # print("Selected nodes", sel_nodes)
 
         if self.nodes.active is not None:
             if (event.type == 'G' and event.value == 'RELEASE') or\
                (event.type == 'LEFTMOUSE' and event.value == 'CLICK_DRAG' and G_hovered_node is not None and hovered_node in sel_nodes):
-                if all([node.locked for node in sel_nodes]):
-                    # All nodes are locked!
-                    return {'CANCELLED'}
                 if G_hovered_node is not None and hovered_node is not None:
                     if hovered_node.locked:
                         return {'CANCELLED'}
@@ -447,15 +496,36 @@ class AP_NodeTree(NodeTree):
                                       modal_draw_callback=self.modal__rotate_node__draw)
                 return {'RUNNING_MODAL'}
 
-        if G_hovered_node is not None and hovered_node is not None and hovered_node not in sel_nodes:
-            if event.type == 'LEFTMOUSE' and event.value == 'CLICK_DRAG':
+        if G_hovered_node is not None and hovered_node is not None and event.type == 'LEFTMOUSE':
+            if event.value == 'CLICK_DRAG' and hovered_node not in sel_nodes:
                 for sel_node in sel_nodes:
                     sel_node.select = False
-                if hovered_node.locked:
+                if not test_node_sel_locked(self, hovered_node):
                     return {'CANCELLED'}
                 self.nodes.active = hovered_node
                 hovered_node.select = True
                 return self.invoke__edit(context, event)
+
+            if event.value == 'RELEASE':
+                if not test_node_sel(self, hovered_node):
+                    if hovered_node.select:
+                        hovered_node.select = False
+                    if self.nodes.active == hovered_node:
+                        self.nodes.active = None
+                    return {'FINISHED'}
+                if hovered_node.locked:
+                    bpy.ops.node.select_all(False, action='DESELECT')
+                    self.nodes.active = hovered_node
+                    return {'FINISHED'}
+                elif hovered_node.select and event.shift and self.nodes.active == hovered_node:
+                    self.nodes.active = None
+                    hovered_node.select = False
+                else:
+                    # hovered_node.select_node(context, deselect_all=not event.shift, toggle=False, set_active=True)
+                    if not event.shift:
+                        bpy.ops.node.select_all(False, action='DESELECT')
+                    hovered_node.select = True
+                    self.nodes.active = hovered_node
 
 
     # ----------------------------------------------------------------
@@ -553,6 +623,9 @@ class AP_NodeTree(NodeTree):
         active_node: AP_Node = self.nodes.active
         sel_nodes: set[AP_Node] = self.get_selected_nodes(context)
 
+        # A set of the widget types that are visible.
+        visible_wg_types = get_visible_widget_types(self)
+
         visible_view_box = get_node_editor_visible_view_box(context)
 
         theme_style = get_active_theme_style(context)
@@ -564,6 +637,8 @@ class AP_NodeTree(NodeTree):
 
             for node_layer_nodes in sorted_nodes_cache[self.uuid]:
                 for node in node_layer_nodes:
+                    if node.wg_type not in visible_wg_types:
+                        continue
                     if not node.visible:
                         continue
                     if not rect_overlap(visible_view_box, node.rect_transform):
