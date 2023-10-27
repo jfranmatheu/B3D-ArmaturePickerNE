@@ -158,7 +158,7 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps):
             bones = armature.bones if context.mode == 'POSE' else armature.edit_bones
         return bones.get(self.bone_name, None)
 
-    def select_bone(self, context: Context, deselect_all: bool = True) -> None:
+    def select_bone(self, context: Context, deselect_all: bool = True, make_active: bool = True) -> None:
         if context.active_object is None or context.active_object.type != 'ARMATURE':
             return
         armature: Armature = context.active_object.data
@@ -168,7 +168,8 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps):
             if deselect_all:
                 deselect_all_bones_from_active(context)
             bone.select = True
-            bones.active = bone
+            if make_active:
+                bones.active = bone
 
     # ------ ON HOVER --------------------------------
 
