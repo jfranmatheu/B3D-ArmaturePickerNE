@@ -337,8 +337,6 @@ class AP_NodeTree(NodeTree):
         if event.type == 'LEFTMOUSE':
             global G_hovered_node
 
-            print(event.value, G_hovered_node)
-
             if G_hovered_node is None:
                 if event.value == 'CLICK':
                     deselect_all_bones_from_active(context)
