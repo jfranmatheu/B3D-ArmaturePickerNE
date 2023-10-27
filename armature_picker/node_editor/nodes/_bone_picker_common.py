@@ -28,6 +28,11 @@ class APNODE_BonePicker_CommonProps:
             'NONE', "None", "",
         ),)
 
+    def test_bone_selected(self, context: Context) -> bool:
+        if bone := self.get_bone(context):
+            return bone.select
+        return False
+
     # ----- UPDATES -----------------------------------
 
     def update_bone_name(self, context: Context) -> None:
@@ -224,10 +229,10 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps):
     # ------ DRAWING --------------------------------
 
     def draw__pose(self, context, view_loc: Vector, rect: RectTransform, style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
-        if active:
+        if active or selected:
             draw.box_ui(
                 self, 'SELECT_CAGE',
                 margin=2,
                 line_thickness=2 * scale,
-                color=(1.0, 1.0, .1, 1.0)
+                color=(1.0, 1.0, .1, 1.0) if active else (1.0, .6, .1, 1.0)
             )

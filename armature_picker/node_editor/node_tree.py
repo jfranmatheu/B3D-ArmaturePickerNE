@@ -1,5 +1,5 @@
 import bpy
-from bpy.types import NodeTree, Context, Event, Node
+from bpy.types import NodeTree, Context, Event, Node, PoseBone
 from bpy.props import BoolProperty, EnumProperty, StringProperty
 from mathutils import Vector
 import gpu
@@ -169,6 +169,15 @@ class AP_NodeTree(NodeTree):
             if act_node := self.nodes.active:
                 sel_nodes.add(act_node)
         return sel_nodes
+
+    def get_selected_bones(self, context: Context, include_active: bool = True) -> set[PoseBone]:
+        if context.active_object is None or context.active_object.type != 'ARMATURE':
+            return set()
+        sel_bones = set(context.selected_bones)
+        if include_active:
+            if active_bone := context.active_bone:
+                sel_bones.add(active_bone)
+        return sel_bones
 
 
     def update_nodes_depth(self) -> None:
@@ -562,7 +571,14 @@ class AP_NodeTree(NodeTree):
                         continue
                     if node.dirty:
                         refresh = True
-                    node._draw(context, view_loc, node.get_style(theme_style), node.get_settings(wg_settings), ui_scale, active=node==active_node, selected=node in sel_nodes, in_edit=in_edit)
+                    node._draw(context,
+                               view_loc,
+                               node.get_style(theme_style),
+                               node.get_settings(wg_settings),
+                               ui_scale,
+                               active=node==active_node,
+                               selected=node in sel_nodes if in_edit else node.wg_type.startswith('bone_picker') and node.test_bone_selected(context),
+                               in_edit=in_edit)
 
             if self.active_node is not None and self.active_node.in_modal:
                 draw_callback = self.active_node.modal_draw__edit if in_edit else self.active_node.modal_draw__pose
