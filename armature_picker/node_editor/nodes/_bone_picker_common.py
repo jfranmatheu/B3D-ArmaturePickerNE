@@ -194,6 +194,12 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps):
                 self.toggle_ik_fk(context)
                 return
 
+            if self.select and event.shift and self.node_tree.nodes.active == self:
+                self.select = False
+                self.node_tree.nodes.active = None
+                self.deselect_bone(context)
+                return
+
             self.select_node(context, deselect_all=not event.shift)
             self.select_bone(context, deselect_all=not event.shift)
 
