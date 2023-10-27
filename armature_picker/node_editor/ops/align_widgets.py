@@ -34,6 +34,7 @@ class AP_OT_align_widgets(Operator):
             ('MATCH_ACTIVE_SIZE', "Match Active Size", "Copy the size from the active widget"),
             ('MATCH_MIN_SIZE', "Match Minimum Size", "Copy the size from the widget with the minimum size"),
             ('MATCH_MAX_SIZE', "Match Maximum Size", "Copy the size from the active with the maximum size"),
+            ('MATCH_ACTIVE_ROTATION', "Match Active Rotation", "Copy the rotation from the active widget"),
         )
     )
 
@@ -77,15 +78,33 @@ class AP_OT_align_widgets(Operator):
         if active_node is not None and self.align_method == 'ACTIVE':
             value = get_origin_component(active_node, axis)
             nodes.remove(active_node)
+            for node in nodes:
+                set_origin_component(node, axis, value)
         elif self.align_method == 'MIN':
-            value = min([get_origin_component(_node, axis) for _node in nodes])
+            minimums = [_node.rect_transform.bound_box[1][axis] for _node in nodes]
+            min_value = min(minimums)
+            if min_value < 0:
+                min_value = abs(min_value)
+                minimums = [_val + min_value for _val in minimums]
+                min_value = 0
+            for node_min_val, node in zip(minimums, nodes):
+                off = min_value - node_min_val
+                set_origin_component(node, axis, get_origin_component(node, axis) + off)
         elif self.align_method == 'MAX':
-            value = max([get_origin_component(_node, axis) for _node in nodes])
+            maximums = [_node.rect_transform.bound_box[3][axis] for _node in nodes]
+            max_value = max(maximums)
+            min_value = min(maximums)
+            if min_value < 0:
+                min_value = abs(min_value)
+                maximums = [_val + min_value for _val in maximums]
+                max_value += min_value
+            for node_max_val, node in zip(maximums, nodes):
+                off = max_value - node_max_val
+                set_origin_component(node, axis, get_origin_component(node, axis) + off)
         else:
             value = sum([get_origin_component(_node, axis) for _node in nodes]) / len(nodes)
-
-        for node in nodes:
-            set_origin_component(node, axis, value)
+            for node in nodes:
+                set_origin_component(node, axis, value)
 
     def normalize_size(self, nodes: list[AP_Node]) -> None:
         ''' The typical normalization. '''
@@ -105,7 +124,7 @@ class AP_OT_align_widgets(Operator):
             if node == active_node:
                 continue
             node.rect_transform.dimensions = active_node_size
-    
+
     def match_min_size(self, nodes: list[AP_Node]) -> None:
         min_size = (
             int(min([get_size_component(_node, 0) for _node in nodes])),
@@ -122,12 +141,22 @@ class AP_OT_align_widgets(Operator):
         for node in nodes:
             node.rect_transform.dimensions = max_size
 
+    def match_active_rotation(self, active_node: AP_Node, nodes: list[AP_Node]) -> None:
+        ''' Actually matching rotation of active node. '''
+        if active_node is None:
+            return
+        active_node_rotation = active_node.rect_transform.rotation
+        for node in nodes:
+            if node == active_node:
+                continue
+            node.rect_transform.rotation = active_node_rotation
+
     def execute(self, context: Context) -> OpsReturn:
         node_tree = context.space_data.node_tree
         nodes: list[AP_Node] = list(node_tree.get_selected_nodes(context, include_active=True))
         if len(nodes) < 2:
             return OpsReturn.CANCEL
-        
+
         axis_int = 0 if self.axis == 'X' else 1
 
         if self.op == 'EVEN_DISTRIBUTION':
@@ -149,5 +178,8 @@ class AP_OT_align_widgets(Operator):
 
         elif self.op == 'MATCH_MAX_SIZE':
             self.match_max_size(nodes)
+
+        elif self.op == 'MATCH_ACTIVE_ROTATION':
+            self.match_active_rotation(node_tree.nodes.active, nodes)
 
         return OpsReturn.FINISH
