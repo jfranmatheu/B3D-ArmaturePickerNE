@@ -171,6 +171,10 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps):
             if make_active:
                 bones.active = bone
 
+    def deselect_bone(self, context: Context) -> None:
+        if bone := self.get_bone(context):
+            bone.select = False
+
     # ------ ON HOVER --------------------------------
 
     def on_hover_exit(self, context: Context | None = None) -> None:
