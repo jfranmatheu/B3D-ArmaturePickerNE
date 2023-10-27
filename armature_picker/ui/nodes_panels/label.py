@@ -11,7 +11,7 @@ class APNODE_PT_label(Panel):
     bl_label = 'Label'
     bl_space_type = 'NODE_EDITOR'
     bl_region_type = 'UI'
-    bl_category = 'Node'
+    bl_category = 'Widget'
 
     bl_order = 1
 

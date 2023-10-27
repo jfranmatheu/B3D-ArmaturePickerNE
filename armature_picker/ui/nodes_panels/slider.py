@@ -11,7 +11,7 @@ class APNODE_PT_slider_contraints(Panel):
     bl_label = 'Slider'
     bl_space_type = 'NODE_EDITOR'
     bl_region_type = 'UI'
-    bl_category = 'Node'
+    bl_category = 'Widget'
 
     bl_order = 1
 

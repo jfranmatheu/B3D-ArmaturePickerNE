@@ -10,7 +10,7 @@ class APNODE_PT_visibility(Panel):
     bl_label = 'Visibility'
     bl_space_type = 'NODE_EDITOR'
     bl_region_type = 'UI'
-    bl_category = 'Node'
+    bl_category = 'Widget'
     
     bl_options = {'HIDE_HEADER'}
 

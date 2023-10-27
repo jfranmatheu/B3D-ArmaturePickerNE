@@ -608,6 +608,10 @@ class AP_Node(NodeTransformProps):
     # ----- UI LAYOUT DRAWING --------------------------------
 
     def draw_buttons_ext(self, context: Context, layout: UILayout) -> None:
+        ''' Internal method from Blender. We are not using it anymore (1.0.18 beta). '''
+        pass
+
+    def draw_wg_props(self, context: Context, layout: UILayout) -> None:
         if not poll_check(context, 'ANY', use_active_object=True):
             return
         mode = self.node_tree.picker_mode

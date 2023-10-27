@@ -42,6 +42,6 @@ class APNODE_Label_NodeProps:
         update=update_label
     )
 
-    def draw_buttons_ext(self, context: Context, layout: UILayout) -> None:
+    def draw_wg_props(self, context: Context, layout: UILayout) -> None:
         layout.prop(self, 'text')
         layout.prop(self, 'text_size')

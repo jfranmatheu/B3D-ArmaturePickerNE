@@ -60,7 +60,7 @@ class APNODE_Image_NodeProps:
         update=update_dimensions
     )
 
-    def draw_buttons_ext(self, context: Context, layout: UILayout) -> None:
+    def draw_wg_props(self, context: Context, layout: UILayout) -> None:
         row = layout.row(align=True)
         row.prop(self, 'image')
         row.operator('armature_picker.load_image_for_active_node', text='', icon='IMPORT')

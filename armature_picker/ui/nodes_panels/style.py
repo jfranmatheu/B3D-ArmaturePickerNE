@@ -10,7 +10,7 @@ class APNODE_PT_style(Panel):
     bl_label = 'Style'
     bl_space_type = 'NODE_EDITOR'
     bl_region_type = 'UI'
-    bl_category = 'Node'
+    bl_category = 'Widget'
     
     bl_order = 5
 

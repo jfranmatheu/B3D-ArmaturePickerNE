@@ -105,7 +105,7 @@ class APNODE_PT_custom_properties(Panel):
     bl_label = 'Custom Properties'
     bl_space_type = 'NODE_EDITOR'
     bl_region_type = 'UI'
-    bl_category = 'Node'
+    bl_category = 'Widget'
     bl_options = {'DEFAULT_CLOSED'}
 
     bl_order = 10
