@@ -185,6 +185,7 @@ class RectTransform(PropertyGroup):
         max=2000,
         min=10,
         size=2,
+        subtype='XYZ',
         update=update_dimensions
     )
 
