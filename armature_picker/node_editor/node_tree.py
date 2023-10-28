@@ -903,13 +903,25 @@ class AP_NodeTree(NodeTree):
         self.box = Box(mouse_pos.x, mouse_pos.y, mouse_pos.x, mouse_pos.y)
         self.box_origin = mouse_pos.copy()
         self.dummy_node = DummyNode('MODAL_BOX_SELECT')
-        self.prev_sel_nodes = self.get_selected_nodes(context, include_active=True)
         in_edit = self.picker_mode == 'EDIT'
+        self.append_selection = event.shift
         self.modal_nodes = self.nodes if in_edit else [node for node in self.nodes if node.wg_type.startswith('bone_picker')]
-        bpy.ops.node.select_all(False, action='DESELECT')
-        
-        if not in_edit:
-            deselect_all_bones_from_active(context)
+        if in_edit:
+            self.prev_sel_nodes = self.get_selected_nodes(context, include_active=True)
+        else:
+            self.prev_sel_nodes = {_node for _node in self.modal_nodes if _node.test_bone_selected(context)}
+
+        if self.append_selection:
+            if in_edit:
+                pass
+            else:
+                bpy.ops.node.select_all(False, action='DESELECT')
+                for prev_sel_node in self.prev_sel_nodes:
+                    prev_sel_node.select = True
+        else:
+            bpy.ops.node.select_all(False, action='DESELECT')
+            if not in_edit:
+                deselect_all_bones_from_active(context)
 
         Cursor.set_icon(context, CursorIcon.CROSS)
 
@@ -943,6 +955,8 @@ class AP_NodeTree(NodeTree):
             if rect_overlap(proj_box, rect):
                 node.select = True
             elif node.select:
+                if self.append_selection and node in self.prev_sel_nodes:
+                    continue
                 node.select = False
 
         context.region.tag_redraw()
@@ -964,11 +978,14 @@ class AP_NodeTree(NodeTree):
                     self.nodes.active.select_bone(context, deselect_all=True, make_active=True)
                     for node in sel_nodes:
                         node.select_bone(context, deselect_all=False, make_active=False)
+                    for sel_node in self.prev_sel_nodes:
+                        node.select_bone(context, deselect_all=False, make_active=False)
 
                 del sel_nodes
 
         Cursor.set_icon(context, CursorIcon.DEFAULT)
 
+        del self.append_selection
         del self.box
         del self.box_origin
         del self.dummy_node
