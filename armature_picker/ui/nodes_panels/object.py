@@ -8,7 +8,7 @@ from ...node_editor.nodes.bone_picker_geo.node import APNODE_BonePickerGeo
 
 class APNODE_PT_source_mesh_object(Panel):
     bl_idname = 'APNODE_PT_source_mesh_object'
-    bl_label = 'Object'
+    bl_label = 'Geometry'
     bl_space_type = 'NODE_EDITOR'
     bl_region_type = 'UI'
     bl_category = 'Widget'
