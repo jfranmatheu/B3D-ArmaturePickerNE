@@ -162,7 +162,7 @@ class APNODE_Button_CommonProps:
         name="Image Scale X",
         default=1,
         min=0.1,
-        max=10,
+        max=2,
         update=update_dimensions
     )
 
@@ -170,7 +170,7 @@ class APNODE_Button_CommonProps:
         name="Image Scale Y",
         default=1,
         min=0.1,
-        max=10,
+        max=2,
         update=update_dimensions
     )
 
