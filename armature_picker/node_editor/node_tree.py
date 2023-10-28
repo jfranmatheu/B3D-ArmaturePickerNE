@@ -846,6 +846,8 @@ class AP_NodeTree(NodeTree):
                     rect.y_max = rect.y_max + mouse.local_delta_int.y * inv_zoom
 
         # rect.update_from_coords(context)
+        if hasattr(node, 'apply_transform_constraints'):
+            node.apply_transform_constraints(node.rect_transform)
         node.update_graphics(context)
         return 1
 

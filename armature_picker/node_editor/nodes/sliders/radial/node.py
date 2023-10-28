@@ -26,6 +26,13 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_Slider_Common, A
     wg_type = 'slider_radial'
 
 
+    def apply_transform_constraints(self, rect: RectTransform) -> None:
+        w, h = rect.dimensions
+        if w != h:
+            k = int((w + h) / 2)
+            rect.dimensions = (k, k)
+
+
     def init(self, context):
         super().init(context)
 
