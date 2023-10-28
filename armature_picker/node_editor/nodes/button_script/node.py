@@ -47,8 +47,9 @@ class APNODE_ButtonScript(APNODE_ButtonScript_NodeProps, AP_Node, Node):
         self.script_text: Text = bpy.data.texts.new('.' + self.uuid)
         self.script_text.from_string(script_text_template)
 
-    def draw_error_message(self, layout: UILayout) -> None:
-        lines = wrap(self.error_message, 70)
+    def draw_error_message(self, popover, context: Context) -> None:
+        layout: UILayout = popover.layout
+        lines = wrap(self.error_message, 40)
         for line in lines:
             layout.label(text=line)
 
