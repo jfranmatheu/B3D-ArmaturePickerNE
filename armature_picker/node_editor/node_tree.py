@@ -790,9 +790,6 @@ class AP_NodeTree(NodeTree):
 
         if node.wg_type == 'bone_picker' and node.fit_to_text:
             node.fit_to_text = False
-        
-        if node.wg_type == 'slider_radial' and rect.rotation == 0:
-            rect.rotation = radians(0.001)
 
         Cursor.set_icon(context, CursorIcon.DOT)
 
@@ -867,7 +864,7 @@ class AP_NodeTree(NodeTree):
             rect.coords = self.prev_node_coords
             rect.update_from_coords(context)
 
-        elif rect.rotation != 0 or rect.can_update_origin_on_redimension:
+        elif rect.rotation != 0 or not rect.can_update_origin_on_redimension:
             v_dir_angle = (Vector(rect.coords_rotated[2]) - Vector(rect.coords_rotated[1])).normalized()
 
             width, height = rect.dimensions
