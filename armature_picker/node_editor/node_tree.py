@@ -826,6 +826,8 @@ class AP_NodeTree(NodeTree):
         # print("local_current_prev ->", mouse.local_prev.x, "->", mouse.local_current.x)
         # print("local_delta_int.x ->", mouse.local_delta_int.x)
         # print("local_offset.x ->", mouse.local_offset.x)
+        
+        prev_dim = Vector(rect.dimensions)
 
         if is_hor_border:
             rect_dir_v = (rect.bottom_right - rect.bottom_left).normalized()
@@ -848,8 +850,10 @@ class AP_NodeTree(NodeTree):
                     rect.y_max = rect.y_max + mouse.local_delta_int.y * inv_zoom
 
         # rect.update_from_coords(context)
-        if hasattr(node, 'apply_transform_constraints'):
-            node.apply_transform_constraints(node.rect_transform)
+        if hasattr(node, 'apply_transform_dimensions_constraints'):
+            new_dim = Vector(rect.dimensions)
+            if prev_dim != new_dim:
+                rect.dimensions = node.apply_transform_dimensions_constraints(prev_dim, new_dim)
         node.update_graphics(context)
         return 1
 

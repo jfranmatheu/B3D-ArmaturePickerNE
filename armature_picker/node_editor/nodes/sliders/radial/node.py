@@ -25,13 +25,21 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_Slider_Common, A
     bl_icon = 'PROPERTIES'
     wg_type = 'slider_radial'
 
+    # ----- TRANSFORM CONSTRAINTS --------------------------------
 
-    def apply_transform_constraints(self, rect: RectTransform) -> None:
-        w, h = rect.dimensions
-        if w != h:
-            k = int((w + h) / 2)
-            rect.dimensions = (k, k)
+    def apply_transform_dimensions_constraints(self, prev_dimensions: Vector, new_dimensions: Vector) -> None:
+        _w, _h = prev_dimensions
+        w, h = new_dimensions
+        if w != _w:
+            k = int(w)
+        elif h != _h:
+            k = int(h)
+        else:
+            return
+        return (k, k)
 
+
+    # ----- INITIALIZE --------------------------------
 
     def init(self, context):
         super().init(context)
