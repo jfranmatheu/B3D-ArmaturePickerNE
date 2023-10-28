@@ -51,14 +51,18 @@ class APNODE_Image(APNODE_Image_NodeProps, AP_Node, Node):
     # ----- UI LAYOUT DRAWING -----------------------------------------------------------
 
     def draw_transform(self, layout: UILayout, rect_transform: RectTransform) -> None:
+        layout.prop(self, 'keep_aspect_ratio', text="Keep Image Aspect Ratio")
+
         layout.row().prop(rect_transform, 'origin')
         layout.row().prop(rect_transform, 'pivot')
         layout.prop(rect_transform, 'rotation')
-        layout.prop(self, 'keep_aspect_ratio')
-        # if self.keep_aspect_ratio:
-        #     layout.prop(self, 'image_scale')
-        # else:
-        layout.prop(self, 'image_scale')
+
+        if self.keep_aspect_ratio:
+            layout.prop(self, 'image_scale_x', text='Image Scale', slider=True)
+        else:
+            col = layout.column(align=True, heading="Image Scale")
+            col.prop(self, 'image_scale_x', text='X', slider=True)
+            col.prop(self, 'image_scale_y', text='Y', slider=True)
 
         _sub = layout.column()
         _sub.enabled = False

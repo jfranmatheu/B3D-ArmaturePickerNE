@@ -1,5 +1,5 @@
 from bpy.types import Context, UILayout, Image
-from bpy.props import PointerProperty, BoolProperty, FloatVectorProperty
+from bpy.props import PointerProperty, BoolProperty, FloatProperty, FloatVectorProperty
 
 from armature_picker.prefs.styles import Image_Style
 
@@ -24,8 +24,8 @@ class APNODE_Image_NodeProps:
             self.image: Image
             w, h = self.image.size
             self.rect_transform.dimensions = (
-                int(w * self.image_scale[0]),
-                int(h * (self.image_scale[0] if self.keep_aspect_ratio else self.image_scale[1]))
+                int(w * self.image_scale_x),
+                int(h * (self.image_scale_x if self.keep_aspect_ratio else self.image_scale_y))
             )
 
         else:
@@ -34,6 +34,14 @@ class APNODE_Image_NodeProps:
             )
 
         self.update_graphics(context)
+
+    def update_aspect_ratio(self, context: Context) -> None:
+        self.update_dimensions(context)
+        return
+        if not self.keep_aspect_ratio:
+            self.image_scale_x, self.image_scale_y = 1, 1
+        else:
+            self.image_scale_x, self.image_scale_y = 1, 1
 
 
     # BUTTON PROPERTIES
@@ -44,20 +52,36 @@ class APNODE_Image_NodeProps:
         update=update_image,
     )
 
-    image_scale: FloatVectorProperty(
-        name="Image Scale",
-        default=(1, 1),
+    # image_scale: FloatVectorProperty(
+    #     name="Image Scale",
+    #     default=(1, 1),
+    #     min=0.1,
+    #     max=10,
+    #     size=2,
+    #     subtype='XYZ',
+    #     update=update_dimensions
+    # )
+    
+    image_scale_x: FloatProperty(
+        name="Image Scale X",
+        default=1,
         min=0.1,
         max=10,
-        size=2,
-        subtype='XYZ',
+        update=update_dimensions
+    )
+
+    image_scale_y: FloatProperty(
+        name="Image Scale Y",
+        default=1,
+        min=0.1,
+        max=10,
         update=update_dimensions
     )
 
     keep_aspect_ratio: BoolProperty(
         name="Keep aspect ratio",
         default=True,
-        update=update_dimensions
+        update=update_aspect_ratio
     )
 
     def draw_wg_props(self, context: Context, layout: UILayout) -> None:

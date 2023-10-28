@@ -83,6 +83,8 @@ class APNODE_Button_CommonProps:
         self.update_graphics(context)
         
     def update_aspect_ratio(self, context: Context) -> None:
+        self.update_dimensions(context)
+        return
         if not self.keep_aspect_ratio:
             self.image_scale_x, self.image_scale_y = 1, 1
         else:
