@@ -35,8 +35,8 @@ class APNODE_Button_CommonProps:
             self.image: Image
             w, h = self.image.size
             self.rect_transform.dimensions = (
-                int(w * self.image_scale[0]),
-                int(h * (self.image_scale[0] if self.keep_aspect_ratio else self.image_scale[1]))
+                int(w * self.image_scale_x),
+                int(h * (self.image_scale_x if self.keep_aspect_ratio else self.image_scale_y))
             )
             return
 
