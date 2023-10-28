@@ -53,14 +53,17 @@ class APNODE_ButtonScript(APNODE_ButtonScript_NodeProps, AP_Node, Node):
             layout.label(text=line)
 
     def invoke__pose(self, context: Context, event: Event, mouse_pos: Vector) -> set[str] | None:
-        if event.type == 'LEFMOUSE' and event.type == 'RELEASE':
+        if event.type == 'LEFTMOUSE' and event.value == 'CLICK':
             script_text: Text = self.script_text
             view3d_context = get_view3d_context(context)
+            ## print(script_text.as_string())
             try:
                 with context.temp_override(**view3d_context):
                     armature_object = context.active_object
-                    exec(script_text.as_string(), globals={'armature': armature_object.data, 'pose': armature_object.pose})
+                    d = {'armature': armature_object.data, 'pose': armature_object.pose}
+                    exec(script_text.as_string(), d, d)
             except Exception as e:
                 print(e)
                 self.error_message = e.__str__()
                 context.window_manager.popover(self.draw_error_message)
+            return {'FINISHED'}
