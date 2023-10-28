@@ -14,6 +14,8 @@ attr_widget_types = (
     # Others.
     ("label", "Label"),
     ("image", "Image"),
+    (None, None),
+    ('button_script', "Button Script"),
 )
 
 

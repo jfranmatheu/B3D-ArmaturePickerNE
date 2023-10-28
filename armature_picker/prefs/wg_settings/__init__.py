@@ -5,3 +5,4 @@ from .label import PG_Label_Settings as Label_Settings
 from .slider_linear import PG_SliderLinear_Settings as SliderLinear_Settings
 from .slider_linear_2d import PG_SliderLinear2D_Settings as SliderLinear2D_Settings
 from .slider_radial import PG_SliderRadial_Settings as SliderRadial_Settings
+from .button_script import PG_ButtonScript_Settings as ButtonScript_Settings

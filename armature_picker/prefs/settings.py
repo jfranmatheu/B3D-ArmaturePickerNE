@@ -16,6 +16,8 @@ class PG_ArmaturePicker_WidgetSettings(PropertyGroup):
     image: PointerProperty(type=Image_Settings)
 
     label: PointerProperty(type=Label_Settings)
+    
+    button_script: PointerProperty(type=ButtonScript_Settings)
 
     wg_type: EnumProperty(
         name="Widget Type",

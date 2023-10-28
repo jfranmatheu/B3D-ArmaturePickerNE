@@ -13,6 +13,9 @@ class MT_add_node(Menu):
         pie = layout.menu_pie()
         # Pie order: west, east, south, north, north-west, north-east, south-west, south-east
         for node in NODES:
+            if node is None:
+                pie.separator()
+                continue
             if isinstance(node, dict):
                 menu_name = node['name']
                 items = node['items']

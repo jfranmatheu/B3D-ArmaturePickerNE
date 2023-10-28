@@ -18,6 +18,8 @@ class AP_PG_PickerView(PropertyGroup):
     show_widget_slider_linear_2d: BoolProperty(name="Show SliderLineal2D Widget Types", default=True)
     show_widget_slider_radial: BoolProperty(name="Show SliderRadial Widget Types", default=True)
 
+    show_widget_button_script: BoolProperty(name="Show ButtonScript Widget Types", default=True)
+
     # Select.
     show_widget_select_label: BoolProperty(name="Can Select Label Types", default=True)
     show_widget_select_image: BoolProperty(name="Can Select Image Types", default=True)
@@ -28,3 +30,5 @@ class AP_PG_PickerView(PropertyGroup):
     show_widget_select_slider_linear: BoolProperty(name="Can Select SliderLineal Widget Types", default=True)
     show_widget_select_slider_linear_2d: BoolProperty(name="Can Select SliderLineal2D Widget Types", default=True)
     show_widget_select_slider_radial: BoolProperty(name="Can Select SliderRadial Widget Types", default=True)
+
+    show_widget_select_button_script: BoolProperty(name="Can Select ButtonScript Widget Types", default=True)

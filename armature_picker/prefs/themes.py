@@ -18,6 +18,8 @@ class PG_ArmaturePickerTheme(PropertyGroup):
 
     label: PointerProperty(type=Label_Style)
 
+    button_script: PointerProperty(type=ButtonScript_Style)
+
     wg_type: EnumProperty(
         name="Widget Type",
         items=(
@@ -27,6 +29,7 @@ class PG_ArmaturePickerTheme(PropertyGroup):
             ('slider_linear', 'Slider Lineal', ""),
             ('slider_radial', 'Slider Radial', ""),
             ('slider_linear_2d', 'Slider Lineal 2D', ""),
+            ('button_script', 'Button Script', ""),
         )
     )
 
