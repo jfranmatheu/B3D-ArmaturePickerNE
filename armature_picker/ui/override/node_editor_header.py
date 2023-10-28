@@ -10,7 +10,7 @@ def draw(self, context: Context):
     if context.space_data.tree_type != 'AP_NODETREE':
         self.old_draw(context)
         return
-    
+
     node_tree = context.space_data.node_tree
 
     snode = context.space_data
@@ -20,24 +20,26 @@ def draw(self, context: Context):
     layout.template_header()
     if node_tree is not None:
         layout.prop(node_tree, 'picker_mode', text='')
-    
-    layout.menu('AP_MT_view', text='View')
-    layout.menu('AP_MT_utils', text='Utils')
+
+        layout.menu('AP_MT_view', text='View')
+
+        if node_tree.picker_mode == 'EDIT':
+            layout.menu('AP_MT_utils', text='Utils')
 
     layout.separator_spacer()
 
     layout.template_ID(snode, "node_tree", new="node.new_node_tree")
-    
+
     layout.separator()
     # Picker Layers.
     layout.popover(panel="AP_PT_picker_layers", text="", icon='RENDERLAYERS') # 'HIDE_OFF')
-    
+
     layout.separator_spacer()
-    
+
     # Viewport Settings
     AP_PT_widget_type_visibility.draw_in_layout(context, layout)
-    
-    
+
+
 
     # Overlay toggle & popover
     # row = layout.row(align=True)
