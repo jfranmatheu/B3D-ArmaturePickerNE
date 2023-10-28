@@ -7,9 +7,9 @@ from ...node_editor.nodes._button_common import APNODE_Button_Common
 
 
 
-class APNODE_PT_label(Panel):
-    bl_idname = 'APNODE_PT_label'
-    bl_label = 'Label'
+class APNODE_PT_button(Panel):
+    bl_idname = 'APNODE_PT_button'
+    bl_label = 'Button'
     bl_space_type = 'NODE_EDITOR'
     bl_region_type = 'UI'
     bl_category = 'Widget'
@@ -23,8 +23,4 @@ class APNODE_PT_label(Panel):
     def draw(self, context: Context):
         layout = self.layout
         node = context.space_data.node_tree.nodes.active
-
-        section_style = draw_section(layout, 'Label', icon='FILE_TEXT')
-        if node.use_image:
-            section_style.enabled = False
-        node.draw_label_props(section_style)
+        node.draw_button_props(context, layout)

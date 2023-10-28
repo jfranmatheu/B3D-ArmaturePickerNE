@@ -159,18 +159,19 @@ class APNODE_Button_CommonProps:
 
     # ------ Draw UILayout --------------------------------
 
-    def draw_label_props(self, layout: UILayout) -> None:
-        layout.prop(self, 'label', text="Text")
-
-        layout.separator()
-
-        layout.prop(self, 'text_size')
-        _sub = layout.row()
+    def draw_button_props(self, context: Context, panel_layout: UILayout) -> None:
+        # DRAW LABEL PROPS.
+        style_section = draw_section(panel_layout, 'Label', icon='FILE_TEXT')
+        if self.use_image:
+            style_section.enabled = False
+        style_section.prop(self, 'label', text="Text")
+        style_section.separator()
+        style_section.prop(self, 'text_size')
+        _sub = style_section.row()
         _sub.enabled = not self.fit_to_text
         _sub.prop(self, 'text_alignment')
 
-
-    def draw_styles(self, panel_layout: UILayout, section_layout: UILayout) -> None:
+        # DRAW IMAGE GRAPHICS PROPS.
         image_section = draw_section(panel_layout, 'Image Graphic', icon='IMAGE_DATA')
         row = image_section.row(align=True, heading='Image')
         row.prop(self, 'use_image', text="")
@@ -180,6 +181,8 @@ class APNODE_Button_CommonProps:
         _row.prop(self, 'image', text='')
         _row.operator('armature_picker.load_image_for_active_node', text='', icon='IMPORT')
 
+
+    def draw_styles(self, panel_layout: UILayout, section_layout: UILayout) -> None:
         if self.use_image:
             section_layout.enabled = False
 
