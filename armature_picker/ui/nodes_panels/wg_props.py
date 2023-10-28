@@ -7,7 +7,7 @@ from ...node_editor.nodes._slider_common import APNODE_Slider_CommonNode
 
 class APNODE_PT_widget_properties(Panel):
     bl_idname = 'APNODE_PT_widget_properties'
-    bl_label = 'Properties'
+    bl_label = 'Widget Properties'
     bl_space_type = 'NODE_EDITOR'
     bl_region_type = 'UI'
     bl_category = 'Widget'
