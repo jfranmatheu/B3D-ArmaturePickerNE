@@ -896,6 +896,7 @@ class AP_NodeTree(NodeTree):
         self.prev_sel_nodes = self.get_selected_nodes(context, include_active=True)
         in_edit = self.picker_mode == 'EDIT'
         self.modal_nodes = self.nodes if in_edit else [node for node in self.nodes if node.wg_type.startswith('bone_picker')]
+        bpy.ops.node.select_all(False, action='DESELECT')
 
         Cursor.set_icon(context, CursorIcon.CROSS)
 
