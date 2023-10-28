@@ -4,7 +4,7 @@ from ._transform_props import RectTransform
 from bpy.types import Context, UILayout, Image
 from mathutils import Vector, Matrix
 import gpu
-from bpy.props import StringProperty, IntProperty, BoolProperty, FloatVectorProperty, EnumProperty, PointerProperty
+from bpy.props import StringProperty, IntProperty, BoolProperty, FloatProperty, FloatVectorProperty, EnumProperty, PointerProperty
 from blf import size as set_text_size, dimensions as get_text_dimensions
 
 from math import ceil
@@ -81,6 +81,12 @@ class APNODE_Button_CommonProps:
         self.update_dimensions(context)
         self.dirty_label = True
         self.update_graphics(context)
+        
+    def update_aspect_ratio(self, context: Context) -> None:
+        if not self.keep_aspect_ratio:
+            self.image_scale_x, self.image_scale_y = 1, 1
+        else:
+            self.image_scale_x, self.image_scale_y = 1, 1
 
 
     # BUTTON PROPERTIES
@@ -140,20 +146,36 @@ class APNODE_Button_CommonProps:
         update=lambda node, ctx: node.update_graphics(ctx)
     )
 
-    image_scale: FloatVectorProperty(
-        name="Image Scale",
-        default=(1, 1),
+    # image_scale: FloatProperty(
+    #     name="Image Scale",
+    #     default=(1, 1),
+    #     min=0.1,
+    #     max=10,
+    #     size=2,
+    #     subtype='XYZ',
+    #     update=update_dimensions
+    # )
+
+    image_scale_x: FloatProperty(
+        name="Image Scale X",
+        default=1,
         min=0.1,
         max=10,
-        size=2,
-        subtype='XYZ',
+        update=update_dimensions
+    )
+
+    image_scale_y: FloatProperty(
+        name="Image Scale Y",
+        default=1,
+        min=0.1,
+        max=10,
         update=update_dimensions
     )
 
     keep_aspect_ratio: BoolProperty(
         name="Keep aspect ratio",
         default=True,
-        update=update_dimensions
+        update=update_aspect_ratio
     )
 
 
@@ -335,7 +357,7 @@ class APNODE_Button_Common(APNODE_Button_CommonProps):
     def draw_transform(self, layout: UILayout, rect_transform: RectTransform) -> None:
         row = layout.row()
         row.enabled = not self.use_image
-        
+
         if self.use_image:
             layout.prop(self, 'keep_aspect_ratio', text="Keep Image Aspect Ratio")
         else:
@@ -347,8 +369,12 @@ class APNODE_Button_Common(APNODE_Button_CommonProps):
         layout.row().prop(rect_transform, 'pivot')
 
         if self.use_image:
-            layout.prop(self, 'keep_aspect_ratio')
-            layout.prop(self, 'image_scale')
+            if self.keep_aspect_ratio:
+                layout.prop(self, 'image_scale_x', text='Image Scale')
+            else:
+                col = layout.column(align=True, heading="Image Scale")
+                col.prop(self, 'image_scale_x', text='X')
+                col.prop(self, 'image_scale_y', text='Y')
         else:
             _sub = layout.column()
             _sub.enabled = not self.fit_to_text
