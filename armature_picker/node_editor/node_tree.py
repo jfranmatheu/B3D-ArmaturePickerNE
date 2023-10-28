@@ -787,6 +787,9 @@ class AP_NodeTree(NodeTree):
         elif self.node_border_id == 'BOTTOM':
             self.rect_border_attr = 'y_min'
             self.node_start_min = rect.y_min
+        
+        if node.wg_type == 'bone_picker' and node.fit_to_text:
+            node.fit_to_text = False
 
 
     def modal__resize_node__update(self, context: Context, event: Event, mouse: Mouse) -> int:
