@@ -826,7 +826,7 @@ class AP_NodeTree(NodeTree):
         # print("local_current_prev ->", mouse.local_prev.x, "->", mouse.local_current.x)
         # print("local_delta_int.x ->", mouse.local_delta_int.x)
         # print("local_offset.x ->", mouse.local_offset.x)
-        
+
         prev_dim = Vector(rect.dimensions)
 
         if is_hor_border:
@@ -907,6 +907,9 @@ class AP_NodeTree(NodeTree):
         in_edit = self.picker_mode == 'EDIT'
         self.modal_nodes = self.nodes if in_edit else [node for node in self.nodes if node.wg_type.startswith('bone_picker')]
         bpy.ops.node.select_all(False, action='DESELECT')
+        
+        if not in_edit:
+            deselect_all_bones_from_active(context)
 
         Cursor.set_icon(context, CursorIcon.CROSS)
 
@@ -935,18 +938,12 @@ class AP_NodeTree(NodeTree):
         proj_box = Box(*(get_node_editor_view_point(context, self.box.min)),
                        *(get_node_editor_view_point(context, self.box.max)))
 
-        in_pose = self.picker_mode == 'POSE'
-
         for node in self.modal_nodes:
             rect = node.rect_transform
             if rect_overlap(proj_box, rect):
                 node.select = True
-                if in_pose:
-                    node.select_bone(context, deselect_all=False, make_active=False)
             elif node.select:
                 node.select = False
-                if in_pose:
-                    node.deselect_bone(context)
 
         context.region.tag_redraw()
         return 1
@@ -955,15 +952,19 @@ class AP_NodeTree(NodeTree):
         in_pose = self.picker_mode == 'POSE'
 
         if cancel:
+            deselect_all_bones_from_active(context)
             for sel_node in self.prev_sel_nodes:
                 sel_node.select = True
 
         else:
-            sel_nodes = self.get_selected_nodes(context)
+            sel_nodes = [node for node in self.modal_nodes if node.select]
             if len(sel_nodes) != 0:
                 self.nodes.active = sel_nodes.pop()
                 if in_pose:
-                    self.nodes.active.select_bone(context, deselect_all=False, make_active=True)
+                    self.nodes.active.select_bone(context, deselect_all=True, make_active=True)
+                    for node in sel_nodes:
+                        node.select_bone(context, deselect_all=False, make_active=False)
+
                 del sel_nodes
 
         Cursor.set_icon(context, CursorIcon.DEFAULT)
@@ -976,15 +977,22 @@ class AP_NodeTree(NodeTree):
 
 
     def modal__box_select__draw(self, context: Context, ui_scale: float, sel_nodes: list[Node], in_edit: bool, in_view2d: bool) -> None:
-        if in_view2d: # or not in_edit:
-            return
-        draw.box(
-            self.dummy_node, 'BOX_SELECT',
-            self.box.pos, self.box.size,
-            padding=0,
-            line_thickness=2.0,
-            color=(1, 1, 1, .92)
-        )
+        if in_view2d:
+            if in_edit:
+                return
+
+            for node in self.modal_nodes:
+                if node.select:
+                    node.draw_sel_cage((.3, .7, 1.0, .92), cage_thickness=2.5)
+
+        else:
+            draw.box(
+                self.dummy_node, 'BOX_SELECT',
+                self.box.pos, self.box.size,
+                padding=0,
+                line_thickness=2.0,
+                color=(1, 1, 1, .92)
+            )
 
     def reset(self):
         self.active_node = None
