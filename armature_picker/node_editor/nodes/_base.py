@@ -436,6 +436,14 @@ class AP_Node(NodeTransformProps):
 
     # ----- DRAWING --------------------------------
 
+    def draw_sel_cage(self, color: tuple, cage_thickness: float = 2.0) -> None:
+        draw.box_ui(
+            self, 'SELECT_CAGE',
+            margin=2,
+            line_thickness=cage_thickness,
+            color=color
+        )
+
     def draw__pose(self, context: Context, view_loc: Vector, rect: RectTransform, style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         ''' Specific drawing for POSE mode '''
         pass
@@ -464,12 +472,9 @@ class AP_Node(NodeTransformProps):
             # draw.box(
             #     self, 'ANY_BOX', rect.bottom_left, rect.size, 0, 2.0, (1, 0, 0, .64)
             # )
-            draw.box_ui(
-                self, 'SELECT_CAGE',
-                margin=2,
-                line_thickness=2 * scale,
-                color=color
-            )
+
+            self.draw_sel_cage(color, cage_thickness=2 * scale)
+
 
             # GIZMO HANDLES FOR INTERACTIVE RE-DIMENSION.
             if active and not self.locked:

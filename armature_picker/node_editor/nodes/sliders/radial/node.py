@@ -123,16 +123,10 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_Slider_Common, A
             )
 
 
-    def draw__edit(self, context, view_loc: Vector, rect: RectTransform, style: SliderRadial_Style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
-        ''' Specific drawing for EDIT mode. '''
-        if active or selected:
-            if self.locked:
-                color = (.5, .5, .5, .5)
-            else:
-                color = (1.0, 1.0, .1, 1.0) if active else (1.0, .6, .1, 1.0)
-            draw.circle_ui(
-                self, # 'SELECT_CAGE',
-                margin=4,
-                line_thickness=2 * scale,
-                color=color
-            )
+    def draw_sel_cage(self, color: tuple, cage_thickness: float = 2) -> None:
+        draw.circle_ui(
+            self, # 'SELECT_CAGE',
+            margin=2,
+            line_thickness=cage_thickness,
+            color=color
+        )

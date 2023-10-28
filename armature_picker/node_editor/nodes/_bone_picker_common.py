@@ -231,14 +231,10 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps):
 
                 # return {'RUNNING_MODAL'}
 
+    
+    # DRAWING. #################################################################
 
-    # ------ DRAWING --------------------------------
-
-    def draw__pose(self, context, view_loc: Vector, rect: RectTransform, style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    def draw__pose(self, context: Context, view_loc: Vector, rect: RectTransform, style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+        ''' Specific drawing for POSE mode '''
         if active or selected:
-            draw.box_ui(
-                self, 'SELECT_CAGE',
-                margin=2,
-                line_thickness=2 * scale,
-                color=(1.0, 1.0, .1, 1.0) if active else (1.0, .6, .1, 1.0)
-            )
+            self.draw_sel_cage((1.0, 1.0, .1, 1.0) if active else (1.0, .6, .1, 1.0), cage_thickness=2 * scale)
