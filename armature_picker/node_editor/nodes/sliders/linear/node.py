@@ -173,6 +173,7 @@ class APNODE_SliderLinear(APNODE_Slider_NodeProps, APNODE_Slider_Common, AP_Node
         draw.text(
             handle_pos,
             text,
-            12,
-            (0, 0)
+            11,
+            (0, 0),
+            color=(.92, .92, .92, 1)
         )
