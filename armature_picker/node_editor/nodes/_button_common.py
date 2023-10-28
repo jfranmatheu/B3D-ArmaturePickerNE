@@ -355,13 +355,10 @@ class APNODE_Button_Common(APNODE_Button_CommonProps):
 
 
     def draw_transform(self, layout: UILayout, rect_transform: RectTransform) -> None:
-        row = layout.row()
-        row.enabled = not self.use_image
-
         if self.use_image:
             layout.prop(self, 'keep_aspect_ratio', text="Keep Image Aspect Ratio")
         else:
-            row.prop(self, 'fit_to_text', text="Fit To Label Text")
+            layout.prop(self, 'fit_to_text', text="Fit To Label Text")
 
         layout.separator()
 
