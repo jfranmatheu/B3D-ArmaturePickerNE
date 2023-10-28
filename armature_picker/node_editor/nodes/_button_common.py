@@ -379,9 +379,9 @@ class APNODE_Button_Common(APNODE_Button_CommonProps):
             _sub = layout.column()
             _sub.enabled = not self.fit_to_text
             if self.fit_to_text and not self.use_image:
-                _sub.row().prop(rect_transform, 'dimensions', text='Size', slider=True)
+                _sub.row().prop(rect_transform, 'dimensions', text='Size')
             else:
-                _sub.row().prop(rect_transform, 'edit_dimensions', text='Size', slider=True)
+                _sub.row().prop(rect_transform, 'edit_dimensions', text='Size')
 
         layout.prop(rect_transform, 'rotation', slider=True)
 
