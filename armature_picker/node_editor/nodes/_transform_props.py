@@ -113,6 +113,8 @@ class RectTransform(PropertyGroup):
 
     # ----- Properties --------------------------------
 
+    can_update_origin_on_redimension: BoolProperty(default=True)
+
     block_updates: BoolProperty(
         name="Block Updates",
         description="Flag to Block Rect Transform updates",
@@ -312,7 +314,7 @@ class RectTransform(PropertyGroup):
 
             self.dimensions[0] = int(new_width)
 
-            if self.rotation == 0:
+            if self.rotation == 0 and self.can_update_origin_on_redimension:
                 self.origin[0] = int(self.coords[1][0] + self.pivot[0] * new_width)
             else:
                 # This works and center the origin BUT... it doesn't center so that the coords stays the same.
@@ -359,7 +361,7 @@ class RectTransform(PropertyGroup):
             self.coords[2][0] = self.coords[3][0] = value
             self.dimensions[0] = int(new_width)
 
-            if self.rotation == 0:
+            if self.rotation == 0 and self.can_update_origin_on_redimension:
                 self.origin[0] = int(self.coords[1][0] + self.pivot[0] * new_width)
 
             else:
@@ -400,7 +402,7 @@ class RectTransform(PropertyGroup):
             height_diff = new_height - self.dimensions[1]
             self.dimensions[1] = new_height
 
-            if self.rotation == 0:
+            if self.rotation == 0 and self.can_update_origin_on_redimension:
                 self.origin[1] = int(self.coords[1][1] + self.pivot[1] * new_height)
             else:
                 pass
@@ -437,7 +439,7 @@ class RectTransform(PropertyGroup):
 
             self.dimensions[1] = new_height
 
-            if self.rotation == 0:
+            if self.rotation == 0 and self.can_update_origin_on_redimension:
                 self.origin[1] = int(self.coords[1][1] + self.pivot[1] * new_height)
             else:
                 pass

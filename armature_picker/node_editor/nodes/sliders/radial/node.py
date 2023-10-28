@@ -35,7 +35,7 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_Slider_Common, A
         elif h != _h:
             k = int(h)
         else:
-            return
+            return (w, h)
         return (k, k)
 
 
@@ -46,6 +46,7 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_Slider_Common, A
 
         # Force an update. Respect the 1:1 dimensions.
         self.slider_radius = self.slider_radius
+        self.rect_transform.can_update_origin_on_redimension = False
         # self.rect_transform.rotation = - pi / 2 # 90º
 
 

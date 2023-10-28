@@ -9,7 +9,7 @@ from uuid import uuid4
 from typing import List, Tuple, Type, Dict, Set, Union
 from collections import defaultdict
 from dataclasses import dataclass
-from math import cos, sin
+from math import cos, sin, radians, degrees
 
 from armature_picker.data.pg.picker_view import AP_PG_PickerView
 from armature_picker.ui.header_menus.widget_types_visibility import attr_widget_types
@@ -791,6 +791,9 @@ class AP_NodeTree(NodeTree):
         if node.wg_type == 'bone_picker' and node.fit_to_text:
             node.fit_to_text = False
         
+        if node.wg_type == 'slider_radial' and rect.rotation == 0:
+            rect.rotation = radians(0.001)
+
         Cursor.set_icon(context, CursorIcon.DOT)
 
 
@@ -858,13 +861,13 @@ class AP_NodeTree(NodeTree):
         return 1
 
     def modal__resize_node__exit(self, context: Context, mouse_pos: Vector, cancel: bool) -> None:
+        rect: RectTransform = self.active_node.rect_transform
+
         if cancel:
-            self.active_node.rect_transform.coords = self.prev_node_coords
-            self.active_node.rect_transform.update_from_coords(context)
+            rect.coords = self.prev_node_coords
+            rect.update_from_coords(context)
 
-        elif self.active_node.rect_transform.rotation != 0:
-            rect: RectTransform = self.active_node.rect_transform
-
+        elif rect.rotation != 0 or rect.can_update_origin_on_redimension:
             v_dir_angle = (Vector(rect.coords_rotated[2]) - Vector(rect.coords_rotated[1])).normalized()
 
             width, height = rect.dimensions
