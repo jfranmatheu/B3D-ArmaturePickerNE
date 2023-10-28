@@ -58,10 +58,10 @@ class APNODE_Image(APNODE_Image_NodeProps, AP_Node, Node):
         layout.prop(rect_transform, 'rotation')
 
         if self.keep_aspect_ratio:
-            layout.prop(self, 'image_scale_x', text='Image Scale', slider=True)
+            layout.prop(self, 'image_scale_x', text='Scale', slider=True)
         else:
-            col = layout.column(align=True, heading="Image Scale")
-            col.prop(self, 'image_scale_x', text='X', slider=True)
+            col = layout.column(align=True)
+            col.prop(self, 'image_scale_x', text='Scale X', slider=True)
             col.prop(self, 'image_scale_y', text='Y', slider=True)
 
         _sub = layout.column()
