@@ -366,23 +366,23 @@ class APNODE_Button_Common(APNODE_Button_CommonProps):
         layout.separator()
 
         layout.row().prop(rect_transform, 'origin')
-        layout.row().prop(rect_transform, 'pivot')
+        layout.row().prop(rect_transform, 'pivot', slider=True)
 
         if self.use_image:
             if self.keep_aspect_ratio:
-                layout.prop(self, 'image_scale_x', text='Image Scale')
+                layout.prop(self, 'image_scale_x', text='Image Scale', slider=True)
             else:
                 col = layout.column(align=True, heading="Image Scale")
-                col.prop(self, 'image_scale_x', text='X')
-                col.prop(self, 'image_scale_y', text='Y')
+                col.prop(self, 'image_scale_x', text='X', slider=True)
+                col.prop(self, 'image_scale_y', text='Y', slider=True)
         else:
             _sub = layout.column()
             _sub.enabled = not self.fit_to_text
             if self.fit_to_text and not self.use_image:
-                _sub.row().prop(rect_transform, 'dimensions', text='Size')
+                _sub.row().prop(rect_transform, 'dimensions', text='Size', slider=True)
             else:
-                _sub.row().prop(rect_transform, 'edit_dimensions', text='Size')
+                _sub.row().prop(rect_transform, 'edit_dimensions', text='Size', slider=True)
 
-        layout.prop(rect_transform, 'rotation')
+        layout.prop(rect_transform, 'rotation', slider=True)
 
         layout.prop(self, 'draw_depth')
