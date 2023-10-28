@@ -30,7 +30,7 @@ class APNODE_ButtonScript(APNODE_ButtonScript_NodeProps, AP_Node, Node):
     def init(self, context):
         super().init(context)
 
-        self.label = 'Run My Script'
+        self.label = 'Run Script'
         self.create_default_script()
 
     def copy(self, node):
