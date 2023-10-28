@@ -14,7 +14,7 @@ class APNODE_PT_button(Panel):
     bl_region_type = 'UI'
     bl_category = 'Widget'
 
-    bl_order = 1
+    bl_order = 2
 
     @classmethod
     def poll(cls, context: Context):

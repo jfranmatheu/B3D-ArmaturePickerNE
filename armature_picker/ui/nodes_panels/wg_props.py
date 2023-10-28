@@ -12,7 +12,7 @@ class APNODE_PT_widget_properties(Panel):
     bl_region_type = 'UI'
     bl_category = 'Widget'
 
-    bl_order = 0
+    bl_order = 1
 
     @classmethod
     def poll(cls, context: Context):
