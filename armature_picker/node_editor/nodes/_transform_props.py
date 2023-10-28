@@ -301,13 +301,15 @@ class RectTransform(PropertyGroup):
     def x_min(self, value: int) -> None:
         new_width = self.x_max - value
         ## print("Set[x_min]:", value, new_width)
-        if new_width < 20:
-            return
+        if new_width < 10:
+            if new_width == self.dimensions[0]:
+                return
+            new_width = 10
+            value = self.x_max - 10
+
         with CM_BlockUpdates(self):
             self.coords[0][0] = self.coords[1][0] = value
 
-            delta_x_min = self.dimensions[0] - new_width
-            width, height = self.dimensions
             self.dimensions[0] = int(new_width)
 
             if self.rotation == 0:
@@ -348,11 +350,13 @@ class RectTransform(PropertyGroup):
     @x_max.setter
     def x_max(self, value: int) -> None:
         new_width = value - self.x_min
-        if new_width < 20:
-            return
+        if new_width < 10:
+            if new_width == self.dimensions[0]:
+                return
+            new_width = 10
+            value = self.x_min + 10
         with CM_BlockUpdates(self):
             self.coords[2][0] = self.coords[3][0] = value
-            w_delta = new_width - self.dimensions[0]
             self.dimensions[0] = int(new_width)
 
             if self.rotation == 0:
@@ -385,8 +389,11 @@ class RectTransform(PropertyGroup):
     @y_min.setter
     def y_min(self, value: int) -> None:
         new_height = int(self.y_max - value)
-        if new_height < 20:
-            return
+        if new_height < 10:
+            if new_height == self.dimensions[1]:
+                return
+            new_height = 10
+            value = self.y_max - 10
         with CM_BlockUpdates(self):
             self.coords[1][1] = self.coords[2][1] = value
 
@@ -420,8 +427,11 @@ class RectTransform(PropertyGroup):
     @y_max.setter
     def y_max(self, value: int) -> None:
         new_height = int(value - self.y_min)
-        if new_height < 20:
-            return
+        if new_height < 10:
+            if new_height == self.dimensions[1]:
+                return
+            new_height = 10
+            value = self.y_min + 10
         with CM_BlockUpdates(self):
             self.coords[0][1] = self.coords[3][1] = value
 
