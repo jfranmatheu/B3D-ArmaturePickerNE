@@ -171,6 +171,7 @@ class RectTransform(PropertyGroup):
         name="Dimensions",
         size=2,
         min=10,
+        max=2000,
         default=(20, 20),
         subtype='XYZ',
         options={'HIDDEN'},
@@ -181,6 +182,7 @@ class RectTransform(PropertyGroup):
         name="Dimensions",
         description="Picker button size in the NodeGraph 2D view",
         default=(20, 20),
+        max=2000,
         min=10,
         size=2,
         update=update_dimensions
