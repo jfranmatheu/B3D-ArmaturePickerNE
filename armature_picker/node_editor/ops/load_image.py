@@ -33,6 +33,8 @@ class AP_OT_load_image_for_active_node(Operator, ExportHelper):
         active_node = context.space_data.node_tree.nodes.active
         if isinstance(active_node, APNODE_Image):
             active_node.image = image
+            active_node.keep_aspect_ratio = True
         elif isinstance(active_node, (AP_BonePickerNode, APNODE_ButtonScript)) and active_node.use_image:
             active_node.image = image
+            active_node.keep_aspect_ratio = True
         return {'FINISHED'}
