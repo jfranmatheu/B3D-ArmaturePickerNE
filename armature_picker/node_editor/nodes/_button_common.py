@@ -81,7 +81,7 @@ class APNODE_Button_CommonProps:
         self.update_dimensions(context)
         self.dirty_label = True
         self.update_graphics(context)
-        
+
     def update_aspect_ratio(self, context: Context) -> None:
         self.update_dimensions(context)
         return
@@ -89,7 +89,7 @@ class APNODE_Button_CommonProps:
             self.image_scale_x, self.image_scale_y = 1, 1
         else:
             self.image_scale_x, self.image_scale_y = 1, 1
-    
+
     def apply_transform_dimensions_constraints(self, prev_dimensions: Vector, new_dimensions: Vector) -> None:
         if not self.use_image:
             return
@@ -263,7 +263,7 @@ class APNODE_Button_CommonProps:
 
         super().draw_styles(panel_layout, section_layout)
 
-
+offscreen = None
 
 class APNODE_Button_Common(APNODE_Button_CommonProps):
 
@@ -271,14 +271,17 @@ class APNODE_Button_Common(APNODE_Button_CommonProps):
 
     def on_hover(self, context: Context, in_edit: bool, rect: RectTransform, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
         if point_inside_rect(view_loc, rect.bottom_left, rect.size, rect.rotation, origin=Vector(rect.origin)):
-            if self.use_image and self.image is not None and self.node_tree.picker_mode == 'POSE':
-
-                ## bbox_n = rect.bound_box_norm
+            if self.use_image and self.image is not None and not in_edit:
+                global offscreen
+                # bbox_n = rect.bound_box_norm
                 bbox_size = tuple(int(v) for v in (rect.bound_box_size))
-                ## coords_rot_n = rect.coords_rotated_norm
+                # coords_rot_n = rect.coords_rotated_norm
                 mpos_in_bbox_space = rect.convert_abs_coord_to_rel_coord(region_loc, context)
 
-                offscreen = gpu.types.GPUOffScreen(*bbox_size, format ='RGBA16F')
+                if offscreen is None or offscreen.width != bbox_size[0] or offscreen.height != bbox_size[1]:
+                    if offscreen is not None:
+                        offscreen.free()
+                    offscreen = gpu.types.GPUOffScreen(*bbox_size, format ='RGBA16F')
 
                 ## print("BBOX Norm:", coords_rot_n, bbox_size)
                 ## print("Bottom-Left:", bbox_n, " --> ", coords_rot_n)
@@ -318,6 +321,8 @@ class APNODE_Button_Common(APNODE_Button_CommonProps):
                     buffer.dimensions = bbox_size[0] * bbox_size[1] * 4
 
                 px_alpha_value = pick_color_buffer[-1]
+
+                print("Color:", pick_color_buffer)
 
                 if px_alpha_value <= 0.01:
                     return False
