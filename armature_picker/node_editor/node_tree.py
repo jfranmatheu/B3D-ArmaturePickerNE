@@ -834,24 +834,8 @@ class AP_NodeTree(NodeTree):
 
         prev_dim = Vector(rect.dimensions)
 
-        preserve_origin_1_ok = self.use_keep_image_aspect_ratio and round(node.image_scale_x, 4) == 0.1
-        if preserve_origin_1_ok:
+        if self.use_keep_image_aspect_ratio:
             prev_origin = tuple(rect.origin)
-
-        '''
-        # Check if has the minimum scale value... and
-        # user is trying to push it more...
-        if is_hor_border:
-            if is_min_border and mouse.local_dir.x >= 0:
-                return 1
-            elif is_max_border and mouse.local_dir.x <= 0:
-                return 1
-        elif is_vert_border:
-            if is_min_border and mouse.local_dir.y >= 0:
-                return 1
-            elif is_max_border and mouse.local_dir.y <= 0:
-                return 1
-        '''
 
         if is_hor_border:
             rect_dir_v = (rect.bottom_right - rect.bottom_left).normalized()
@@ -880,8 +864,7 @@ class AP_NodeTree(NodeTree):
                 if constrained_dimensions := node.apply_transform_dimensions_constraints(prev_dim, new_dim):
                     rect.dimensions = constrained_dimensions
 
-        preserve_origin_2_ok = self.use_keep_image_aspect_ratio and round(node.image_scale_x, 4) == 0.1
-        if preserve_origin_1_ok and preserve_origin_2_ok:
+        if self.use_keep_image_aspect_ratio:
             rect.origin = prev_origin
 
         node.update_graphics(context)
