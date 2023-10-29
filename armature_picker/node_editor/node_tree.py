@@ -993,7 +993,7 @@ class AP_NodeTree(NodeTree):
                     for node in sel_nodes:
                         node.select_bone(context, deselect_all=False, make_active=False)
                     for sel_node in self.prev_sel_nodes:
-                        node.select_bone(context, deselect_all=False, make_active=False)
+                        sel_node.select_bone(context, deselect_all=False, make_active=False)
 
                 del sel_nodes
 
