@@ -393,15 +393,15 @@ class APNODE_Button_Common(APNODE_Button_CommonProps):
                 origin=Vector(rect.origin)
             )
 
-    def draw__edit(self, context, view_loc: Vector, rect: RectTransform, style: CommonTheme__Button, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
-        if self.use_image and self.image is not None:
-            return
-        super().draw__edit(context, view_loc, rect, style, wg_settings, scale, active, selected, hovered)
+    #def draw__edit(self, context, view_loc: Vector, rect: RectTransform, style: CommonTheme__Button, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    #    if self.use_image and self.image is not None:
+    #        return
+    #    super().draw__edit(context, view_loc, rect, style, wg_settings, scale, active, selected, hovered)
 
-    def draw__pose(self, context, view_loc: Vector, rect: RectTransform, style: CommonTheme__Button, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
-        if self.use_image and self.image is not None:
-            return
-        super().draw__pose(context, view_loc, rect, style, wg_settings, scale, active, selected, hovered)
+    #def draw__pose(self, context, view_loc: Vector, rect: RectTransform, style: CommonTheme__Button, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
+    #    if self.use_image and self.image is not None:
+    #        return
+    #    super().draw__pose(context, view_loc, rect, style, wg_settings, scale, active, selected, hovered)
 
 
     # ----- UI LAYOUT DRAWING -----------------------------------------------------------
