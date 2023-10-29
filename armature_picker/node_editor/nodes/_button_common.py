@@ -336,12 +336,19 @@ class APNODE_Button_Common(APNODE_Button_CommonProps):
 
     # ----- DRAWING --------------------------------
 
+    def draw_sel_cage(self, color: tuple, cage_thickness: float = 2.0) -> None:
+        if self.use_image and self.image is not None and self.node_tree.picker_mode == 'POSE':
+            # Use image outline instead...
+            return
+        super().draw_sel_cage(color, cage_thickness)
+
+
     def draw_common(self, context: Context, view_loc: Vector, rect: RectTransform, style: CommonTheme__Button, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         pos: Vector = rect.position
         size: Vector = rect.size
 
         if self.use_image and self.image is not None:
-            if active or (selected and context.mode != 'POSE'):
+            if active or selected: # (selected and context.mode != 'POSE'):
                 draw.image_ui_outline(
                     self, 'BUTTON_IMAGE',
                     image=self.image,
