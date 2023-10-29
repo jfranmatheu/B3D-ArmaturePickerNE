@@ -30,20 +30,16 @@ class APNODE_Label(APNODE_Label_NodeProps, AP_Node, Node):
     # ----- DRAWING --------------------------------
 
     def draw_common(self, context: Context, view_loc: Vector, rect: RectTransform, style: Label_Style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
-        
-
-        padding = 4 * scale
         size = rect.size
         pos = rect.position
-        padding = 4 * scale
         label_dimensions = size
         pivot = (0.5, 0.5)
-        tex_pos = pos + Vector((padding, padding))
+        tex_pos = pos
 
         draw.text_cached(
             self.uuid, 'LABEL', self.dirty, self.dirty_label,
             tex_pos,
-            Vector(rect.origin) if rect.rotation == 0 else rotate_point(pos + Vector((padding, padding)), Vector(rect.origin), rect.rotation),
+            Vector(rect.origin) if rect.rotation == 0 else rotate_point(pos, Vector(rect.origin), rect.rotation),
             self.text,
             self.text_size,
             label_dimensions,
