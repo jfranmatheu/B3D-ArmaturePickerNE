@@ -322,7 +322,7 @@ class APNODE_Button_Common(APNODE_Button_CommonProps):
 
                 px_alpha_value = pick_color_buffer[-1]
 
-                print("Color:", pick_color_buffer)
+                # print("Color:", pick_color_buffer)
 
                 if px_alpha_value <= 0.01:
                     return False
