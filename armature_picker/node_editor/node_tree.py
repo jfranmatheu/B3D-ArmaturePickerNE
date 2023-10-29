@@ -791,6 +791,11 @@ class AP_NodeTree(NodeTree):
         if node.wg_type == 'bone_picker' and node.fit_to_text:
             node.fit_to_text = False
 
+        if ((node.wg_type in {'bone_picker', 'button_script'} and node.use_image) or node.wg_type == 'image') and node.image is not None:
+            self.use_keep_image_aspect_ratio = node.keep_aspect_ratio
+        else:
+            self.use_keep_image_aspect_ratio = False
+
         Cursor.set_icon(context, CursorIcon.DOT)
 
 
@@ -829,6 +834,25 @@ class AP_NodeTree(NodeTree):
 
         prev_dim = Vector(rect.dimensions)
 
+        preserve_origin_1_ok = self.use_keep_image_aspect_ratio and round(node.image_scale_x, 4) == 0.1
+        if preserve_origin_1_ok:
+            prev_origin = tuple(rect.origin)
+
+        '''
+        # Check if has the minimum scale value... and
+        # user is trying to push it more...
+        if is_hor_border:
+            if is_min_border and mouse.local_dir.x >= 0:
+                return 1
+            elif is_max_border and mouse.local_dir.x <= 0:
+                return 1
+        elif is_vert_border:
+            if is_min_border and mouse.local_dir.y >= 0:
+                return 1
+            elif is_max_border and mouse.local_dir.y <= 0:
+                return 1
+        '''
+
         if is_hor_border:
             rect_dir_v = (rect.bottom_right - rect.bottom_left).normalized()
             if is_min_border:
@@ -853,7 +877,13 @@ class AP_NodeTree(NodeTree):
         if hasattr(node, 'apply_transform_dimensions_constraints'):
             new_dim = Vector(rect.dimensions)
             if prev_dim != new_dim:
-                rect.dimensions = node.apply_transform_dimensions_constraints(prev_dim, new_dim)
+                if constrained_dimensions := node.apply_transform_dimensions_constraints(prev_dim, new_dim):
+                    rect.dimensions = constrained_dimensions
+
+        preserve_origin_2_ok = self.use_keep_image_aspect_ratio and round(node.image_scale_x, 4) == 0.1
+        if preserve_origin_1_ok and preserve_origin_2_ok:
+            rect.origin = prev_origin
+
         node.update_graphics(context)
         return 1
 
@@ -890,6 +920,7 @@ class AP_NodeTree(NodeTree):
         del self.node_reg_loc
         del self.node_reg_loc_offset
         del self.node_bbox
+        del self.use_keep_image_aspect_ratio
 
         self.active_node.in_modal = False
         self.active_node = None

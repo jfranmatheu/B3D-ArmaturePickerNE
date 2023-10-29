@@ -89,6 +89,57 @@ class APNODE_Button_CommonProps:
             self.image_scale_x, self.image_scale_y = 1, 1
         else:
             self.image_scale_x, self.image_scale_y = 1, 1
+    
+    def apply_transform_dimensions_constraints(self, prev_dimensions: Vector, new_dimensions: Vector) -> None:
+        if not self.use_image:
+            return
+        if self.image is None:
+            return
+        if not self.keep_aspect_ratio:
+            return
+        _w, _h = prev_dimensions
+        w, h = new_dimensions
+        if w == _w and h == _h:
+            return
+
+        # origin = tuple(self.rect_transform.origin)
+
+        old_image_scale_x = self.image_scale_x
+
+        if w != _w:
+            old_width = prev_dimensions.x
+            new_width = new_dimensions.x
+            # old_width --> old_image_scale_x
+            # new_width --> new_image_scale_x
+            new_image_scale_x = old_image_scale_x * new_width / old_width
+
+        elif h != _h:
+            old_image_scale_y = self.image_scale_y
+            old_height = prev_dimensions.y
+            new_height = new_dimensions.y
+            # old_height --> old_image_scale_Y
+            # new_height --> new_image_scale_Y
+            new_image_scale_y = old_image_scale_y * new_height / old_height
+
+            if new_image_scale_y < 0.1:
+                new_image_scale_y = 0.1
+            if new_image_scale_y != old_image_scale_y:
+                self.image_scale_y = new_image_scale_y
+                # self.rect_transform.origin = origin
+
+            img_w, img_h = self.image.size
+            aspect_ratio = img_w / img_h
+            new_image_scale_x = new_image_scale_y * aspect_ratio
+        else:
+            return
+
+        if new_image_scale_x < 0.1:
+            new_image_scale_x = 0.1
+        if new_image_scale_x == old_image_scale_x:
+            return
+        self.image_scale_x = new_image_scale_x
+
+        # self.rect_transform.origin = origin
 
 
     # BUTTON PROPERTIES
