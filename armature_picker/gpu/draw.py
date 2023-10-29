@@ -334,6 +334,7 @@ def text_cached(data_id: str,
         if not dirty and (batch := get_batch_from_cache(data_id, graphic_id)) is not None:
             pass
         else:
+            # _pos = _pos - Vector((_label_dimensions.y * .1, _label_dimensions.y * .1))
             coords = get_tex_coords(_pos, _label_dimensions) if angle == 0 else get_rotated_tex_coords(_pos, _label_dimensions, origin if origin is not None else _pos+_label_dimensions*0.5, angle)
             batch=batch_for_shader(SHADER_IMAGE, 'TRIS',
             {'pos': coords,
@@ -344,7 +345,21 @@ def text_cached(data_id: str,
         SHADER_IMAGE.uniform_sampler('image', off.texture_color)
         batch.draw(SHADER_IMAGE)
     else:
-        draw_offscreen(data_id, partial(text, Vector((0, 0)), _text, _text_size*10*render_scale, (0, 0), 0, color, alpha, 0), *get_text_dim(_text, _text_size*render_scale))
+        ts = _text_size*render_scale
+        text_dim = get_text_dim(_text, ts)
+        # min_text_h = get_text_dim('x', ts)[1]
+        max_text_h = get_text_dim('Xy', ts)[1]
+        print("Diff height text:", _text, max_text_h, text_dim[1]) #, min_text_h)
+        if max_text_h <= text_dim[1]:
+            text_dim = Vector(text_dim)
+            t_pos = Vector((0, text_dim.y * 2)) # Fix height.
+            #text_dim.y *= 1.1
+            # text_dim.x *= .9
+            ts *= 0.9
+            t_pos.x += (text_dim.x * 0.5)
+        else:
+            t_pos = Vector((0, 0))
+        draw_offscreen(data_id, partial(text, t_pos, _text, ts * 10, (0, 0), 0, color, alpha, 0), *text_dim)
         text(_text_pos, _text, _text_size, pivot, angle, color, alpha, width)
 
 
