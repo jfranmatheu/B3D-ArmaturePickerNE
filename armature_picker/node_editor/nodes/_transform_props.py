@@ -505,7 +505,7 @@ class RectTransform(PropertyGroup):
                 p = rotate_point(p, o, -self.rotation)
 
             bbox = [get_node_editor_region_coord(context, co) for co in bbox]
-            scale = 1 / get_node_editor_zoom(context)
+            scale = get_node_editor_zoom(context)
         else:
             scale = 1
 
