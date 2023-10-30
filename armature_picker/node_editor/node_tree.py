@@ -202,7 +202,7 @@ class AP_NodeTree(NodeTree):
 
     #----------------------------------------------------------------
     # On-Top Layer.
-    
+
     @property
     def sorted_nodes_cache(self) -> Dict[str, List[List[AP_Node]]]:
         return sorted_nodes_cache[self.uuid]
@@ -226,7 +226,7 @@ class AP_NodeTree(NodeTree):
 
     @property
     def widgets_visible(self) -> list[AP_Node]:
-        return [widget for widget in self.widgets if test_node_visibility(self, widget)]
+        return [widget for widget in self.widgets if test_node_visibility(self, widget)] # widget.visible]
 
     def remove_widget(self, widget: AP_Node) -> None:
         self.nodes.remove(widget)
@@ -371,11 +371,17 @@ class AP_NodeTree(NodeTree):
         region_offset = get_node_editor_offset(context)
         view_loc = get_node_editor_view_point(context, region_loc)
 
+        # A set of the widget types that are visible.
+        visible_wg_types = get_visible_widget_types(self)
+        selectable_wg_types = get_selectable_widget_types(self)
+
         for node_layer_nodes in reversed(sorted_nodes_cache[self.uuid]):
             for node in reversed(node_layer_nodes):
                 if in_pose and not node.interactable:
                     continue
-                if not test_node_sel(self, node):
+                if node.wg_type not in visible_wg_types:
+                    continue
+                if node.wg_type not in selectable_wg_types:
                     continue
                 if node._test_select(context, not in_pose, region_loc, view_loc, view_zoom, region_offset):
                     G_hovered_node = node.uuid
@@ -437,7 +443,10 @@ class AP_NodeTree(NodeTree):
             return {'FINISHED'}
 
         if event.type == 'A' and not event.shift and event.value == 'PRESS':
-            bpy.ops.node.select_all(action='TOGGLE')
+            # bpy.ops.node.select_all(action='TOGGLE')
+            if self.picker_mode == 'EDIT':
+                for widget in self.widgets_interactable:
+                    widget.select = True
             return {'FINISHED'}
 
         global G_hovered_node
@@ -729,12 +738,17 @@ class AP_NodeTree(NodeTree):
         theme_style = get_active_theme_style(context)
         wg_settings = get_prefs_wg_settings(context)
 
+        # A set of the widget types that are visible.
+        visible_wg_types = get_visible_widget_types(self)
+
         with gpu.matrix.push_pop():
             gpu.matrix.translate(offset)
             gpu.matrix.scale_uniform(zoom)
 
             for node_layer_nodes in sorted_nodes_cache[self.uuid]:
                 for node in node_layer_nodes:
+                    if node.wg_type not in visible_wg_types:
+                        continue
                     if not rect_overlap(visible_view_box, node.rect_transform):
                         # print("Node outside view", node.label)
                         continue
