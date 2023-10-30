@@ -239,7 +239,7 @@ class AP_Node(NodeTransformProps):
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     def draw_visibility(self, layout: UILayout) -> None:
-        layout.prop_enum(self, 'picker_layer', icon='RENDERLAYERS')
+        layout.prop(self, 'picker_layer', icon='RENDERLAYERS')
 
     def draw_styles(self, panel_layout: UILayout, section_layout: UILayout) -> None:
         ''' From Node. '''
