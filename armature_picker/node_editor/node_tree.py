@@ -177,7 +177,7 @@ class AP_NodeTree(NodeTree):
         default='EDIT'
     )
     picker_view: PointerProperty(name='Picker View', type=AP_PG_PickerView)
-    active_picker_layer: IntProperty(default=-1, name="Active Picker Layer", update=update_active_layer)
+    active_picker_layer_index: IntProperty(default=-1, name="Active Picker Layer", update=update_active_layer)
     picker_layers: CollectionProperty(type=PG_PickerLayer)
 
 
@@ -185,8 +185,17 @@ class AP_NodeTree(NodeTree):
     # On-Top Layer.
 
     @property
+    def active_picker_layer(self) -> PG_PickerLayer:
+        return self.picker_layers[self.active_picker_layer_index]
+
+    @property
     def widgets(self) -> list[AP_Node]:
         return self.nodes
+
+    @property
+    def widgets_from_active_layer(self) -> list[AP_Node]:
+        active_layer_id = self.active_picker_layer.uuid
+        return [widget for widget in self.widgets if widget.picker_layer == active_layer_id]
 
     def remove_widget(self, widget: AP_Node) -> None:
         self.nodes.remove(widget)
@@ -244,14 +253,16 @@ class AP_NodeTree(NodeTree):
     # ----------------------------------------------------------------
 
     def new_layer(self, name: str) -> None:
-        self.active_picker_layer = len(self.picker_layers)
+        self.active_picker_layer_index = len(self.picker_layers)
         new_picker_layer: PG_PickerLayer = self.picker_layers.add()
         new_picker_layer.name = name
         new_picker_layer.uuid = uuid4().hex
 
     def remove_layer(self, uuid_or_index: str | int | None) -> None:
+        if len(self.picker_layers) == 0:
+            return
         if uuid_or_index is None:
-            index = self.active_picker_layer
+            index = self.active_picker_layer_index
         elif isinstance(uuid_or_index, int):
             index = uuid_or_index
         elif isinstance(uuid_or_index, str):
@@ -261,7 +272,7 @@ class AP_NodeTree(NodeTree):
 
         removed_layer_id = self.picker_layers[index].uuid
         self.picker_layers.remove(index)
-        self.active_picker_layer = ( len(self.picker_layers) - 1 )
+        self.active_picker_layer_index = ( len(self.picker_layers) - 1 )
 
         for widget in self.widgets:
             if removed_layer_id in widget.picker_layer:

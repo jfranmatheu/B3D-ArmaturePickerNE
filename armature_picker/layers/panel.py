@@ -33,7 +33,7 @@ class PickerLayersPanel(Panel):
         row.template_list(
             LIST_PickerLayers.bl_idname, '',
             node_tree, 'picker_layers',
-            node_tree, 'active_picker_layer',
+            node_tree, 'active_picker_layer_index',
             item_dyntip_propname='', rows=5, maxrows=5, type='DEFAULT'
         )
         
