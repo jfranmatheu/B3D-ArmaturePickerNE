@@ -68,7 +68,8 @@ def ensure_nodes_cache(node_tree: 'AP_NodeTree'):
 
 
 def refresh_nodes_cache(node_tree: 'AP_NodeTree'):
-    nodes: List[AP_Node] = node_tree.nodes
+    # Filter widgets visibility.
+    nodes: List[AP_Node] = node_tree.widgets_visible # node_tree.nodes
 
     sorted_nodes_cache[node_tree.uuid].clear()
 
@@ -76,7 +77,7 @@ def refresh_nodes_cache(node_tree: 'AP_NodeTree'):
         ## print("No nodes")
         return
 
-    active_node = nodes.active
+    active_node = node_tree.nodes.active
 
     nodes_by_draw_layer: Dict[int, Set[AP_Node]] = defaultdict(set)
     {nodes_by_draw_layer[node.draw_layer].add(node) for node in nodes}
@@ -123,7 +124,7 @@ def test_node_sel(node_tree: 'AP_NodeTree', node: AP_Node) -> bool:
     return getattr(node_tree.picker_view, 'show_widget_select_' + node.wg_type)
 
 def test_node_visibility(node_tree: 'AP_NodeTree', node: AP_Node) -> bool:
-    return getattr(node_tree.picker_view, 'show_widget_' + node.wg_type) # node.visible and
+    return node.visible and getattr(node_tree.picker_view, 'show_widget_' + node.wg_type) # node.visible and
 
 def get_visible_widget_types(node_tree: 'AP_NodeTree') -> set[str]:
     picker_view = node_tree.picker_view
@@ -163,10 +164,12 @@ class AP_NodeTree(NodeTree):
     #----------------------------------------------------------------
     # ID Properties.
 
-    def update_active_layer(self, _context: Context):
+    def update_active_layer(self, context: Context):
         active_picker_layer_id = self.active_picker_layer.uuid
         for widget in self.widgets:
             widget.visible = active_picker_layer_id == widget.picker_layer
+        refresh_nodes_cache(self)
+        context.region.tag_redraw()
 
     def get_picker_layers(self, _context: Context) -> list[PG_PickerLayer]:
         if len(self.picker_layers) == 0:
@@ -208,6 +211,14 @@ class AP_NodeTree(NodeTree):
     def widgets_from_active_layer(self) -> list[AP_Node]:
         active_layer_id = self.active_picker_layer.uuid
         return [widget for widget in self.widgets if widget.picker_layer == active_layer_id]
+
+    @property
+    def widgets_interactable(self) -> list[AP_Node]:
+        return [widget for widget in self.widgets if test_node_visibility(self, widget) and test_node_sel_locked(self, widget)]
+
+    @property
+    def widgets_visible(self) -> list[AP_Node]:
+        return [widget for widget in self.widgets if test_node_visibility(self, widget)]
 
     def remove_widget(self, widget: AP_Node) -> None:
         self.nodes.remove(widget)
@@ -354,9 +365,9 @@ class AP_NodeTree(NodeTree):
 
         for node_layer_nodes in reversed(sorted_nodes_cache[self.uuid]):
             for node in reversed(node_layer_nodes):
-                if not node.visible:
-                    continue
                 if in_pose and not node.interactable:
+                    continue
+                if not test_node_sel(self, node):
                     continue
                 if node._test_select(context, not in_pose, region_loc, view_loc, view_zoom, region_offset):
                     G_hovered_node = node.uuid
@@ -705,9 +716,6 @@ class AP_NodeTree(NodeTree):
         active_node: AP_Node = self.nodes.active
         sel_nodes: set[AP_Node] = self.get_selected_nodes(context)
 
-        # A set of the widget types that are visible.
-        visible_wg_types = get_visible_widget_types(self)
-
         visible_view_box = get_node_editor_visible_view_box(context)
 
         theme_style = get_active_theme_style(context)
@@ -719,10 +727,6 @@ class AP_NodeTree(NodeTree):
 
             for node_layer_nodes in sorted_nodes_cache[self.uuid]:
                 for node in node_layer_nodes:
-                    if node.wg_type not in visible_wg_types:
-                        continue
-                    if not node.visible:
-                        continue
                     if not rect_overlap(visible_view_box, node.rect_transform):
                         # print("Node outside view", node.label)
                         continue
