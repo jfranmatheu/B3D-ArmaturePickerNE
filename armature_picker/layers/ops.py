@@ -1,7 +1,5 @@
 from bpy.types import Context, Event, Operator, NodeTree
-from bpy.props import IntProperty
-
-from uuid import uuid4
+from bpy.props import IntProperty, StringProperty
 
 from armature_picker.node_editor.poll import poll_check
 from ..utils.operator import OpsReturn
@@ -12,12 +10,17 @@ class AddPickerLayer(Operator):
     bl_idname = 'armature_picker.add_picker_layer'
     bl_label = 'Add Picker Layer'
 
+    layer_name: StringProperty(name="Layer Name", default='New Layer')
+
     @classmethod
     def poll(cls, context: Context):
         return poll_check(context, use_active_object=False)
 
+    def invoke(self, context: Context, event: Event) -> OpsReturn:
+        return context.window_manager.invoke_props_dialog(self, width=300)
+
     def execute(self, context: Context) -> OpsReturn:
-        context.space_data.node_tree.new_layer(name='New Layer')
+        context.space_data.node_tree.new_layer(name=self.layer_name)
         return OpsReturn.FINISH
 
 
