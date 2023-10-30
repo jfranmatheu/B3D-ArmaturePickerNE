@@ -22,10 +22,14 @@ def on_node_tree_change(context: Context, space_data: SpaceNodeEditor, node_tree
     print(f"RNA::on_node_tree_change -> {node_tree.name}")
 
     if node_tree.uuid == '':
+        # New NodeTree.
+        node_tree.name = 'Picker'
         node_tree.uuid = uuid4().hex
+        new_layer = node_tree.picker_layers.add()
+        new_layer.name = 'Layer'
     armature = context.active_object.data
     if armature.picker is None:
         armature.picker = node_tree
     ensure_nodes_cache(node_tree)
-    
+
     node_tree.picker_update_flags.add('CENTER_VIEW')
