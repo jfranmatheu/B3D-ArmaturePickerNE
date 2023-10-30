@@ -23,6 +23,7 @@ from ._transform_props import NodeTransformProps, RectTransform
 # Global variables.
 
 _hovered_node: str = None
+default_picker_layer_items = [('NONE', 'NONE', 'No layer. Will be always visible')]
 
 
 # ----------------------------------------------------------------
@@ -94,19 +95,30 @@ class AP_Node(NodeTransformProps):
     locked: BoolProperty(name="Locked", default=False, update=update_locked)
     visible: BoolProperty(name="Visible", default=True)
 
-    def update_picker_layer(self, context: Context) -> None:
-        if picker_layer := self.node_tree.picker_layers.get(self.picker_layer, None):
-            self.visible = picker_layer.enabled
-        else:
+    def update_picker_layers(self, context: Context) -> None:
+        if not self.picker_layers or 'NONE' in self.picker_layers:
             self.visible = True
+            return
+        pk_layers = self.node_tree.picker_layers
+        for pk_layer_idname in self.picker_layers:
+            if picker_layer := pk_layers.get(pk_layer_idname, None):
+                if picker_layer.enabled:
+                    self.visible = True
+                    return
+        self.visible = False
 
-    picker_layer_items = [('NONE', 'NONE', 'No layer. Will be always visible')]
     def get_picker_layers(self, context: Context) -> list:
-        return self.picker_layer_items + [
+        if len(self.node_tree.picker_layers) == 0:
+            return default_picker_layer_items
+        return [
             (picker_layer.uuid, picker_layer.edit_name, '') for picker_layer in self.node_tree.picker_layers
         ]
 
-    picker_layer: EnumProperty(name="Picker Layer", items=get_picker_layers, update=update_picker_layer)
+    picker_layers: EnumProperty(name="Picker Layers",
+                                description="Asigned PickerLayers to this Widget. They will control the visibility of this element",
+                                items=get_picker_layers,
+                                update=update_picker_layers,
+                                options={'ENUM_FLAG'})
 
 
     # DRAW LAYERS
@@ -235,7 +247,7 @@ class AP_Node(NodeTransformProps):
     # +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
     def draw_visibility(self, layout: UILayout) -> None:
-        layout.prop(self, 'picker_layer', expand=False)
+        layout.prop_menu_enum(self, 'picker_layers', icon='RENDERLAYERS')
 
     def draw_styles(self, panel_layout: UILayout, section_layout: UILayout) -> None:
         ''' From Node. '''

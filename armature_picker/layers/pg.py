@@ -1,4 +1,4 @@
-from bpy.types import PropertyGroup, NodeTree
+from bpy.types import PropertyGroup, NodeTree, Context
 from bpy.props import BoolProperty, StringProperty, IntProperty, CollectionProperty
 
 from .update import update_active_layer
@@ -10,14 +10,18 @@ class PG_PickerLayer(PropertyGroup):
     @property
     def uuid(self) -> str:
         return self.name
-    
-    def update_nodes_visibility(self, nodes, layer_id: str, visible: bool) -> None:
+
+    def update_nodes_visibility(self, context: Context, nodes, layer_id: str, visible: bool) -> None:
         for node in nodes:
-            if node.picker_layer == layer_id:
-                node.visible = visible
+            if visible:
+                if layer_id in node.picker_layers:
+                    node.visible = visible
+            else:
+                node.update_picker_layers(context)
+        self.visible = False
 
     enabled: BoolProperty(default=True, name="Visible", description="Show the picker elements inside this layer",
-                          update=lambda self, ctx: self.update_nodes_visibility(ctx.space_data.node_tree.nodes, self.uuid, self.enabled))
+                          update=lambda self, ctx: self.update_nodes_visibility(ctx, ctx.space_data.node_tree.nodes, self.uuid, self.enabled))
     edit_name: StringProperty(default="Layer", name="Layer Name", description="Name of the layer")
 
 

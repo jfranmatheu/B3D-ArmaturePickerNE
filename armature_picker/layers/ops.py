@@ -68,7 +68,7 @@ class SelectNodesInPickerLayer(Operator):
         node_tree: NodeTree = context.space_data.node_tree
         picker_layer_id: str = node_tree.picker_layers[self.picker_layer_index].uuid
         for node in node_tree.nodes:
-            node.select = node.picker_layer == picker_layer_id
+            node.select = picker_layer_id in node.picker_layers
         
         if context.selected_nodes != []:
             node_tree.nodes.active = context.selected_nodes[0]
