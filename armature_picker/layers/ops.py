@@ -18,12 +18,7 @@ class AddPickerLayer(Operator):
         return poll_check(context, use_active_object=False)
 
     def execute(self, context: Context) -> OpsReturn:
-        node_tree: NodeTree = context.space_data.node_tree
-
-        node_tree.active_picker_layer = len(node_tree.picker_layers)
-        new_picker_layer = node_tree.picker_layers.add()
-        new_picker_layer.name = uuid4().hex
-
+        context.space_data.node_tree.new_layer(name='New Layer')
         return OpsReturn.FINISH
 
 
@@ -44,12 +39,7 @@ class RemovePickerLayer(Operator):
         if node_tree.active_picker_layer >= len(node_tree.picker_layers):
             return OpsReturn.CANCEL
 
-        node_tree.picker_layers.remove(node_tree.active_picker_layer) # node_tree.picker_layers[node_tree.active_picker_layer])
-
-        on_remove_layer(node_tree, context, node_tree.active_picker_layer)
-
-        node_tree.active_picker_layer = ( len(node_tree.picker_layers) - 1 )
-
+        context.space_data.node_tree.remove_layer(uuid_or_index=node_tree.active_picker_layer)
         return OpsReturn.FINISH
 
 
@@ -57,7 +47,7 @@ class RemovePickerLayer(Operator):
 class SelectNodesInPickerLayer(Operator):
     bl_idname = 'armature_picker.select_nodes_in_picker_layer'
     bl_label = 'Select Nodes in Picker Layer'
-    
+
     picker_layer_index: IntProperty(default=-1)
 
     @classmethod
@@ -68,8 +58,8 @@ class SelectNodesInPickerLayer(Operator):
         node_tree: NodeTree = context.space_data.node_tree
         picker_layer_id: str = node_tree.picker_layers[self.picker_layer_index].uuid
         for node in node_tree.nodes:
-            node.select = picker_layer_id in node.picker_layers
-        
+            node.select = picker_layer_id == node.picker_layer
+
         if context.selected_nodes != []:
             node_tree.nodes.active = context.selected_nodes[0]
 

@@ -1,6 +1,6 @@
 import bpy
 from bpy.types import NodeTree, Context, Event, Node, PoseBone
-from bpy.props import BoolProperty, EnumProperty, StringProperty, PointerProperty
+from bpy.props import BoolProperty, EnumProperty, StringProperty, PointerProperty, IntProperty, CollectionProperty
 from mathutils import Vector
 import gpu
 
@@ -11,6 +11,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from math import cos, sin, radians, degrees
 
+from armature_picker.layers.pg import PG_PickerLayer, update_active_layer
 from armature_picker.data.pg.picker_view import AP_PG_PickerView
 from armature_picker.ui.header_menus.widget_types_visibility import attr_widget_types
 from armature_picker.utils.cursor import Cursor, CursorIcon
@@ -162,7 +163,28 @@ class AP_NodeTree(NodeTree):
     #----------------------------------------------------------------
     # ID Properties.
 
+    uuid: StringProperty()
+    dirty: BoolProperty()
+    picker_mode: EnumProperty(
+        name='Picker Mode',
+        items=(
+            ('EDIT', 'Edit Mode', "Edit Mode", 'GREASEPENCIL', 0),
+            ('POSE', 'Pose Mode', "Pose Mode", 'POSE_HLT', 1),
+        ),
+        default='EDIT'
+    )
     picker_view: PointerProperty(name='Picker View', type=AP_PG_PickerView)
+    active_picker_layer: IntProperty(default=-1, name="Active Picker Layer", update=lambda node_tree, ctx: update_active_layer(node_tree, ctx, node_tree.active_picker_layer))
+    picker_layers: CollectionProperty(type=PG_PickerLayer)
+    
+    
+    #----------------------------------------------------------------
+    # On-Top Layer.
+    
+    @property
+    def widgets(self) -> list[AP_Node]:
+        return self.nodes
+
 
     #----------------------------------------------------------------
 
@@ -177,8 +199,9 @@ class AP_NodeTree(NodeTree):
     last_event_value: str = 'NONE'
     last_time_event: float = time()
 
-    dirty: bool
+    picker_update_flags = set()
 
+    # Blender NodeEditor Flags.
     bl_use_exclude_layers = False
     bl_use_postprocess = False
     bl_use_preview = False
@@ -196,6 +219,8 @@ class AP_NodeTree(NodeTree):
 
     def __init__(self):
         self.uuid = uuid4().hex
+        new_layer: PG_PickerLayer = self.picker_layers.add()
+        new_layer.name = 'Default'
 
     def __del__(self):
         pass
@@ -208,6 +233,32 @@ class AP_NodeTree(NodeTree):
     def on_region_resize(self, context: Context) -> None:
         for graphic in graphic_users[self.uuid].values():
             graphic.dirty = True
+    
+    
+    # ----------------------------------------------------------------
+
+    def new_layer(self, name: str) -> None:
+        self.active_picker_layer = len(self.picker_layers)
+        new_picker_layer: PG_PickerLayer = self.picker_layers.add()
+        new_picker_layer.name = name
+        new_picker_layer.uuid = uuid4().hex
+    
+    def remove_layer(self, uuid_or_index: str | int | None) -> None:
+        if uuid_or_index is None:
+            index = self.active_picker_layer
+        elif isinstance(uuid_or_index, int):
+            index = uuid_or_index
+        elif isinstance(uuid_or_index, str):
+            for index, layer in enumerate(self.picker_layers):
+                if layer.uuid == uuid_or_index:
+                    break
+        self.picker_layers.remove(index)
+        self.active_picker_layer = ( len(self.picker_layers) - 1 )
+        
+        node: AP_Node
+        for widget in self.widgets:
+            if removed_layer_id in widget.picker_layer:
+                node.picker_layers = {'NONE'}
 
 
     # ----------------------------------------------------------------
@@ -227,6 +278,9 @@ class AP_NodeTree(NodeTree):
             if active_bone := context.active_bone:
                 sel_bones.add(active_bone)
         return sel_bones
+    
+    
+    # ----------------------------------------------------------------
 
 
     def update_nodes_depth(self) -> None:
@@ -1056,27 +1110,8 @@ def reset_globals():
 # ----------------------------------------------------------------
 
 def register():
-    NodeTree.uuid = StringProperty()
-    NodeTree.dirty = BoolProperty()
-
-    NodeTree.picker_mode = EnumProperty(
-        name='Picker Mode',
-        items=(
-            ('EDIT', 'Edit Mode', "Edit Mode", 'GREASEPENCIL', 0),
-            ('POSE', 'Pose Mode', "Pose Mode", 'POSE_HLT', 1),
-        ),
-        default='EDIT'
-    )
-
-    NodeTree.picker_update_flags = set()
+    pass
 
 
 def unregister():
     reset_globals()
-
-
-    del NodeTree.uuid
-    del NodeTree.dirty
-    del NodeTree.picker_mode
-
-    del NodeTree.picker_update_flags
