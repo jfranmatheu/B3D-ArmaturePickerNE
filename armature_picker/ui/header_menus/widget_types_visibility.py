@@ -29,11 +29,11 @@ class AP_PT_widget_type_visibility(Panel):
     @classmethod
     def get_icon(cls, context: Context) -> str:
         if not poll_check(context, 'ANY', use_picker_editor=True):
-            return
+            return 'NONE'
 
         node_tree = context.space_data.node_tree
         if node_tree is None:
-            return
+            return 'VIS_SEL_11'
 
         picker_view = node_tree.picker_view
 
