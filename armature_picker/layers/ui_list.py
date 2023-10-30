@@ -10,4 +10,3 @@ class LIST_PickerLayers(UIList):
     def draw_item(self, context: Context, layout: UILayout, data: AnyType, item: PG_PickerLayer, icon: int, active_data: AnyType, active_property: str, index: int = 0, flt_flag: int = 0):
         row = layout.row(align=True)
         row.prop(item, 'name', text="", emboss=False)
-        row.operator('armature_picker.select_nodes_in_picker_layer', text='', icon='RESTRICT_SELECT_OFF').picker_layer_index = index
