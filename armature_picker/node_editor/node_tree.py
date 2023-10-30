@@ -11,7 +11,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from math import cos, sin, radians, degrees
 
-from armature_picker.layers.pg import PG_PickerLayer, update_active_layer
+from armature_picker.layers.pg import PG_PickerLayer
 from armature_picker.data.pg.picker_view import AP_PG_PickerView
 from armature_picker.ui.header_menus.widget_types_visibility import attr_widget_types
 from armature_picker.utils.cursor import Cursor, CursorIcon

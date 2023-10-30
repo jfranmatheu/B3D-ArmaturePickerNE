@@ -5,7 +5,6 @@ from uuid import uuid4
 
 from armature_picker.node_editor.poll import poll_check
 from ..utils.operator import OpsReturn
-from .update import on_remove_layer
 from ..utils.node_editor import deselect_all_nodes
 
 

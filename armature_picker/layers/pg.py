@@ -1,7 +1,5 @@
 from bpy.types import PropertyGroup, NodeTree, Context
-from bpy.props import BoolProperty, StringProperty, IntProperty, CollectionProperty
-
-from .update import update_active_layer
+from bpy.props import BoolProperty, StringProperty
 
 
 class PG_PickerLayer(PropertyGroup):
