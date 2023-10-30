@@ -164,7 +164,14 @@ class AP_NodeTree(NodeTree):
     # ID Properties.
 
     def update_active_layer(self, context: Context):
-        pass
+        active_picker_layer_id = self.active_picker_layer.uuid
+        for widget in self.widgets:
+            widget.visible = active_picker_layer_id == widget.picker_layer
+
+    def get_picker_layers(self, _context: Context) -> list[PG_PickerLayer]:
+        if len(self.picker_layers) == 0:
+            return [(-1, 'NONE', ""),]
+        return ((str(index), pk_layer.name, pk_layer.name) for index, pk_layer in enumerate(self.picker_layers))
 
     uuid: StringProperty()
     dirty: BoolProperty()
@@ -179,6 +186,11 @@ class AP_NodeTree(NodeTree):
     picker_view: PointerProperty(name='Picker View', type=AP_PG_PickerView)
     active_picker_layer_index: IntProperty(default=-1, name="Active Picker Layer", update=update_active_layer)
     picker_layers: CollectionProperty(type=PG_PickerLayer)
+    active_picker_layer_selector: EnumProperty(
+        name="Active Picker Layer Selector",
+        items=get_picker_layers,
+        update=lambda pk, _ctx: setattr(pk, 'active_picker_layer_index', int(pk.active_picker_layer_selector))
+    )
 
 
     #----------------------------------------------------------------
@@ -209,7 +221,6 @@ class AP_NodeTree(NodeTree):
     inject_modal_exit: callable = None
     inject_modal_draw: callable = None
     inject_modal_mouse: Mouse = None
-    picker_mode: str
     last_event_type: str = 'NONE'
     last_event_value: str = 'NONE'
     last_time_event: float = time()

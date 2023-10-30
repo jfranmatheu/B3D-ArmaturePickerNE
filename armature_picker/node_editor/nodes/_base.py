@@ -104,7 +104,7 @@ class AP_Node(NodeTransformProps):
         if len(self.node_tree.picker_layers) == 0:
             return default_picker_layer_items
         return [
-            (picker_layer.uuid, picker_layer.edit_name, '') for picker_layer in self.node_tree.picker_layers
+            (picker_layer.uuid, picker_layer.name, '') for picker_layer in self.node_tree.picker_layers
         ]
 
     picker_layer: EnumProperty(name="Picker Layer",
