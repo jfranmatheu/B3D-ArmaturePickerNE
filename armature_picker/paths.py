@@ -20,6 +20,7 @@ class Paths(Enum):
     LIB = src_path / 'lib'
     LIB_SHADERS = LIB / 'shaders'
     LIB_IMAGES = LIB / 'images'
+    LIB_TEMPLATES = LIB / 'templates'
 
     def __call__(self, *paths, as_path: bool = False):
         if paths:
