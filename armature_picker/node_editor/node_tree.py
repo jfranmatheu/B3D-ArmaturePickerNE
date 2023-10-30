@@ -163,6 +163,9 @@ class AP_NodeTree(NodeTree):
     #----------------------------------------------------------------
     # ID Properties.
 
+    def update_active_layer(self, context: Context):
+        pass
+
     uuid: StringProperty()
     dirty: BoolProperty()
     picker_mode: EnumProperty(
@@ -174,16 +177,19 @@ class AP_NodeTree(NodeTree):
         default='EDIT'
     )
     picker_view: PointerProperty(name='Picker View', type=AP_PG_PickerView)
-    active_picker_layer: IntProperty(default=-1, name="Active Picker Layer", update=lambda node_tree, ctx: update_active_layer(node_tree, ctx, node_tree.active_picker_layer))
+    active_picker_layer: IntProperty(default=-1, name="Active Picker Layer", update=update_active_layer)
     picker_layers: CollectionProperty(type=PG_PickerLayer)
-    
-    
+
+
     #----------------------------------------------------------------
     # On-Top Layer.
-    
+
     @property
     def widgets(self) -> list[AP_Node]:
         return self.nodes
+
+    def remove_widget(self, widget: AP_Node) -> None:
+        self.nodes.remove(widget)
 
 
     #----------------------------------------------------------------
@@ -233,8 +239,8 @@ class AP_NodeTree(NodeTree):
     def on_region_resize(self, context: Context) -> None:
         for graphic in graphic_users[self.uuid].values():
             graphic.dirty = True
-    
-    
+
+
     # ----------------------------------------------------------------
 
     def new_layer(self, name: str) -> None:
@@ -242,7 +248,7 @@ class AP_NodeTree(NodeTree):
         new_picker_layer: PG_PickerLayer = self.picker_layers.add()
         new_picker_layer.name = name
         new_picker_layer.uuid = uuid4().hex
-    
+
     def remove_layer(self, uuid_or_index: str | int | None) -> None:
         if uuid_or_index is None:
             index = self.active_picker_layer
@@ -252,13 +258,14 @@ class AP_NodeTree(NodeTree):
             for index, layer in enumerate(self.picker_layers):
                 if layer.uuid == uuid_or_index:
                     break
+
+        removed_layer_id = self.picker_layers[index].uuid
         self.picker_layers.remove(index)
         self.active_picker_layer = ( len(self.picker_layers) - 1 )
-        
-        node: AP_Node
+
         for widget in self.widgets:
             if removed_layer_id in widget.picker_layer:
-                node.picker_layers = {'NONE'}
+                self.remove_widget(widget)
 
 
     # ----------------------------------------------------------------
@@ -278,8 +285,8 @@ class AP_NodeTree(NodeTree):
             if active_bone := context.active_bone:
                 sel_bones.add(active_bone)
         return sel_bones
-    
-    
+
+
     # ----------------------------------------------------------------
 
 
