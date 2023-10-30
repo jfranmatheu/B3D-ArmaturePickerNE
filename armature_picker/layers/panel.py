@@ -27,7 +27,7 @@ class PickerLayersPanel(Panel):
         layout = self.layout
 
         node_tree = context.space_data.node_tree
-        
+
         row = layout.row()
 
         row.template_list(
@@ -36,11 +36,12 @@ class PickerLayersPanel(Panel):
             node_tree, 'active_picker_layer_index',
             item_dyntip_propname='', rows=5, maxrows=5, type='DEFAULT'
         )
-        
+
         actions = row.column(align=True)
         actions.operator('armature_picker.add_picker_layer', text='', icon='ADD')
         actions.operator('armature_picker.remove_picker_layer', text='', icon='REMOVE')
-
+        actions.separator()
+        actions.prop(node_tree, 'frame_layer_on_switch', text='', icon='LOCKVIEW_ON')
 
 
 class BoneCollectionsPanel(Panel):

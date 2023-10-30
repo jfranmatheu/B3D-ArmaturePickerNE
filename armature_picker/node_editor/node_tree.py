@@ -20,7 +20,7 @@ from armature_picker.paths import Paths
 from armature_picker.ui.context_menu import AP_MT_context_menu
 from ..gpu import draw
 from .nodes._base import AP_Node, RectTransform
-from ..utils.node_editor import get_node_editor_zoom, get_node_editor_view_point, get_node_editor_offset, get_node_editor_region_coord, get_node_editor_visible_view_box
+from ..utils.node_editor import center_node_editor_view, get_node_editor_zoom, get_node_editor_view_point, get_node_editor_offset, get_node_editor_region_coord, get_node_editor_visible_view_box
 from ..utils.armature import deselect_all_bones_from_active
 from ..utils.geometry import angle_signed, rect_overlap, Box
 from armature_picker.prefs import get_active_theme_style, get_prefs_wg_settings
@@ -169,6 +169,8 @@ class AP_NodeTree(NodeTree):
         for widget in self.widgets:
             widget.visible = active_picker_layer_id == widget.picker_layer
         refresh_nodes_cache(self)
+        if self.frame_layer_on_switch:
+            center_node_editor_view(context)
         context.region.tag_redraw()
 
     def get_picker_layers(self, _context: Context) -> list[PG_PickerLayer]:
@@ -195,9 +197,15 @@ class AP_NodeTree(NodeTree):
         update=lambda pk, _ctx: setattr(pk, 'active_picker_layer_index', int(pk.active_picker_layer_selector))
     )
 
+    frame_layer_on_switch: BoolProperty(name="Auto-Frame Layer", description="Frame Layer On Active-Layer-Switch", default=True)
+
 
     #----------------------------------------------------------------
     # On-Top Layer.
+    
+    @property
+    def sorted_nodes_cache(self) -> Dict[str, List[List[AP_Node]]]:
+        return sorted_nodes_cache[self.uuid]
 
     @property
     def active_picker_layer(self) -> PG_PickerLayer:
@@ -272,10 +280,10 @@ class AP_NodeTree(NodeTree):
     # ----------------------------------------------------------------
 
     def new_layer(self, name: str) -> None:
-        self.active_picker_layer_index = len(self.picker_layers)
         new_picker_layer: PG_PickerLayer = self.picker_layers.add()
         new_picker_layer.name = name
         new_picker_layer.uuid = uuid4().hex
+        self.active_picker_layer_index = (len(self.picker_layers) - 1)
 
     def remove_layer(self, uuid_or_index: str | int | None) -> None:
         if len(self.picker_layers) == 0:

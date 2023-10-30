@@ -1,4 +1,4 @@
-from bpy.types import Context, SpaceNodeEditor, Area
+from bpy.types import Context, SpaceNodeEditor, Area, Region
 from mathutils import Vector
 
 from armature_picker.ackit.bcy import CyBlStruct
@@ -22,8 +22,14 @@ def get_node_editor_region_coord(context: Context, view_co: Vector) -> Vector:
 def get_node_editor_offset(context: Context) -> Vector:
     return Vector(context.region.view2d.view_to_region(0, 0, clip=False)) # * get_node_editor_zoom(context)
 
+def get_window_region(area: Area) -> Region:
+    for region in area.regions:
+        if region.type == 'WINDOW':
+            return region
+    return None
+
 def get_node_editor_zoom(context: Context) -> float:
-    region = context.region
+    region = context.region if context.region.type == 'WINDOW' else get_window_region(context.area)
     view2d = region.view2d
     region_height = region.height
     view_height = view2d.region_to_view(0, region_height)[1] - view2d.region_to_view(0, 0)[1]
@@ -32,7 +38,7 @@ def get_node_editor_zoom(context: Context) -> float:
     return region_height / view_height
 
 def get_node_editor_view_size(context: Context) -> Vector:
-    region = context.region
+    region = context.region if context.region.type == 'WINDOW' else get_window_region(context.area)
     view2d = region.view2d
     return Vector(view2d.region_to_view(region.width, region.height)) - Vector(view2d.region_to_view(0, 0))
 
@@ -48,25 +54,23 @@ def deselect_all_nodes(context: Context, nullify_active: bool = True) -> None:
 def center_node_editor_view(context: Context) -> None:
     node_tree = context.space_data.node_tree
     if len(node_tree.nodes) == 0:
-            return
+        return
+    if len(node_tree.sorted_nodes_cache) == 0:
+        return
 
     zoom = get_node_editor_zoom(context)
 
-    min_p = Vector((0, 0))
-    max_p = Vector((0 ,0))
+    min_p = Vector((float('inf'), float('inf')))
+    max_p = Vector((0, 0))
 
-    for node in node_tree.nodes:
-        # x, y = node.rect_transform.origin
-        # min_p.x = min(min_p.x, x)
-        # max_p.x = max(max_p.x, x)
-        # min_p.y = min(min_p.y, y)
-        # max_p.y = max(max_p.y, y)
-        for co in node.rect_transform.coords_rotated:
-            x, y = co
-            min_p.x = min(min_p.x, x)
-            max_p.x = max(max_p.x, x)
-            min_p.y = min(min_p.y, y)
-            max_p.y = max(max_p.y, y)
+    for node_layer_nodes in reversed(node_tree.sorted_nodes_cache):
+        for node in reversed(node_layer_nodes):
+            for co in node.rect_transform.coords_rotated:
+                x, y = co
+                min_p.x = min(min_p.x, x)
+                max_p.x = max(max_p.x, x)
+                min_p.y = min(min_p.y, y)
+                max_p.y = max(max_p.y, y)
 
     '''
     # THIS NEEDS TO BE DONE IN A SECOND PASS,
@@ -79,12 +83,13 @@ def center_node_editor_view(context: Context) -> None:
     max_p -= void_space
     '''
 
-    pad = 5 * zoom
+    pad = 10 * zoom
     pad_v = Vector((pad, pad))
     min_p -= pad_v
     max_p += pad_v
 
-    cy_region = CyBlStruct.UI_REGION(context.region)
+    region = context.region if context.region.type == 'WINDOW' else get_window_region(context.area)
+    cy_region = CyBlStruct.UI_REGION(region)
     cy_region.v2d.cur.xmin = min_p.x
     cy_region.v2d.cur.xmax = max_p.x
     cy_region.v2d.cur.ymin = min_p.y
@@ -92,7 +97,8 @@ def center_node_editor_view(context: Context) -> None:
 
 
 def get_node_editor_visible_view_box(context: Context) -> Box:
-    cy_region = CyBlStruct.UI_REGION(context.region)
+    region = context.region if context.region.type == 'WINDOW' else get_window_region(context.area)
+    cy_region = CyBlStruct.UI_REGION(region)
     return Box(
         cy_region.v2d.cur.xmin,
         cy_region.v2d.cur.ymin,
