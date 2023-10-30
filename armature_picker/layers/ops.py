@@ -31,7 +31,7 @@ class RemovePickerLayer(Operator):
         return poll_check(context, use_active_object=False) and len(context.space_data.node_tree.picker_layers) > 1
 
     def invoke(self, context: Context, event: Event):
-        self.widgets_to_remove = len(context.space_data.node_tree.widgets_from_active_layer)
+        # self.widgets_to_remove = len(context.space_data.node_tree.widgets_from_active_layer)
         return context.window_manager.invoke_confirm(self, event)
 
     def execute(self, context: Context) -> OpsReturn:
