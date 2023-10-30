@@ -314,7 +314,7 @@ class AP_NodeTree(NodeTree):
 
     def _invoke(self, context: Context, event: Event) -> set[str]:
         # Skip navigation km.
-        if event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE', 'T', 'N', 'TAB', 'X', 'DEL'}:
+        if event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE', 'T', 'N', 'TAB', 'X', 'DEL', 'S'}:
             if event.value != 'PRESS':
                 return {'PASS_THROUGH'}
             if event.type == 'WHEELUPMOUSE':
@@ -323,6 +323,8 @@ class AP_NodeTree(NodeTree):
                 bpy.ops.view2d.zoom_out('INVOKE_DEFAULT')
             elif event.type == 'MIDDLEMOUSE':
                 bpy.ops.view2d.pan('INVOKE_DEFAULT')
+            elif event.type == 'S' and event.ctrl:
+                bpy.ops.wm.save_mainfile(False)
             elif event.type == 'N':
                 context.space_data.show_region_ui = not context.space_data.show_region_ui
             elif event.type == 'T':
