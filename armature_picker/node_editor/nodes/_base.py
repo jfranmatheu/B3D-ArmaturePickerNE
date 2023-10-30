@@ -98,7 +98,8 @@ class AP_Node(NodeTransformProps):
     def update_picker_layer(self, context: Context) -> None:
         if picker_layer := self.node_tree.picker_layers.get(self.picker_layer, None):
             self.visible = picker_layer.enabled
-        self.visible = False
+            return
+        self.visible = True
 
     def get_picker_layers(self, context: Context) -> list:
         if len(self.node_tree.picker_layers) == 0:
@@ -207,6 +208,7 @@ class AP_Node(NodeTransformProps):
 
     def init(self, context):
         self.name = self.uuid = uuid4().hex
+        self.picker_layer = self.node_tree.active_picker_layer.uuid
 
         self.rect_transform.node_idname = self.uuid
 
@@ -224,6 +226,7 @@ class AP_Node(NodeTransformProps):
     # Copy function to initialize a copied node from an existing one.
     def copy(self, node):
         self.name = self.uuid = uuid4().hex
+        self.picker_layer = self.node_tree.active_picker_layer.uuid
         self.dirty = True
         self.dirty_label = True
         self.rect_transform.node_idname = self.uuid
