@@ -163,14 +163,14 @@ class AP_NodeTree(NodeTree):
     #----------------------------------------------------------------
     # ID Properties.
 
-    def update_active_layer(self, context: Context):
+    def update_active_layer(self, _context: Context):
         active_picker_layer_id = self.active_picker_layer.uuid
         for widget in self.widgets:
             widget.visible = active_picker_layer_id == widget.picker_layer
 
     def get_picker_layers(self, _context: Context) -> list[PG_PickerLayer]:
         if len(self.picker_layers) == 0:
-            return [(-1, 'NONE', ""),]
+            return [('-1', 'NONE', ""),]
         return ((str(index), pk_layer.name, pk_layer.name) for index, pk_layer in enumerate(self.picker_layers))
 
     uuid: StringProperty()
@@ -242,11 +242,8 @@ class AP_NodeTree(NodeTree):
     # def poll(cls, context: Context) -> bool:
     #     return poll_check(context)
 
-
     def __init__(self):
-        self.uuid = uuid4().hex
-        new_layer: PG_PickerLayer = self.picker_layers.add()
-        new_layer.name = 'Default'
+        pass
 
     def __del__(self):
         pass
