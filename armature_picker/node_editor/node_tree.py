@@ -20,7 +20,7 @@ from armature_picker.paths import Paths
 from armature_picker.ui.context_menu import AP_MT_context_menu
 from ..gpu import draw
 from .nodes._base import AP_Node, RectTransform
-from ..utils.node_editor import center_node_editor_view, get_node_editor_zoom, get_node_editor_view_point, get_node_editor_offset, get_node_editor_region_coord, get_node_editor_visible_view_box
+from ..utils.node_editor import get_node_editor_view_size, center_node_editor_view, get_node_editor_zoom, get_node_editor_view_point, get_node_editor_offset, get_node_editor_region_coord, get_node_editor_visible_view_box
 from ..utils.armature import deselect_all_bones_from_active
 from ..utils.geometry import angle_signed, rect_overlap, Box, point_inside_rect
 from armature_picker.prefs import get_active_theme_style, get_prefs_wg_settings
@@ -38,6 +38,7 @@ TABS_HEADER_HEIGHT = draw.get_text_dim('Xy', 12)[1]
 
 region_loc: Vector = Vector((-1, -1))
 view_loc: Vector = Vector((-100000, -100000))
+view_size: Vector = Vector((0, 0))
 
 # ----------------------------------------------------------------
 
@@ -209,7 +210,7 @@ class AP_NodeTree(NodeTree):
 
     #----------------------------------------------------------------
     # On-Top Layer.
-    
+
     @property
     def active_picker_layer_id(self) -> str:
         return self.active_picker_layer.uuid
@@ -242,7 +243,7 @@ class AP_NodeTree(NodeTree):
     @property
     def picker_layers_pinned(self) -> list[PG_PickerLayer]:
         return [pk_layer for pk_layer in self.picker_layers if pk_layer.use_pin]
-    
+
     @property
     def widgets_selected(self) -> list[AP_Node]:
         # Can't select an invisible widget.
@@ -296,6 +297,17 @@ class AP_NodeTree(NodeTree):
     def on_region_resize(self, context: Context) -> None:
         for graphic in graphic_users[self.uuid].values():
             graphic.dirty = True
+
+        self.on_view_resize(context)
+
+    @property
+    def view_size(self) -> Vector:
+        global view_size
+        return view_size
+
+    def on_view_resize(self, context: Context) -> None:
+        global view_size
+        view_size = get_node_editor_view_size(context)
 
 
     # ----------------------------------------------------------------
@@ -475,8 +487,10 @@ class AP_NodeTree(NodeTree):
                 return {'PASS_THROUGH'}
             if event.type == 'WHEELUPMOUSE':
                 bpy.ops.view2d.zoom_in('INVOKE_DEFAULT')
+                self.on_view_resize(context)
             elif event.type == 'WHEELDOWNMOUSE':
                 bpy.ops.view2d.zoom_out('INVOKE_DEFAULT')
+                self.on_view_resize(context)
             elif event.type == 'MIDDLEMOUSE':
                 bpy.ops.view2d.pan('INVOKE_DEFAULT')
             elif event.type == 'S' and event.ctrl:
@@ -832,7 +846,7 @@ class AP_NodeTree(NodeTree):
 
         if self.inject_modal_draw is not None:
             self.inject_modal_draw(context, ui_scale, sel_nodes, in_edit=in_edit, in_view2d=False)
-        
+
         if in_edit:
             draw.box(
                 self.get_graphic_user('EDIT_CAGE'), 'EDIT_CAGE',
