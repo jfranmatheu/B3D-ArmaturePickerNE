@@ -9,15 +9,23 @@ from .button_script.node import APNODE_ButtonScript
 
 
 NODES = (
-    {
-        'name': 'Picker Buttons',
-        'icon': 'CONSTRAINT_BONE',
-        'items': (
-            (AP_BonePickerNode, 'Button', 'SEQ_SEQUENCER'),
-            (APNODE_BonePickerGeo, 'Geometry Shape', 'MESH_MONKEY'),
-        )
-    },
-    APNODE_Image,
+    (
+        {
+            'name': 'Bone-Picker',
+            'icon': 'CONSTRAINT_BONE',
+            'items': (
+                (AP_BonePickerNode, 'Button', 'SEQ_SEQUENCER'),
+                (APNODE_BonePickerGeo, 'Geometry Shape', 'MESH_MONKEY'),
+            )
+        },
+        {
+            'name': 'Action Buttons',
+            'icon': 'FILE_SCRIPT',
+            'items': (
+                (APNODE_ButtonScript, 'Custom Script', 'TEXT'),
+            )
+        },
+    ),
     {
         'name': 'Sliders',
         'icon': 'PROPERTIES',
@@ -27,13 +35,14 @@ NODES = (
             (APNODE_SliderLinear2D, 'Lineal 2D', 'PIVOT_BOUNDBOX'),
         )
     },
+    APNODE_Image,
     APNODE_Label,
-    None,
-    {
-        'name': 'Action Buttons',
-        'icon': 'FILE_SCRIPT',
-        'items': (
-            (APNODE_ButtonScript, 'Custom Script', 'TEXT'),
-        )
-    },
+    # None,
+    # {
+    #     'name': 'Action Buttons',
+    #     'icon': 'FILE_SCRIPT',
+    #     'items': (
+    #         (APNODE_ButtonScript, 'Custom Script', 'TEXT'),
+    #     )
+    # },
 )
