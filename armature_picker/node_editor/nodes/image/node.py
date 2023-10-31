@@ -24,10 +24,10 @@ class APNODE_Image(APNODE_Image_NodeProps, AP_Node, Node):
         super().init(context)
         self.label = 'Image'
         
-        image = bpy.data.images.get('Sav Martin es Muy Cool')
+        image = bpy.data.images.get('Default ArmaturePicker Image')
         if not image:
-            image = bpy.data.images.load(Paths.LIB_IMAGES('default_image.jpg'))
-            image.name = 'Sav Martin es Muy Cool'
+            image = bpy.data.images.load(Paths.LIB_IMAGES('default_image.png'))
+            image.name = 'Default ArmaturePicker Image'
         self.image = image
 
     # ----- DRAWING --------------------------------
