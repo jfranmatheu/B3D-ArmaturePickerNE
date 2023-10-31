@@ -39,7 +39,7 @@ class PickerLayersPanel(Panel):
 
         actions = row.column(align=True)
         actions.operator('armature_picker.add_picker_layer', text='', icon='ADD')
-        actions.operator('armature_picker.remove_picker_layer', text='', icon='REMOVE')
+        actions.operator('armature_picker.remove_active_picker_layer', text='', icon='REMOVE')
         actions.separator()
         actions.operator('armature_picker.duplicate_active_layer', text='', icon='DUPLICATE')
         actions.separator()
