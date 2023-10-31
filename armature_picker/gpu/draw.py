@@ -349,7 +349,7 @@ def text_cached(data_id: str,
         text_dim = get_text_dim(_text, ts)
         # min_text_h = get_text_dim('x', ts)[1]
         max_text_h = get_text_dim('Xy', ts)[1]
-        print("Diff height text:", _text, max_text_h, text_dim[1]) #, min_text_h)
+        # print("Diff height text:", _text, max_text_h, text_dim[1]) #, min_text_h)
         if max_text_h <= text_dim[1]:
             text_dim = Vector(text_dim)
             t_pos = Vector((0, text_dim.y * 2)) # Fix height.
