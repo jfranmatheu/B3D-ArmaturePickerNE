@@ -16,6 +16,7 @@ class GLOBALS:
     #ADDON_NAME = bl_info['name']
     #ADDON_VERSION = bl_info['version']
     #SUPPORTED_BLENDER_VERSION = bl_info['blender']
+    ICONS_PATH = ADDON_SOURCE_PATH / 'lib' / 'icons'
 
     IN_DEVELOPMENT = hasattr(sys, 'gettrace') and sys.gettrace() is not None # Just a nice HACK! ;-)
     IN_PRODUCTION  = not IN_DEVELOPMENT
