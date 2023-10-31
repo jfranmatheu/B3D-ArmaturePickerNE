@@ -886,7 +886,7 @@ class AP_NodeTree(NodeTree):
             draw.text(
                 tabs_header_pos + tab_size_pad * 0.5 + Vector((0, 1.5 * ui_scale)),
                 pinned_layer.name,
-                12,
+                int(12 * ui_scale),
                 pivot=(0, 0),
                 angle=0,
                 color=(.92, .92, .92),
