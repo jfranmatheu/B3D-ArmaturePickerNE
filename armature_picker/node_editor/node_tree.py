@@ -361,38 +361,9 @@ class AP_NodeTree(NodeTree):
 
         global G_on_hover_tabs_area
         if in_pose:
-            # LAYER TABS.
-            pinned_layers = self.picker_layers_pinned
-            pinned_layer_count = len(pinned_layers)
-            tabs_size = Vector((0, 0))
-            for pinned_layer in pinned_layers:
-                if pinned_layer.label_dimensions is None:
-                    tabs_size += (Vector((draw.get_text_dim(pinned_layer.name, 12)[0], TABS_HEADER_HEIGHT)) * ui_scale)
-                else:
-                    tabs_size += (Vector((pinned_layer.label_dimensions.x, TABS_HEADER_HEIGHT)) * ui_scale)
-            pad = 4 * ui_scale
-            tab_spacing = 6 * ui_scale
-            tabs_header_size = (
-                tabs_size.x + tab_spacing * 2 * pinned_layer_count + tab_spacing * (pinned_layer_count - 1),
-                TABS_HEADER_HEIGHT * ui_scale # tabs_size.y + pad * 2
-            )
-            tabs_header_pos = Vector((
-                tab_spacing * 2,
-                context.region.height - tab_spacing * 3 - tabs_header_size[1]
-            ))
-            if point_inside_rect(region_loc, tabs_header_pos, tabs_header_size, 0):
-                tab_size_pad = Vector((tab_spacing * 2, pad * 2))
-                for pinned_layer in pinned_layers:
-                    if pinned_layer.label_dimensions is None:
-                        tab_size = (Vector((draw.get_text_dim(pinned_layer.name, 12)[0], TABS_HEADER_HEIGHT)) * ui_scale + tab_size_pad)
-                    else:
-                        tab_size = (Vector((pinned_layer.label_dimensions.x, TABS_HEADER_HEIGHT)) * ui_scale + tab_size_pad)
-                    if point_inside_rect(region_loc, tabs_header_pos, tab_size, 0):
-                        G_on_hover_tabs_area = pinned_layer.uuid
-                        return True
-                    tabs_header_pos.x += (tab_size.x + tab_spacing)
-                G_on_hover_tabs_area = None
-                return False
+            res_tabs = self._test_select_tabs(context)
+            if res_tabs is not None:
+                return res_tabs
         G_on_hover_tabs_area = None
 
         global G_active_node
@@ -433,6 +404,45 @@ class AP_NodeTree(NodeTree):
 
         G_hovered_node = None
         return 1
+
+
+    def _test_select_tabs(self, context: Context):
+        # LAYER TABS.
+        global region_loc
+        global G_on_hover_tabs_area
+        ui_scale = context.preferences.system.ui_scale
+        pinned_layers = self.picker_layers_pinned
+        pinned_layer_count = len(pinned_layers)
+
+        tabs_size = Vector((0, 0))
+        for pinned_layer in pinned_layers:
+            if pinned_layer.label_dimensions is None:
+                tabs_size += (Vector((draw.get_text_dim(pinned_layer.name, 12)[0], TABS_HEADER_HEIGHT)) * ui_scale)
+            else:
+                tabs_size += (Vector((pinned_layer.label_dimensions.x, TABS_HEADER_HEIGHT)) * ui_scale)
+        pad = 4 * ui_scale
+        tab_spacing = 6 * ui_scale
+        tabs_header_size = (
+            tabs_size.x + pad * 2 * pinned_layer_count + tab_spacing * (pinned_layer_count - 1),
+            TABS_HEADER_HEIGHT * ui_scale # tabs_size.y + pad * 2
+        )
+        tabs_header_pos = Vector((
+            tab_spacing * 2,
+            context.region.height - tab_spacing * 3 - tabs_header_size[1]
+        ))
+        if point_inside_rect(region_loc, tabs_header_pos, tabs_header_size, 0):
+            tab_size_pad = Vector((tab_spacing * 2, pad * 2))
+            for pinned_layer in pinned_layers:
+                if pinned_layer.label_dimensions is None:
+                    tab_size = (Vector((draw.get_text_dim(pinned_layer.name, 12)[0], TABS_HEADER_HEIGHT)) * ui_scale + tab_size_pad)
+                else:
+                    tab_size = (Vector((pinned_layer.label_dimensions.x, TABS_HEADER_HEIGHT)) * ui_scale + tab_size_pad)
+                if point_inside_rect(region_loc, tabs_header_pos, tab_size, 0):
+                    G_on_hover_tabs_area = pinned_layer.uuid
+                    return True
+                tabs_header_pos.x += (tab_size.x + tab_spacing)
+            G_on_hover_tabs_area = None
+            return False
 
 
     # ----------------------------------------------------------------
@@ -778,53 +788,7 @@ class AP_NodeTree(NodeTree):
                 color=(.9, .3, .1, .5)
             )
         else:
-            global G_on_hover_tabs_area
-            active_layer_id = self.active_picker_layer.uuid
-
-            # LAYER TABS.
-            pinned_layers = self.picker_layers_pinned
-            pinned_layer_count = len(pinned_layers)
-            tabs_size = Vector((0, 0))
-            for pinned_layer in pinned_layers:
-                if pinned_layer.label_dimensions is None:
-                    pinned_layer.update_label_dimensions(context)
-                tabs_size += (Vector((pinned_layer.label_dimensions.x, TABS_HEADER_HEIGHT)) * ui_scale)
-            pad = 4 * ui_scale
-            tab_spacing = 6 * ui_scale
-            tabs_header_size = (
-                tabs_size.x + pad * 2 * pinned_layer_count + tab_spacing * (pinned_layer_count - 1),
-                TABS_HEADER_HEIGHT * ui_scale # tabs_size.y + pad * 2
-            )
-            tabs_header_pos = Vector((
-                tab_spacing * 2,
-                context.region.height - tab_spacing * 3 - tabs_header_size[1]
-            ))
-            tab_size_pad = Vector((tab_spacing * 2, pad * 2))
-            for pinned_layer in pinned_layers:
-                tab_size = (Vector((pinned_layer.label_dimensions.x, TABS_HEADER_HEIGHT)) * ui_scale + tab_size_pad)
-                if pinned_layer.uuid == active_layer_id:
-                    color = (.12, .56, .95, 1.0) if G_on_hover_tabs_area == pinned_layer.uuid else (.12, .56, .95, .75)
-                else:
-                    color = (.12, .12, .12, 1.0) if G_on_hover_tabs_area == pinned_layer.uuid else (.06, .06, .06, .75)
-                draw.wg(
-                    self.get_graphic_user('TABS'), pinned_layer.uuid,
-                    tabs_header_pos,
-                    tab_size,
-                    rotation=0,
-                    roundness=.35,
-                    outline_thickness=1.0,
-                    bg_color=color
-                )
-                draw.text(
-                    tabs_header_pos + tab_size_pad * 0.5 + Vector((0, 1.5 * ui_scale)),
-                    pinned_layer.name,
-                    12,
-                    pivot=(0, 0),
-                    angle=0,
-                    color=(.92, .92, .92),
-                    alpha=.92
-                )
-                tabs_header_pos.x += (tab_size.x + tab_spacing)
+            self.draw_layer_tabs(context)
 
         refresh: bool = False
         zoom = get_node_editor_zoom(context)
@@ -878,6 +842,57 @@ class AP_NodeTree(NodeTree):
 
         if self.inject_modal_draw is not None:
             self.inject_modal_draw(context, ui_scale, sel_nodes, in_edit=in_edit, in_view2d=False)
+    
+    
+    def draw_layer_tabs(self, context: Context) -> None:
+        global G_on_hover_tabs_area
+        active_layer_id = self.active_picker_layer.uuid
+        ui_scale = context.preferences.system.ui_scale
+
+        # LAYER TABS.
+        pinned_layers = self.picker_layers_pinned
+        pinned_layer_count = len(pinned_layers)
+        tabs_size = Vector((0, 0))
+        for pinned_layer in pinned_layers:
+            if pinned_layer.label_dimensions is None:
+                pinned_layer.update_label_dimensions(context)
+            tabs_size += (Vector((pinned_layer.label_dimensions.x, TABS_HEADER_HEIGHT)) * ui_scale)
+        pad = 4 * ui_scale
+        tab_spacing = 6 * ui_scale
+        tabs_header_size = (
+            tabs_size.x + pad * 2 * pinned_layer_count + tab_spacing * (pinned_layer_count - 1),
+            TABS_HEADER_HEIGHT * ui_scale # tabs_size.y + pad * 2
+        )
+        tabs_header_pos = Vector((
+            tab_spacing * 2,
+            context.region.height - tab_spacing * 3 - tabs_header_size[1]
+        ))
+        tab_size_pad = Vector((tab_spacing * 2, pad * 2))
+        for pinned_layer in pinned_layers:
+            tab_size = (Vector((pinned_layer.label_dimensions.x, TABS_HEADER_HEIGHT)) * ui_scale + tab_size_pad)
+            if pinned_layer.uuid == active_layer_id:
+                color = (.12, .56, .95, 1.0) if G_on_hover_tabs_area == pinned_layer.uuid else (.12, .56, .95, .75)
+            else:
+                color = (.12, .12, .12, 1.0) if G_on_hover_tabs_area == pinned_layer.uuid else (.06, .06, .06, .75)
+            draw.wg(
+                self.get_graphic_user('TABS'), pinned_layer.uuid,
+                tabs_header_pos,
+                tab_size,
+                rotation=0,
+                roundness=.35,
+                outline_thickness=1.0,
+                bg_color=color
+            )
+            draw.text(
+                tabs_header_pos + tab_size_pad * 0.5 + Vector((0, 1.5 * ui_scale)),
+                pinned_layer.name,
+                12,
+                pivot=(0, 0),
+                angle=0,
+                color=(.92, .92, .92),
+                alpha=.92
+            )
+            tabs_header_pos.x += (tab_size.x + tab_spacing)
 
 
     # ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
