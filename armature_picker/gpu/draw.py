@@ -255,7 +255,11 @@ def text(pos: Vector,
          color: tuple[float, float, float] = (.92, .92, .92),
          alpha: float = 1.0,
          width=0,
-         word_wrap=True) -> Vector:
+         word_wrap=True,
+         use_shadow: bool = False,
+         shadow_level: int = 3, # 3, 5, 0
+         shadow_color: tuple[float, float, float, float] = (0, 0, 0, .9),
+         shadow_offset: tuple = (1, -1)) -> Vector:
     if size < 10:
         return
 
@@ -299,7 +303,13 @@ def text(pos: Vector,
         blf.color(0, *color)
     else:
         blf.color(0, *color, alpha)
+    if use_shadow:
+        blf.enable(0, blf.SHADOW)
+        blf.shadow(0, shadow_level, *shadow_color)
+        blf.shadow_offset(0, *shadow_offset)
     blf.draw(0, text)
+    if use_shadow:
+        blf.disable(0, blf.SHADOW)
     if angle != 0:
         blf.disable(0, blf.ROTATION)
         blf.rotation(0, 0)
