@@ -234,6 +234,12 @@ class AP_NodeTree(NodeTree):
     @property
     def picker_layers_pinned(self) -> list[PG_PickerLayer]:
         return [pk_layer for pk_layer in self.picker_layers if pk_layer.use_pin]
+    
+    @property
+    def widgets_selected(self) -> list[AP_Node]:
+        # Can't select an invisible widget.
+        # Can't select an unselectable widget. (BUT can if it has a locked RectTransform, it just can't be transformed)
+        return [widget for widget in self.widgets if widget.select and test_node_visibility(self, widget) and test_node_sel(self, widget)]
 
     def remove_widget(self, widget: AP_Node) -> None:
         self.nodes.remove(widget)
@@ -475,7 +481,7 @@ class AP_NodeTree(NodeTree):
 
     def _invoke(self, context: Context, event: Event) -> set[str]:
         # Skip navigation km.
-        if event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE', 'T', 'N', 'TAB', 'X', 'DEL', 'S'}:
+        if event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE', 'T', 'N', 'TAB', 'X', 'DEL', 'S', 'M'}:
             if event.value != 'PRESS':
                 return {'PASS_THROUGH'}
             if event.type == 'WHEELUPMOUSE':
@@ -496,6 +502,9 @@ class AP_NodeTree(NodeTree):
             elif event.type == 'TAB':
                 self.picker_mode = 'POSE' if self.picker_mode == 'EDIT' else 'EDIT'
                 context.area.tag_redraw()
+            elif event.type == 'M' and self.picker_mode == 'EDIT':
+                if len(self.picker_layers) > 1 and len(self.get_selected_nodes(context, include_active=True)) != 0:
+                    bpy.ops.armature_picker.move_selected('INVOKE_DEFAULT')
             return {'FINISHED'}
 
         if event.type == 'A' and not event.shift and event.value == 'PRESS':
