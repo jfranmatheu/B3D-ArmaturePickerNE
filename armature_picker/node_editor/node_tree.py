@@ -299,26 +299,6 @@ class AP_NodeTree(NodeTree):
         self.active_picker_layer_index = (len(self.picker_layers) - 1)
         return new_picker_layer
 
-    def remove_layer(self, uuid_or_index: str | int | None) -> None:
-        if len(self.picker_layers) == 0:
-            return
-        if uuid_or_index is None:
-            index = self.active_picker_layer_index
-        elif isinstance(uuid_or_index, int):
-            index = uuid_or_index
-        elif isinstance(uuid_or_index, str):
-            for index, layer in enumerate(self.picker_layers):
-                if layer.uuid == uuid_or_index:
-                    break
-
-        removed_layer_id = self.picker_layers[index].uuid
-        self.picker_layers.remove(index)
-        self.active_picker_layer_index = ( len(self.picker_layers) - 1 )
-
-        for widget in self.widgets:
-            if removed_layer_id in widget.picker_layer:
-                self.remove_widget(widget)
-
 
     # ----------------------------------------------------------------
 

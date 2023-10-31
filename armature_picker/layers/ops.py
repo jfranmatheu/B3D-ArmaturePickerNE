@@ -1,3 +1,4 @@
+import bpy
 from bpy.types import Context, Event, Operator, NodeTree
 from bpy.props import IntProperty, StringProperty
 
@@ -24,8 +25,8 @@ class AddPickerLayer(Operator):
         return OpsReturn.FINISH
 
 
-class RemovePickerLayer(Operator):
-    bl_idname = 'armature_picker.remove_picker_layer'
+class RemoveActivePickerLayer(Operator):
+    bl_idname = 'armature_picker.remove_active_picker_layer'
     bl_label = 'W A R N I N G !\nAre you sure you want to remove ALL\nthe associated Widgets to this Layer?'
     bl_desctiption = "Remove Active Picker Layer (and all its associated widgets)\nIMPORTANT! This action can't be undone"
 
@@ -46,5 +47,16 @@ class RemovePickerLayer(Operator):
         if node_tree.active_picker_layer_index >= len(node_tree.picker_layers):
             return OpsReturn.CANCEL
 
-        node_tree.remove_layer(uuid_or_index=node_tree.active_picker_layer_index)
+        # Delete picker nodes from active picker layer.
+        bpy.ops.node.select_all(False, action='DESELECT_ALL')
+        widgets = self.widgets_from_active_layer
+        if len(widgets) != 0:
+            for widget in widgets:
+                widget.select = True
+            self.nodes.active = widgets[0]
+            bpy.ops.node.delete(False)
+
+        # Delete active picker layer from picker.
+        self.picker_layers.remove(self.picker_layers.active_picker_layer_index)
+        self.picker_layers.active_picker_layer_index = ( len(self.picker_layers) - 1 )
         return OpsReturn.FINISH
