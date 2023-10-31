@@ -4,9 +4,9 @@ from ...utils.ui_layout import draw_section, draw_section_h
 from armature_picker.node_editor.poll import poll_check
 from ...node_editor.nodes.bone_picker.node import AP_BonePickerNode
 from ..context_menu import AlignWidgetOpPreset as AlignOpPreset
-from armature_picker.icons import Icons
+from armature_picker.icons import Icons as _Icons
 
-Icons8 = Icons.ICONS8
+Icons = _Icons.ALIGN
 
 
 
@@ -43,17 +43,17 @@ class APTOOL_PT_align_widgets(Panel):
         col1.label(text="Median")
         col1.label(text="Max")
 
-        AlignOpPreset.ALIGN_HOR_ACTIVE.draw(col2, name='', icon_value=Icons8.ALIGN_MIDDLE_ACTIVE.icon_id)
-        AlignOpPreset.ALIGN_VER_ACTIVE.draw(col3, name='', icon_value=Icons8.ALIGN_CENTER_ACTIVE.icon_id)
+        AlignOpPreset.ALIGN_HOR_ACTIVE.draw(col2, name='', icon_value=Icons.ALIGN_MIDDLE_ACTIVE.icon_id)
+        AlignOpPreset.ALIGN_VER_ACTIVE.draw(col3, name='', icon_value=Icons.ALIGN_CENTER_ACTIVE.icon_id)
 
-        AlignOpPreset.ALIGN_HOR_MIN.draw(col2, name='', icon_value=Icons8.ALIGN_BOTTOM.icon_id)
-        AlignOpPreset.ALIGN_VER_MIN.draw(col3, name='', icon_value=Icons8.ALIGN_LEFT.icon_id)
+        AlignOpPreset.ALIGN_HOR_MIN.draw(col2, name='', icon_value=Icons.ALIGN_BOTTOM.icon_id)
+        AlignOpPreset.ALIGN_VER_MIN.draw(col3, name='', icon_value=Icons.ALIGN_LEFT.icon_id)
 
-        AlignOpPreset.ALIGN_HOR_MEDIAN.draw(col2, name='', icon_value=Icons8.ALIGN_MIDDLE.icon_id)
-        AlignOpPreset.ALIGN_VER_MEDIAN.draw(col3, name='', icon_value=Icons8.ALIGN_CENTER.icon_id)
+        AlignOpPreset.ALIGN_HOR_MEDIAN.draw(col2, name='', icon_value=Icons.ALIGN_MIDDLE.icon_id)
+        AlignOpPreset.ALIGN_VER_MEDIAN.draw(col3, name='', icon_value=Icons.ALIGN_CENTER.icon_id)
 
-        AlignOpPreset.ALIGN_HOR_MAX.draw(col2, name='', icon_value=Icons8.ALIGN_TOP.icon_id)
-        AlignOpPreset.ALIGN_VER_MAX.draw(col3, name='', icon_value=Icons8.ALIGN_RIGHT.icon_id)
+        AlignOpPreset.ALIGN_HOR_MAX.draw(col2, name='', icon_value=Icons.ALIGN_TOP.icon_id)
+        AlignOpPreset.ALIGN_VER_MAX.draw(col3, name='', icon_value=Icons.ALIGN_RIGHT.icon_id)
 
         # ----------------------------------------------------------------
 
