@@ -872,12 +872,25 @@ class AP_NodeTree(NodeTree):
             context.region.height - tab_spacing * 2 - tabs_header_size[1]
         ))
         tab_size_pad = Vector((tab_spacing * 2, pad * 2))
+        use_default_highlight = all([pinned_layer.color_icon.endswith('9') for pinned_layer in pinned_layers])
         for pinned_layer in pinned_layers:
+            layer_color = pinned_layer.color
+            is_active_layer = pinned_layer.uuid == active_layer_id
+            is_hovered_layer = G_on_hover_tabs_area == pinned_layer.uuid
             tab_size = (Vector((pinned_layer.label_dimensions.x, TABS_HEADER_HEIGHT)) * ui_scale + tab_size_pad)
-            if pinned_layer.uuid == active_layer_id:
-                color = (.12, .56, .95, 1.0) if G_on_hover_tabs_area == pinned_layer.uuid else (.12, .56, .95, .75)
+            if use_default_highlight:
+                if is_active_layer:
+                    color = (.12, .56, .95, 1.0) if is_hovered_layer else (.12, .56, .95, .75)
+                else:
+                    color = (.12, .12, .12, 1.0) if is_hovered_layer else (.06, .06, .06, .75)
             else:
-                color = (.12, .12, .12, 1.0) if G_on_hover_tabs_area == pinned_layer.uuid else (.06, .06, .06, .75)
+                if is_active_layer:
+                    alpha = 1.0 if is_hovered_layer else .75
+                    # color = layer_color * .9 if is_hovered_layer else layer_color
+                else:
+                    alpha = .9 if is_hovered_layer else .3
+                    # color = layer_color * .9 if is_hovered_layer else layer_color * .75
+                color = (*layer_color, alpha)
             draw.wg(
                 self.get_graphic_user('TABS'), pinned_layer.uuid,
                 tabs_header_pos,
@@ -894,8 +907,21 @@ class AP_NodeTree(NodeTree):
                 pivot=(0, 0),
                 angle=0,
                 color=(.92, .92, .92),
-                alpha=.92
+                alpha=.92,
+                use_shadow=is_active_layer or is_hovered_layer,
+                shadow_level=5,
+                shadow_color=(0, 0, 0, 1),
+                shadow_offset=(1, -1)
             )
+            # if not use_default_highlight and is_active_layer:
+            #     draw.box(
+            #         self.get_graphic_user('ACTIVE_TAB_CAGE'), pinned_layer.uuid,
+            #         tabs_header_pos,
+            #         tab_size,
+            #         padding=-1.5 * ui_scale,
+            #         line_thickness=2.0 * ui_scale,
+            #         color=(.12, .56, .95, 1.0) if is_hovered_layer else (.12, .56, .95, .75)
+            #     )
             tabs_header_pos.x += (tab_size.x + tab_spacing)
 
 
