@@ -24,9 +24,9 @@ class MT_add_node(Menu):
                 col.ui_units_x = 6.5
                 header = col.box()
                 header.scale_y = .9
-                header.label(text=menu_name, icon=menu_icon)
+                header.label(text=' '.join(menu_name)) #, icon=menu_icon)
                 sub_pie = col.box().column(align=True)
-                sub_pie.scale_y = 1.1
+                sub_pie.scale_y = 1.4
                 sub_pie.emboss = 'PULLDOWN_MENU'
                 for _node in items:
                     if isinstance(_node, tuple):
