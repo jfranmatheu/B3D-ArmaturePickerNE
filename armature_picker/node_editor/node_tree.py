@@ -489,7 +489,7 @@ class AP_NodeTree(NodeTree):
                 context.area.tag_redraw()
             elif event.type == 'M' and self.picker_mode == 'EDIT':
                 if len(self.picker_layers) > 1 and len(self.get_selected_nodes(context, include_active=True)) != 0:
-                    bpy.ops.armature_picker.move_selected('INVOKE_DEFAULT')
+                    bpy.ops.armature_picker.move_selected_to_another_layer('INVOKE_DEFAULT')
             return {'FINISHED'}
 
         if event.type == 'A' and not event.shift and event.value == 'PRESS':

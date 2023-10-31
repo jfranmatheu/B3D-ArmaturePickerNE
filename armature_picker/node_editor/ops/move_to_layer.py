@@ -7,8 +7,8 @@ from armature_picker.utils.operator import OpsReturn
 
 
 
-class AP_OT_move_selected(Operator):
-    bl_idname = 'armature_picker.move_selected'
+class AP_OT_move_selected_to_another_layer(Operator):
+    bl_idname = 'armature_picker.move_selected_to_another_layer'
     bl_label = 'Move Selected to Picker Layer'
     bl_description = "Move Selected Widgets to another Picker Layer"
 
@@ -23,8 +23,14 @@ class AP_OT_move_selected(Operator):
 
     @classmethod
     def poll(cls, context: Context):
-        return poll_check(context, 'EDIT', use_active_object=False, use_picker_editor=True, use_active_node=True) and\
-            len(context.space_data.node_tree.picker_layers) > 1
+        if not poll_check(context, 'EDIT', use_active_object=False, use_picker_editor=True, use_active_node=True):
+            return False
+        if len(context.space_data.node_tree.picker_layers) <= 1:
+            return False
+        if context.selected_nodes is None:
+            return False
+        active_picker_layer_id = context.space_data.node_tree.active_picker_layer_id
+        return len([node for node in context.selected_nodes if node.picker_layer == active_picker_layer_id]) != 0
 
     def invoke(self, context: Context, _event: Event) -> OpsReturn:
         return context.window_manager.invoke_props_dialog(self)

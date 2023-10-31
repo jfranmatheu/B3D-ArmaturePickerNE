@@ -8,3 +8,7 @@ class AP_MT_utils(Menu):
     def draw(self, context: Context):
         layout = self.layout
         layout.operator('armature_picker.import_geo_collection')
+        
+        layout.separator()
+        
+        layout.operator('armature_picker.move_selected_to_another_layer')
