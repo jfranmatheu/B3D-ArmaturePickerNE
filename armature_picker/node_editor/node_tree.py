@@ -205,6 +205,10 @@ class AP_NodeTree(NodeTree):
 
     #----------------------------------------------------------------
     # On-Top Layer.
+    
+    @property
+    def active_picker_layer_id(self) -> str:
+        return self.active_picker_layer.uuid
 
     @property
     def sorted_nodes_cache(self) -> Dict[str, List[List[AP_Node]]]:
