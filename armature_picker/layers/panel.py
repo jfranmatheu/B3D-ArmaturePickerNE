@@ -15,7 +15,7 @@ class PickerLayersPanel(Panel):
     bl_label = "Picker Layers"
     bl_space_type = 'NODE_EDITOR'
     bl_region_type = 'UI'
-    bl_category = 'View'
+    bl_category = 'Picker'
     bl_order = 1
 
     @classmethod
