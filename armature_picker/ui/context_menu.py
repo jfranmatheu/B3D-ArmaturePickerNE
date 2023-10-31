@@ -11,8 +11,8 @@ class AlignWidgetOperatorProps:
     axis: str = 'X'
     align_method: str | None = None
 
-    def draw(self, layout: UILayout, name: str | None = None, icon: str = 'NONE') -> None:
-        op = layout.operator('armature_picker.align_widgets', text=name if name is not None else self.name, icon=icon)
+    def draw(self, layout: UILayout, name: str | None = None, icon: str = 'NONE', icon_value: int = 0) -> None:
+        op = layout.operator('armature_picker.align_widgets', text=name if name is not None else self.name, icon=icon, icon_value=icon_value)
         op.op = self.op_id
         op.axis = self.axis
         if self.align_method:
