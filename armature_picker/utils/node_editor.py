@@ -37,8 +37,13 @@ def get_node_editor_zoom(context: Context) -> float:
         return 1
     return region_height / view_height
 
-def get_node_editor_view_size(context: Context) -> Vector:
-    region = context.region if context.region.type == 'WINDOW' else get_window_region(context.area)
+def get_node_editor_view_size(context: Context | Area | Region) -> Vector:
+    if isinstance(context, Context):
+        region = context.region if context.region.type == 'WINDOW' else get_window_region(context.area)
+    elif isinstance(context, Area):
+        region = get_window_region(context)
+    else:
+        region = context
     view2d = region.view2d
     return Vector(view2d.region_to_view(region.width, region.height)) - Vector(view2d.region_to_view(0, 0))
 

@@ -130,6 +130,25 @@ def get_point_in_rect_space(p: Vector, rect, invert: bool = False) -> Vector:
     return _p
 
 
+def calculate_scale_to_fit_box_in_box(box1: list[float | int], box2: list[float | int]):
+    ''' Calculate the scale to apply to box2 given dimensions so that it fits into box1.
+        Supports boxes from any dimension but they should match dimensions! '''
+    # Ensure that both boxes are represented as lists of dimensions
+    if len(box1) != len(box2):
+        raise ValueError("Both boxes must have the same number of dimensions")
+
+    # Calculate the scale for each dimension
+    scales = [box1_dim / box2_dim for box1_dim, box2_dim in zip(box1, box2)]
+
+    # The overall scale factor is the minimum of the individual scales
+    scale_factor = min(scales)
+
+    # Apply the scale factor to the dimensions of the second box
+    scaled_box2 = [box2_dim * scale_factor for box2_dim in box2]
+
+    return scaled_box2, scale_factor
+
+
 def distance_to_line_segment(A: Vector, B: Vector, P: Vector) -> float:
     x, y = P
     x1, y1 = A
