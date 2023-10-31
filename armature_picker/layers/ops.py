@@ -48,15 +48,15 @@ class RemoveActivePickerLayer(Operator):
             return OpsReturn.CANCEL
 
         # Delete picker nodes from active picker layer.
-        bpy.ops.node.select_all(False, action='DESELECT_ALL')
-        widgets = self.widgets_from_active_layer
+        bpy.ops.node.select_all(False, action='DESELECT')
+        widgets = node_tree.widgets_from_active_layer
         if len(widgets) != 0:
             for widget in widgets:
                 widget.select = True
-            self.nodes.active = widgets[0]
+            node_tree.nodes.active = widgets[0]
             bpy.ops.node.delete(False)
 
         # Delete active picker layer from picker.
-        self.picker_layers.remove(self.picker_layers.active_picker_layer_index)
-        self.picker_layers.active_picker_layer_index = ( len(self.picker_layers) - 1 )
+        node_tree.picker_layers.remove(node_tree.active_picker_layer_index)
+        node_tree.active_picker_layer_index = ( len(node_tree.picker_layers) - 1 )
         return OpsReturn.FINISH
