@@ -292,11 +292,12 @@ class AP_NodeTree(NodeTree):
 
     # ----------------------------------------------------------------
 
-    def new_layer(self, name: str) -> None:
+    def new_layer(self, name: str) -> PG_PickerLayer:
         new_picker_layer: PG_PickerLayer = self.picker_layers.add()
         new_picker_layer.name = name
         new_picker_layer.uuid = uuid4().hex
         self.active_picker_layer_index = (len(self.picker_layers) - 1)
+        return new_picker_layer
 
     def remove_layer(self, uuid_or_index: str | int | None) -> None:
         if len(self.picker_layers) == 0:

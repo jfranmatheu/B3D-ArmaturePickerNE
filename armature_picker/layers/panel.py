@@ -41,6 +41,8 @@ class PickerLayersPanel(Panel):
         actions.operator('armature_picker.add_picker_layer', text='', icon='ADD')
         actions.operator('armature_picker.remove_picker_layer', text='', icon='REMOVE')
         actions.separator()
+        actions.operator('armature_picker.duplicate_active_layer', text='', icon='DUPLICATE')
+        actions.separator()
         actions.prop(node_tree, 'frame_layer_on_switch', text='', icon='LOCKVIEW_ON')
 
 
