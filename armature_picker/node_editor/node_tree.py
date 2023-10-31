@@ -788,8 +788,6 @@ class AP_NodeTree(NodeTree):
                 line_thickness=1,
                 color=(.9, .3, .1, .5)
             )
-        else:
-            self.draw_layer_tabs(context)
 
         refresh: bool = False
         zoom = get_node_editor_zoom(context)
@@ -843,6 +841,9 @@ class AP_NodeTree(NodeTree):
 
         if self.inject_modal_draw is not None:
             self.inject_modal_draw(context, ui_scale, sel_nodes, in_edit=in_edit, in_view2d=False)
+        
+        if not in_edit:
+            self.draw_layer_tabs(context)
 
 
     def draw_layer_tabs(self, context: Context) -> None:
