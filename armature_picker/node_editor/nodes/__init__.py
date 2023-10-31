@@ -11,26 +11,29 @@ from .button_script.node import APNODE_ButtonScript
 NODES = (
     {
         'name': 'Picker Buttons',
+        'icon': 'CONSTRAINT_BONE',
         'items': (
-            AP_BonePickerNode,
-            APNODE_BonePickerGeo,
+            (AP_BonePickerNode, 'Button', 'SEQ_SEQUENCER'),
+            (APNODE_BonePickerGeo, 'Geometry Shape', 'MESH_MONKEY'),
         )
     },
     APNODE_Image,
     {
         'name': 'Sliders',
+        'icon': 'PROPERTIES',
         'items': (
-            APNODE_SliderLinear,
-            APNODE_SliderRadial,
-            APNODE_SliderLinear2D,
+            (APNODE_SliderLinear, 'Lineal', 'OPTIONS'),
+            (APNODE_SliderRadial, 'Radial', 'ANTIALIASED'),
+            (APNODE_SliderLinear2D, 'Lineal 2D', 'PIVOT_BOUNDBOX'),
         )
     },
     APNODE_Label,
     None,
     {
         'name': 'Action Buttons',
+        'icon': 'FILE_SCRIPT',
         'items': (
-            APNODE_ButtonScript,
+            (APNODE_ButtonScript, 'Custom Script', 'TEXT'),
         )
     },
 )

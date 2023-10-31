@@ -14,6 +14,7 @@ from ....utils.geometry import get_center, point_inside_circle
 class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_Common, AP_Node, Node):
     bl_idname = 'AP_NODE_bone_picker'
     bl_label = 'Bone Picker'
+    bl_description = 'Bone Picker Button'
     bl_icon = 'CONSTRAINT_BONE'
     wg_type = 'bone_picker'
 

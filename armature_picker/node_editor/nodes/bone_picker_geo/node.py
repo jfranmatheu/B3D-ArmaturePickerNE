@@ -15,6 +15,7 @@ from ....utils.geometry import point_inside_rect, get_center, point_inside_circl
 class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Common, AP_Node, Node):
     bl_idname = 'AP_NODE_bone_picker_geo'
     bl_label = 'Bone Picker Geo'
+    bl_description = 'Bone Picker Button with Custom Shape based on a geometry/Mesh Object\nMesh Object should be created in XY plane with no Z dimension'
     bl_icon = 'CONSTRAINT_BONE'
     wg_type = 'bone_picker_geo'
 

@@ -18,13 +18,22 @@ class MT_add_node(Menu):
                 continue
             if isinstance(node, dict):
                 menu_name = node['name']
+                menu_icon = node['icon']
                 items = node['items']
                 col = pie.column(align=True)
+                col.ui_units_x = 6.5
                 header = col.box()
-                header.label(text=menu_name, icon=items[0].bl_icon)
-                sub_pie = col.box()
+                header.scale_y = .9
+                header.label(text=menu_name, icon=menu_icon)
+                sub_pie = col.box().column(align=True)
+                sub_pie.scale_y = 1.1
                 sub_pie.emboss = 'PULLDOWN_MENU'
                 for _node in items:
-                    sub_pie.operator(AP_OT_add_node.bl_idname, text=_node.bl_label).node_idname = _node.bl_idname
+                    if isinstance(_node, tuple):
+                        _node, label, icon = _node
+                    else:
+                        label = _node.bl_label
+                        icon = _node.bl_icon
+                    sub_pie.operator(AP_OT_add_node.bl_idname, text=label, icon=icon).node_idname = _node.bl_idname
             else:
                 pie.operator(AP_OT_add_node.bl_idname, text=node.bl_label, icon=node.bl_icon).node_idname = node.bl_idname
