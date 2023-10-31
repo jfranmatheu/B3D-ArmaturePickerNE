@@ -170,7 +170,11 @@ class AP_NodeTree(NodeTree):
     def update_active_layer(self, context: Context):
         active_picker_layer_id = self.active_picker_layer.uuid
         for widget in self.widgets:
-            widget.visible = active_picker_layer_id == widget.picker_layer
+            if active_picker_layer_id == widget.picker_layer:
+                widget.visible = True
+            else:
+                widget.visible = False
+                widget.select = False
         refresh_nodes_cache(self)
         if self.frame_layer_on_switch:
             center_node_editor_view(context)
