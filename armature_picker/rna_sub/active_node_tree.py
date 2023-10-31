@@ -25,8 +25,7 @@ def on_node_tree_change(context: Context, space_data: SpaceNodeEditor, node_tree
         # New NodeTree.
         node_tree.name = 'Picker'
         node_tree.uuid = uuid4().hex
-        new_layer = node_tree.picker_layers.add()
-        new_layer.name = 'Layer'
+        node_tree.new_layer(name='Layer')
     armature = context.active_object.data
     if armature.picker is None:
         armature.picker = node_tree
