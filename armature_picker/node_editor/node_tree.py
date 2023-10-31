@@ -780,15 +780,6 @@ class AP_NodeTree(NodeTree):
         ui_scale = context.preferences.system.ui_scale
         in_edit = self.picker_mode == 'EDIT'
 
-        if in_edit:
-            draw.box(
-                self.get_graphic_user('EDIT_CAGE'), 'EDIT_CAGE',
-                Vector((0, 0)), Vector((context.region.width, context.region.height)),
-                padding=8,
-                line_thickness=1,
-                color=(.9, .3, .1, .5)
-            )
-
         refresh: bool = False
         zoom = get_node_editor_zoom(context)
         offset = get_node_editor_offset(context)
@@ -842,7 +833,15 @@ class AP_NodeTree(NodeTree):
         if self.inject_modal_draw is not None:
             self.inject_modal_draw(context, ui_scale, sel_nodes, in_edit=in_edit, in_view2d=False)
         
-        if not in_edit:
+        if in_edit:
+            draw.box(
+                self.get_graphic_user('EDIT_CAGE'), 'EDIT_CAGE',
+                Vector((0, 0)), Vector((context.region.width, context.region.height)),
+                padding=8,
+                line_thickness=1,
+                color=(.9, .3, .1, .5)
+            )
+        else:
             self.draw_layer_tabs(context)
 
 
