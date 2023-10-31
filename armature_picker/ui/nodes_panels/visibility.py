@@ -1,3 +1,4 @@
+'''
 from bpy.types import Context, Panel
 
 from ...utils.ui_layout import draw_section
@@ -28,3 +29,4 @@ class APNODE_PT_visibility(Panel):
 
         # section_v = draw_section(layout, 'Visibility', icon='HIDE_OFF')
         node.draw_visibility(layout)
+'''

@@ -101,16 +101,17 @@ class AP_Node(NodeTransformProps):
             return
         self.visible = True
 
-    def get_picker_layers(self, context: Context) -> list:
-        if len(self.node_tree.picker_layers) == 0:
-            return default_picker_layer_items
-        return [
-            (picker_layer.uuid, picker_layer.name, '') for picker_layer in self.node_tree.picker_layers
-        ]
+    # def get_picker_layers(self, context: Context) -> list:
+    #     if len(self.node_tree.picker_layers) == 0:
+    #         global default_picker_layer_items
+    #         return default_picker_layer_items
+    #     return [
+    #         (picker_layer.uuid, picker_layer.name, '') for picker_layer in self.node_tree.picker_layers
+    #     ]
 
-    picker_layer: EnumProperty(name="Picker Layer",
+    picker_layer: StringProperty(name="Picker Layer",
                                 description="Asigned PickerLayer to this Widget",
-                                items=get_picker_layers,
+                                # items=get_picker_layers,
                                 update=update_picker_layer)
 
 
