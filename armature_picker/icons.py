@@ -7,8 +7,10 @@ class Icons(IconsViewer):
 	class ICONS8(IconsEnum):
 		ALIGN_BOTTOM = "icons8/align_bottom.png"
 		ALIGN_CENTER = "icons8/align_center.png"
+		ALIGN_CENTER_ACTIVE = "icons8/align_center_active.png"
 		ALIGN_LEFT = "icons8/align_left.png"
 		ALIGN_MIDDLE = "icons8/align_middle.png"
+		ALIGN_MIDDLE_ACTIVE = "icons8/align_middle_active.png"
 		ALIGN_RIGHT = "icons8/align_right.png"
 		ALIGN_TOP = "icons8/align_top.png"
 		BLUEPRINT = "icons8/blueprint.png"
