@@ -20,7 +20,7 @@ from armature_picker.paths import Paths
 from armature_picker.ui.context_menu import AP_MT_context_menu
 from ..gpu import draw
 from .nodes._base import AP_Node, RectTransform
-from ..utils.node_editor import get_node_editor_view_size, center_node_editor_view, get_node_editor_zoom, get_node_editor_view_point, get_node_editor_offset, get_node_editor_region_coord, get_node_editor_visible_view_box
+from ..utils.node_editor import get_node_editor_view_size, set_node_editor_visible_view_box, center_node_editor_view, get_node_editor_zoom, get_node_editor_view_point, get_node_editor_offset, get_node_editor_region_coord, get_node_editor_visible_view_box
 from ..utils.armature import deselect_all_bones_from_active
 from ..utils.geometry import angle_signed, rect_overlap, Box, point_inside_rect
 from armature_picker.prefs import get_active_theme_style, get_prefs_wg_settings
@@ -168,12 +168,28 @@ class AP_NodeTree(NodeTree):
 
     #----------------------------------------------------------------
     # ID Properties.
+    
+    def get_layer(self, target_layer: str | int) -> PG_PickerLayer | None:
+        if isinstance(target_layer, int):
+            if target_layer < 0 or target_layer >= len(self.picker_layers):
+                return None
+            return self.picker_layers[target_layer]
+        elif isinstance(layer, str):
+            for layer in self.picker_layers:
+                if layer.uuid == target_layer:
+                    return layer
+        return None
+
+    # def set_active_layer_index(self, value):
+    #     self.prev_picker_layer_index = self.active_picker_layer_index
+    #     self["active_picker_layer_index"] = value
 
     def update_active_layer(self, context: Context):
         if not hasattr(context.space_data, 'node_tree'):
             return
         self.layer_selector_lock_update = True
-        self.active_picker_layer_selector = active_picker_layer_id = self.active_picker_layer.uuid
+        active_picker_layer = self.active_picker_layer
+        self.active_picker_layer_selector = active_picker_layer_id = active_picker_layer.uuid
         for widget in self.widgets:
             if active_picker_layer_id == widget.picker_layer:
                 widget.visible = True
@@ -181,8 +197,13 @@ class AP_NodeTree(NodeTree):
                 widget.visible = False
                 widget.select = False
         refresh_nodes_cache(self)
-        if self.frame_layer_on_switch:
-            center_node_editor_view(context)
+        if self.use_preserve_picker_layer_view:
+            # center_node_editor_view(context)
+            if self.prev_picker_layer_index != -1:
+                if prev_layer := self.get_layer(self.prev_picker_layer_index):
+                    prev_layer.view2d_box = get_node_editor_visible_view_box(context).to_tuple()
+                set_node_editor_visible_view_box(context, active_picker_layer.view2d_box)
+        self.prev_picker_layer_index = self.active_picker_layer_index
         context.region.tag_redraw()
         self.layer_selector_lock_update = False
 
@@ -211,7 +232,8 @@ class AP_NodeTree(NodeTree):
         default='EDIT'
     )
     picker_view: PointerProperty(name='Picker View', type=AP_PG_PickerView)
-    active_picker_layer_index: IntProperty(default=-1, name="Active Picker Layer", update=update_active_layer)
+    prev_picker_layer_index: IntProperty(default=-1)
+    active_picker_layer_index: IntProperty(default=-1, name="Active Picker Layer", update=update_active_layer) #, set=set_active_layer_index)
     picker_layers: CollectionProperty(type=PG_PickerLayer)
     active_picker_layer_selector: EnumProperty(
         name="Active Picker Layer Selector",
@@ -220,7 +242,7 @@ class AP_NodeTree(NodeTree):
     )
     layer_selector_lock_update = False
 
-    frame_layer_on_switch: BoolProperty(name="Auto-Frame Layer", description="Frame Layer On Active-Layer-Switch", default=True)
+    use_preserve_picker_layer_view: BoolProperty(name="Preserve Picker-Layer View", description="Save and link picker view to picker layers\nand preserve that view on layer switching", default=True)
 
 
     #----------------------------------------------------------------

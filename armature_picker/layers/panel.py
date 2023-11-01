@@ -42,7 +42,7 @@ class PickerLayersPanel(Panel):
         actions.separator()
         actions.operator('armature_picker.duplicate_active_layer', text='', icon='DUPLICATE')
         actions.separator()
-        actions.prop(node_tree, 'frame_layer_on_switch', text='', icon='LOCKVIEW_ON')
+        actions.prop(node_tree, 'use_preserve_picker_layer_view', text='', icon='LOCKVIEW_ON' if node_tree.use_preserve_picker_layer_view else 'LOCKVIEW_OFF')
 
 
 class BoneCollectionsPanel(Panel):

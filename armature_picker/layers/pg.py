@@ -1,5 +1,5 @@
 from bpy.types import PropertyGroup, NodeTree, Context, UILayout
-from bpy.props import BoolProperty, StringProperty, EnumProperty
+from bpy.props import BoolProperty, StringProperty, EnumProperty, FloatProperty, FloatVectorProperty
 from mathutils import Vector
 
 from armature_picker.gpu.draw import get_text_dim
@@ -45,3 +45,5 @@ class PG_PickerLayer(PropertyGroup):
         items=COLOR_ICONS,
         default='SEQUENCE_COLOR_09',
     )
+
+    view2d_box: FloatVectorProperty(default=(0, 0, 0, 0), size=4)
