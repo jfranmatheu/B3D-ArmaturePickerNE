@@ -39,10 +39,11 @@ def draw(self, context: Context):
         layout.separator()
 
         # Picker Layers.
-        row = layout.row()
+        row = layout.row(align=True)
         row.ui_units_x = 6
         # row.popover(panel="AP_PT_picker_layers", text="", icon='RENDERLAYERS') # 'HIDE_OFF')
         row.prop(node_tree, 'active_picker_layer_selector', text='', icon='RENDERLAYERS')
+        row.operator('armature_picker.add_picker_layer', text='', icon='ADD')
 
         # IDEAL SOLUTION!
         # row.prop_tabs_enum(node_tree, 'active_picker_layer_selector')
