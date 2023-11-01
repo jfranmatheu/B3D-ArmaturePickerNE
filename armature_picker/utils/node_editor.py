@@ -28,6 +28,13 @@ def get_window_region(area: Area) -> Region:
             return region
     return None
 
+def get_node_editor_view_center(context: Context) -> Vector:
+    region = context.region if context.region.type == 'WINDOW' else get_window_region(context.area)
+    rw, rh = region.width, region.height
+    rw = int(rw * 0.5)
+    rh = int(rh * 0.5)
+    return get_node_editor_view_point(context, (rw, rh))
+
 def get_node_editor_zoom(context: Context) -> float:
     region = context.region if context.region.type == 'WINDOW' else get_window_region(context.area)
     view2d = region.view2d
@@ -96,8 +103,8 @@ def center_node_editor_view(context: Context) -> None:
     region = context.region if context.region.type == 'WINDOW' else get_window_region(context.area)
     cy_region = CyBlStruct.UI_REGION(region)
     cy_region.v2d.cur.xmin = min_p.x
-    cy_region.v2d.cur.xmax = max_p.x
     cy_region.v2d.cur.ymin = min_p.y
+    cy_region.v2d.cur.xmax = max_p.x
     cy_region.v2d.cur.ymax = max_p.y
 
 
@@ -109,3 +116,17 @@ def get_node_editor_visible_view_box(context: Context) -> Box:
         cy_region.v2d.cur.ymin,
         cy_region.v2d.cur.xmax,
         cy_region.v2d.cur.ymax)
+
+def set_node_editor_visible_view_box(context: Context, view_box: Box) -> None:
+    region = context.region if context.region.type == 'WINDOW' else get_window_region(context.area)
+    cy_region = CyBlStruct.UI_REGION(region)
+    if isinstance(view_box, Box):
+        cy_region.v2d.cur.xmin = view_box.x_min
+        cy_region.v2d.cur.ymin = view_box.y_min
+        cy_region.v2d.cur.xmax = view_box.x_max
+        cy_region.v2d.cur.ymax = view_box.y_max
+    else:
+        cy_region.v2d.cur.xmin = view_box[0]
+        cy_region.v2d.cur.ymin = view_box[1]
+        cy_region.v2d.cur.xmax = view_box[2]
+        cy_region.v2d.cur.ymax = view_box[3]
