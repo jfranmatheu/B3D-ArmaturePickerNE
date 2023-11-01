@@ -169,7 +169,8 @@ class AP_NodeTree(NodeTree):
     # ID Properties.
 
     def update_active_layer(self, context: Context):
-        active_picker_layer_id = self.active_picker_layer.uuid
+        self.layer_selector_lock_update = True
+        self.active_picker_layer_selector = active_picker_layer_id = self.active_picker_layer.uuid
         for widget in self.widgets:
             if active_picker_layer_id == widget.picker_layer:
                 widget.visible = True
@@ -180,11 +181,20 @@ class AP_NodeTree(NodeTree):
         if self.frame_layer_on_switch:
             center_node_editor_view(context)
         context.region.tag_redraw()
+        self.layer_selector_lock_update = False
+
+    def update_active_picker_layer_selector(self, context: Context) -> None:
+        if not self.layer_selector_lock_update:
+            layer_id = self.active_picker_layer_selector
+            for idx, pk_layer in enumerate(self.picker_layers):
+                if pk_layer.uuid == layer_id:
+                    self.active_picker_layer_index = idx
+                    break
 
     def get_picker_layers(self, _context: Context) -> list[PG_PickerLayer]:
         if len(self.picker_layers) == 0:
-            return [('-1', 'NONE', ""),]
-        return ((str(index), pk_layer.name, pk_layer.name) for index, pk_layer in enumerate(self.picker_layers))
+            return [('NONE', 'NONE', ""),]
+        return ((pk_layer.uuid, pk_layer.name, pk_layer.name) for index, pk_layer in enumerate(self.picker_layers))
 
     uuid: StringProperty()
     dirty: BoolProperty()
@@ -202,8 +212,9 @@ class AP_NodeTree(NodeTree):
     active_picker_layer_selector: EnumProperty(
         name="Active Picker Layer Selector",
         items=get_picker_layers,
-        update=lambda pk, _ctx: setattr(pk, 'active_picker_layer_index', int(pk.active_picker_layer_selector))
+        update=update_active_picker_layer_selector
     )
+    layer_selector_lock_update = False
 
     frame_layer_on_switch: BoolProperty(name="Auto-Frame Layer", description="Frame Layer On Active-Layer-Switch", default=True)
 
