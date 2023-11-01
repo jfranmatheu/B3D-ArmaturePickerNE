@@ -22,7 +22,7 @@ class APTOOL_PT_align_widgets(Panel):
 
     @classmethod
     def poll(cls, context: Context):
-        return poll_check(context, 'EDIT', use_active_object=True, use_active_node=True)
+        return poll_check(context, 'EDIT', use_active_object=True, use_active_node=False)
 
     def draw(self, context: Context):
         layout = self.layout
