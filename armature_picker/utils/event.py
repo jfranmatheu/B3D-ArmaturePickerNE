@@ -45,6 +45,11 @@ class EventType:
     WHEELOUTMOUSE = 'WHEELOUTMOUSE'
 
     LEFT_CTRL = 'LEFT_CTRL'
+    
+    LEFT_ARROW = 'LEFT_ARROW'
+    RIGHT_ARROW = 'RIGHT_ARROW'
+    TOP_ARROW = 'TOP_ARROW'
+    BOTTOM_ARROW = 'BOTTOM_ARROW'
 
     U = 'U'
     Z = 'Z'

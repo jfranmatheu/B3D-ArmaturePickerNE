@@ -37,6 +37,13 @@ G_clipboard_nodes = None
 
 TABS_HEADER_HEIGHT = draw.get_text_dim('Xy', 12)[1]
 
+ARROW_DIRECTIONS = {
+    EventType.LEFT_ARROW: Vector((-1, 0)),
+    EventType.RIGHT_ARROW: Vector((1, 0)),
+    EventType.BOTTOM_ARROW: Vector((0, -1)),
+    EventType.TOP_ARROW: Vector((0, 1))
+}
+
 region_loc: Vector = Vector((-1, -1))
 view_loc: Vector = Vector((-100000, -100000))
 view_size: Vector = Vector((0, 0))
@@ -168,7 +175,7 @@ class AP_NodeTree(NodeTree):
 
     #----------------------------------------------------------------
     # ID Properties.
-    
+
     def get_layer(self, target_layer: str | int) -> PG_PickerLayer | None:
         if isinstance(target_layer, int):
             if target_layer < 0 or target_layer >= len(self.picker_layers):
@@ -640,6 +647,8 @@ class AP_NodeTree(NodeTree):
 
 
     def invoke__edit(self, context: Context, event: Event) -> set[str] | None:
+        event_type, event_value = event.type, event.value
+
         if event.type == 'RIGHTMOUSE' and event.value == 'PRESS':
             if len(context.selected_nodes) == 0 and context.active_node is None:
                 return {'FINISHED'}
@@ -730,6 +739,16 @@ class AP_NodeTree(NodeTree):
 
         sel_nodes = self.get_selected_nodes(context, include_active=True)
         sel_nodes = {_node for _node in sel_nodes if test_node_sel_locked(self, _node)}
+
+        if len(sel_nodes) != 0:
+            # Move nodes by increments by using arrow keys.
+            if event_type in ARROW_DIRECTIONS and event_value == 'PRESS':
+                print("About to move selected nodes")
+                move_dir = ARROW_DIRECTIONS[event_type] * 10 * context.preferences.system.ui_scale
+                for node in sel_nodes:
+                    node.rect_transform.origin = tuple(int(v) for v in Vector(node.rect_transform.origin) + move_dir)
+                context.region.tag_redraw()
+                return {'FINISHED'}
 
         # print("Selected nodes", sel_nodes)
 
