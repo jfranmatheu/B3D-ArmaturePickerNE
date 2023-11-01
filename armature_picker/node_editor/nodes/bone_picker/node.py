@@ -3,11 +3,13 @@ from .._transform_props import RectTransform
 from .._bone_picker_common import APNODE_BonePicker_Common
 from .node_props import APNODE_BonePicker_NodeProps, BonePicker_Style
 
+import bpy
 from bpy.types import Context
 from mathutils import Vector
 
 from ....gpu import draw
 from ....utils.geometry import get_center, point_inside_circle
+from armature_picker.paths import Paths
 
 
 
@@ -17,6 +19,22 @@ class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_Common, A
     bl_description = 'Bone Picker Button'
     bl_icon = 'CONSTRAINT_BONE'
     wg_type = 'bone_picker'
+    
+    
+    # ----- INIT PRESETS CONFIG --------------------------------
+    
+    def init_preset_image(self, context: Context) -> None:
+        self.use_image = True
+        self.keep_aspect_ratio = True
+        self.node_tree.nodes.active = self
+        # bpy.ops.armature_picker.load_image_for_active_node('INVOKE_DEFAULT')
+        image = bpy.data.images.load(Paths.LIB_IMAGES('default_button_image.png'), check_existing=True)
+        if not image.name.startswith('.'):
+            image.name = '.default_button_image'
+        self.image = image
+        self.image_scale_x = 0.5
+
+    # --------------------------------
 
 
     def get_ikfk_pos_size(self, apply_rotation: bool = False, center: bool = False):

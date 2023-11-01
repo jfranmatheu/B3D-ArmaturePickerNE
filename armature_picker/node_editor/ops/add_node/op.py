@@ -59,6 +59,13 @@ class AP_OT_add_node(MoveNodesModal, Operator):
 
     def invoke(self, context: Context, event: Event) -> OpsReturn:
         mouse_pos = get_mouse_pos(event)
-        self.modal_nodes = (new_node(context, self.node_idname, event), )
+        if '@' in self.node_idname:
+            self.node_idname, init_preset_func = self.node_idname.split('@')
+        else:
+            init_preset_func = None
+        node = new_node(context, self.node_idname, event)
+        if init_preset_func:
+            getattr(node, init_preset_func)(context)
+        self.modal_nodes = (node, )
         self.modal__move_node__enter(context, event, mouse_pos)
         return add_modal_handler(context, self)

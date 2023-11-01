@@ -32,10 +32,15 @@ class MT_add_node(Menu):
         for _node in items:
             if isinstance(_node, tuple):
                 _node, label, icon = _node
+                if isinstance(_node, str):
+                    node_idname = _node
+                else:
+                    node_idname = _node.bl_idname
             else:
                 label = _node.bl_label
                 icon = _node.bl_icon
-            sub_pie.operator(AP_OT_add_node.bl_idname, text=label, icon=icon).node_idname = _node.bl_idname
+                node_idname = _node.bl_idname
+            sub_pie.operator(AP_OT_add_node.bl_idname, text=label, icon=icon).node_idname = node_idname
 
     def draw(self, context: Context):
         layout = self.layout

@@ -15,6 +15,7 @@ NODES = (
             'icon': 'CONSTRAINT_BONE',
             'items': (
                 (AP_BonePickerNode, 'Button', 'SEQ_SEQUENCER'),
+                (AP_BonePickerNode.bl_idname + '@' + 'init_preset_image', 'Button Image', 'IMAGE_PLANE'),
                 (APNODE_BonePickerGeo, 'Geometry Shape', 'MESH_MONKEY'),
             )
         },
