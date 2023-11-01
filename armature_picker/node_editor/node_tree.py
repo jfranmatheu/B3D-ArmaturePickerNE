@@ -347,6 +347,8 @@ class AP_NodeTree(NodeTree):
     def get_selected_bones(self, context: Context, include_active: bool = True) -> set[PoseBone]:
         if context.active_object is None or context.active_object.type != 'ARMATURE':
             return set()
+        if not context.selected_bones:
+            return set()
         sel_bones = set(context.selected_bones)
         if include_active:
             if active_bone := context.active_bone:
