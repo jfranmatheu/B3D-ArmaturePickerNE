@@ -16,6 +16,7 @@ class Icons(IconsViewer):
 
 	class ICONS8(IconsEnum):
 		BLUEPRINT = "icons8/blueprint.png"
+		BREAKING_BONE = "icons8/breaking_bone.png"
 		EVEN = "icons8/even.png"
 		LAYOUT = "icons8/layout.png"
 		SHAPES = "icons8/shapes.png"
