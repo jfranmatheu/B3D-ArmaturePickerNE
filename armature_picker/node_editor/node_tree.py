@@ -1346,7 +1346,10 @@ class AP_NodeTree(NodeTree):
 
             for node in self.modal_nodes:
                 if node.select:
-                    node.draw_sel_cage((.3, .7, 1.0, .92), cage_thickness=2.5)
+                    if hasattr(node, 'use_image'):
+                        node.draw_sel_cage((.3, .7, 1.0, .92), cage_thickness=2.5, force_draw=True)
+                    else:
+                        node.draw_sel_cage((.3, .7, 1.0, .92), cage_thickness=2.5)
 
         else:
             draw.box(
