@@ -33,6 +33,7 @@ G_active_node = ''
 G_hovered_node = ''
 G_on_hover_tabs_area = False
 nodes_count: int = -1
+G_clipboard_nodes = None
 
 TABS_HEADER_HEIGHT = draw.get_text_dim('Xy', 12)[1]
 
@@ -619,6 +620,48 @@ class AP_NodeTree(NodeTree):
             bpy.ops.wm.call_menu('INVOKE_DEFAULT', name=AP_MT_context_menu.bl_idname)
             return {'FINISHED'}
 
+        if event.type in {'C', 'V'} and event.ctrl and event.value == 'CLICK':
+            global G_clipboard_nodes
+            if event.type == 'C':
+                sel_nodes = self.get_selected_nodes(context, include_active=True)
+                if len(sel_nodes) == 0:
+                    # self.report({'WARNING'}, "No selected widgets to copy")
+                    print("No selected widgets to copy")
+                    return {'CANCELLED'}
+                # bpy.ops.node.clipboard_copy()
+                G_clipboard_nodes = [node.name for node in sel_nodes]
+                # self.report({'INFO'}, "Copied %i widgets to clipboard" % len(G_clipboard_nodes))
+                print("Copied %i widgets to clipboard" % len(G_clipboard_nodes))
+            else:
+                # bpy.ops.node.clipboard_paste()
+                # sel_nodes = self.get_selected_nodes(context, include_active=True)
+                if G_clipboard_nodes is None or len(G_clipboard_nodes) == 0:
+                    # self.report({'WARNING'}, "No widgets widgets in clipboard")
+                    print("No widgets widgets in clipboard")
+                    return {'CANCELLED'}
+                # self.report({'INFO'}, "Pasted %i widgets from clipboard" % len(G_clipboard_nodes))
+                print("Pasted %i widgets from clipboard" % len(G_clipboard_nodes))
+                bpy.ops.node.select_all(False, action='DESELECT')
+                get_node = self.nodes.get
+                for cb_node_name in G_clipboard_nodes:
+                    if cb_node := get_node(cb_node_name, None):
+                        cb_node.select = True
+                G_clipboard_nodes = None
+                bpy.ops.node.duplicate('INVOKE_DEFAULT', False)
+                sel_nodes = self.get_selected_nodes(context, include_active=True)
+                if len(sel_nodes) == 0:
+                    return {'CANCELLED'}
+                for sel_node in sel_nodes:
+                    sel_node.locked = False
+                ensure_nodes_cache(self)
+                self.modal_nodes = sel_nodes
+                self.set_inject_modal(context, event,
+                                    modal_callback=self.modal__move_node__update,
+                                    modal_enter_callback=self.modal__move_node_cursor__enter,
+                                    modal_exit_callback=self.modal__move_node__exit)
+                return {'RUNNING_MODAL'}
+            return {'FINISHED'}
+
         global G_hovered_node
         ## print("hovered_node", G_hovered_node)
         if G_hovered_node is None:
@@ -928,6 +971,23 @@ class AP_NodeTree(NodeTree):
         self.node_location_offset = [prev_node_loc - mouse_pos for prev_node_loc in node_region_location]
 
         Cursor.set_icon(context, CursorIcon.HAND)
+
+    def modal__move_node_cursor__enter(self, context: Context, event: Event, mouse_pos: Vector) -> None:
+        zoom = get_node_editor_zoom(context)
+        inv_zoom = 1/zoom
+        offset = get_node_editor_offset(context)
+        mouse_offset = (mouse_pos - offset) * inv_zoom
+
+        # Calculate the center of the selected nodes.
+        center = Vector((0, 0))
+        for node in self.modal_nodes:
+            center += Vector(node.rect_transform.origin)
+        center /= len(self.modal_nodes)
+
+        for node in self.modal_nodes:
+            node.rect_transform.move_to(mouse_offset + (Vector(node.rect_transform.origin) - center))
+
+        self.modal__move_node__enter(context, event, mouse_pos)
 
     def modal__move_node__update(self, context: Context, event: Event, mouse_pos: Vector) -> int:
         if self.modal_nodes is None or (event.type == 'LEFTMOUSE' and event.value == 'RELEASE'):
