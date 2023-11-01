@@ -1134,6 +1134,7 @@ class AP_NodeTree(NodeTree):
 
     def modal__scale_node__enter(self, context: Context, event: Event, mouse_pos: Vector) -> None:
         self.prev_node_dimensions = [tuple(node.rect_transform.dimensions) for node in self.modal_nodes]
+        self.modal_scale_axis = {'X', 'Y'}
 
         orig = Vector((0, 0))
         for node in self.modal_nodes:
@@ -1154,6 +1155,17 @@ class AP_NodeTree(NodeTree):
         if self.modal_nodes is None or (event.type == 'LEFTMOUSE' and event.value == 'RELEASE'):
             return -1
 
+        if event.type == 'X' and event.value == 'RELEASE':
+            if 'Y' in self.modal_scale_axis:
+                self.modal_scale_axis.remove('Y')
+            else:
+                self.modal_scale_axis.add('Y')
+        elif event.type == 'Y' and event.value == 'RELEASE':
+            if 'X' in self.modal_scale_axis:
+                self.modal_scale_axis.remove('X')
+            else:
+                self.modal_scale_axis.add('X')
+
         scale_vec = (self.modal_scale_origin_region - mouse_pos)
 
         view_zoom = 1 / get_node_editor_zoom(context)
@@ -1172,7 +1184,18 @@ class AP_NodeTree(NodeTree):
                 # new_dim.x -> new_scale_x ?
                 _node.image_scale_x = _node.image_scale_x * dimensions[0] / _dim[0]
             else:
-                _node.rect_transform.dimensions = dimensions
+                if len(self.modal_scale_axis) in {0, 2}:
+                    _node.rect_transform.dimensions = dimensions
+                elif 'X' in self.modal_scale_axis:
+                    _node.rect_transform.dimensions = (
+                        dimensions[0],
+                        _dim[1]
+                    )
+                elif 'Y' in self.modal_scale_axis:
+                    _node.rect_transform.dimensions = (
+                        _dim[0],
+                        dimensions[1]
+                    )
 
         {scale_node(node, orig_dim, orig_dist) for (node, orig_dim, orig_dist) in zip(self.modal_nodes, self.prev_node_dimensions, self.modal_node_mouse_distances)}
         return 1
