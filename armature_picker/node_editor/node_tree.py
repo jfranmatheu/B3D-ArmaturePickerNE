@@ -202,6 +202,7 @@ class AP_NodeTree(NodeTree):
     dirty: BoolProperty()
     picker_mode: EnumProperty(
         name='Picker Mode',
+        description='Use TAB key to quickly toggle between both picker modes',
         items=(
             ('EDIT', 'Edit Mode', "Edit Mode", 'GREASEPENCIL', 0),
             ('POSE', 'Pose Mode', "Pose Mode", 'POSE_HLT', 1),
