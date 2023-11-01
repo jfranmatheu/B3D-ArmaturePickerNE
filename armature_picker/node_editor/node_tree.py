@@ -1027,6 +1027,8 @@ class AP_NodeTree(NodeTree):
         self.prev_node_location = [tuple(node.rect_transform.origin) for node in self.modal_nodes]
         node_region_location = [get_node_editor_region_coord(context, node.rect_transform.origin) for node in self.modal_nodes]
         self.node_location_offset = [prev_node_loc - mouse_pos for prev_node_loc in node_region_location]
+        
+        self.modal_move_axis = {'X', 'Y'}
 
         Cursor.set_icon(context, CursorIcon.HAND)
 
@@ -1053,13 +1055,37 @@ class AP_NodeTree(NodeTree):
         zoom = get_node_editor_zoom(context)
         inv_zoom = 1/zoom
         offset = get_node_editor_offset(context)
+        
+        if event.type == 'X' and event.value == 'RELEASE':
+            if 'Y' in self.modal_move_axis:
+                self.modal_move_axis.remove('Y')
+                self.modal_move_axis.add('X')
+            else:
+                self.modal_move_axis.add('Y')
+        elif event.type == 'Y' and event.value == 'RELEASE':
+            if 'X' in self.modal_move_axis:
+                self.modal_move_axis.remove('X')
+                self.modal_move_axis.add('Y')
+            else:
+                self.modal_move_axis.add('X')
 
-        def move_node(_node: Node, _node_loc_offset: Vector):
+        def move_node(_node: Node, _node_loc, _node_loc_offset: Vector):
             if _node.locked:
                 return
-            _node.rect_transform.move_to((mouse_pos - offset + _node_loc_offset) * inv_zoom)
+            if len(self.modal_move_axis) in {0, 2}:
+                _node.rect_transform.move_to((mouse_pos - offset + _node_loc_offset) * inv_zoom)
+            elif 'X' in self.modal_move_axis:
+                _node.rect_transform.move_to((
+                    (mouse_pos.x - offset.x + _node_loc_offset.x) * inv_zoom,
+                    _node_loc[1]
+                ))
+            elif 'Y' in self.modal_move_axis:
+                _node.rect_transform.move_to((
+                    _node_loc[0],
+                    (mouse_pos.y - offset.y + _node_loc_offset.y) * inv_zoom
+                ))
 
-        {move_node(node, node_loc_offset) for (node, node_loc_offset) in zip(self.modal_nodes, self.node_location_offset)}
+        {move_node(node, prev_loc, node_loc_offset) for (node, prev_loc, node_loc_offset) in zip(self.modal_nodes, self.prev_node_location, self.node_location_offset)}
         return 1
 
     def modal__move_node__exit(self, context: Context, mouse_pos: Vector, cancel: bool) -> None:
@@ -1070,6 +1096,7 @@ class AP_NodeTree(NodeTree):
             del self.node_location_offset
 
         self.modal_nodes = None
+        del self.modal_move_axis
 
         Cursor.set_icon(context, CursorIcon.DEFAULT)
 
@@ -1158,11 +1185,13 @@ class AP_NodeTree(NodeTree):
         if event.type == 'X' and event.value == 'RELEASE':
             if 'Y' in self.modal_scale_axis:
                 self.modal_scale_axis.remove('Y')
+                self.modal_scale_axis.add('X')
             else:
                 self.modal_scale_axis.add('Y')
         elif event.type == 'Y' and event.value == 'RELEASE':
             if 'X' in self.modal_scale_axis:
                 self.modal_scale_axis.remove('X')
+                self.modal_scale_axis.add('Y')
             else:
                 self.modal_scale_axis.add('X')
 
@@ -1208,6 +1237,7 @@ class AP_NodeTree(NodeTree):
         del self.prev_node_dimensions
         del self.modal_scale_origin_view
         del self.modal_scale_origin_region
+        del self.modal_scale_axis
 
         self.modal_nodes = None
 
