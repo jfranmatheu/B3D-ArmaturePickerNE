@@ -169,6 +169,8 @@ class AP_NodeTree(NodeTree):
     # ID Properties.
 
     def update_active_layer(self, context: Context):
+        if not hasattr(context.space_data, 'node_tree'):
+            return
         self.layer_selector_lock_update = True
         self.active_picker_layer_selector = active_picker_layer_id = self.active_picker_layer.uuid
         for widget in self.widgets:
@@ -764,43 +766,6 @@ class AP_NodeTree(NodeTree):
     def _draw(self, context: Context) -> None:
         if not hasattr(self, 'uuid'):
             self.uuid = uuid4().hex
-
-        if context.active_object.mode != 'POSE':
-            draw.rectangle(
-                self, None,
-                Vector((0, 0)), Vector((context.region.width, context.region.height)), 0,
-                color=(0.25, 0.1, 0.1, .2),
-            )
-            image = bpy.data.images.get('...tmp_overlay_image')
-            if not image:
-                image = bpy.data.images.load(Paths.LIB_IMAGES('icons8-human-bones-64.png'))
-                image.name = '...tmp_overlay_image'
-            aspect_ratio = image.size[1] / image.size[0]
-            w = min(int(context.region.width * 0.5), 128)
-            h = w * aspect_ratio
-
-            ipos = Vector((context.region.width * 0.5 - w * 0.5, context.region.height * 0.5 - h * 0.5))
-            draw.image(
-                self, None,
-                ipos, Vector((w, h)), 0,
-                image=image
-            )
-            draw.text(
-                Vector((ipos.x + w - 25, ipos.y + h)),
-                "Let's pose!",
-                16,
-                (0.0, 0.0),
-                width=int(context.region.width * 0.9),
-                color=(.8, .3, .75, 1.0)
-            )
-            draw.text(
-                Vector((context.region.width * 0.5, ipos.y - h * 0.5)), # Vector((context.region.width * 0.5, context.region.height - 40)), #
-                "Pose me please :'v",
-                24,
-                (0.5, 1.0),
-                width=int(context.region.width * 0.9)
-            )
-            return
 
         ui_scale = context.preferences.system.ui_scale
         in_edit = self.picker_mode == 'EDIT'
