@@ -20,8 +20,7 @@ class PickerLayersPanel(Panel):
 
     @classmethod
     def poll(cls, context: Context):
-        return poll_check(context, use_active_object=False)
-
+        return poll_check(context, use_active_object=True)
 
     def draw(self, context: Context):
         layout = self.layout

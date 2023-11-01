@@ -5,7 +5,7 @@ def poll_pose(context: Context) -> bool:
     return context.mode == 'POSE'
 
 def poll_active_object(context: Context) -> bool:
-    return context.active_object is not None and context.active_object.type in {'ARMATURE'}
+    return context.active_object is not None and context.active_object.type in {'ARMATURE'} and context.active_object.mode in {'POSE'}
 
 def poll_node_editor(context: Context) -> bool:
     return context.area.type == 'NODE_EDITOR' and context.space_data.tree_type == 'AP_NODETREE' and context.space_data.node_tree is not None
