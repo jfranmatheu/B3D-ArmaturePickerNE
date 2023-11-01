@@ -70,11 +70,16 @@ class Box:
     @property
     def top_right(self) -> Vector:
         return Vector((self.x_max, self.y_max))
-    
+
     @property
     def coords(self) -> list[Vector]:
         ''' 'U' shape Order: Top-Left, Bot-Left, Bot-Right, Top-Right. '''
         return [self.top_left, self.bottom_left, self.bottom_right, self.top_right]
+
+    def to_tuple(self) -> tuple[int, int, int, int]:
+        return (
+            self.x_min, self.y_min, self.x_max, self.y_max
+        )
 
 
 def distance_between(_p1, _p2):
