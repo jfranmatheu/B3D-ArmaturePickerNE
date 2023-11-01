@@ -1251,7 +1251,7 @@ class AP_NodeTree(NodeTree):
         self.dummy_node = DummyNode('MODAL_BOX_SELECT')
         in_edit = self.picker_mode == 'EDIT'
         self.append_selection = event.shift
-        self.modal_nodes = self.nodes if in_edit else [node for node in self.nodes if node.wg_type.startswith('bone_picker')]
+        self.modal_nodes = self.widgets_from_active_layer if in_edit else [node for node in self.widgets_from_active_layer if node.wg_type.startswith('bone_picker')]
         if in_edit:
             self.prev_sel_nodes = self.get_selected_nodes(context, include_active=True)
         else:
