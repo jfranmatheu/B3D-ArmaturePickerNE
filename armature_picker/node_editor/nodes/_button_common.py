@@ -348,7 +348,7 @@ class APNODE_Button_Common(APNODE_Button_CommonProps):
         size: Vector = rect.size
 
         if self.use_image and self.image is not None:
-            if active or selected: # (selected and context.mode != 'POSE'):
+            if selected:
                 draw.image_ui_outline(
                     self, 'BUTTON_IMAGE',
                     image=self.image,
