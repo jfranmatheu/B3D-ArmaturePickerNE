@@ -18,6 +18,7 @@ class Icons(IconsViewer):
 		BLUEPRINT = "icons8/blueprint.png"
 		BREAKING_BONE = "icons8/breaking_bone.png"
 		EVEN = "icons8/even.png"
+		HUMAN_BONES = "icons8/human_bones.png"
 		LAYOUT = "icons8/layout.png"
 		SHAPES = "icons8/shapes.png"
 		TRANSFORM = "icons8/transform.png"

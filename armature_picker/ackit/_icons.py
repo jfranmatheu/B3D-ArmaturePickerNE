@@ -16,11 +16,13 @@ from bpy.utils import previews
 from gpu.types import GPUTexture, Buffer as GPUBuffer
 
 from ._globals import GLOBALS
+from .utils import imagesize
 
 
 
 icon_previews = {}
 icon_gputex = {}
+icon_sizes = {}
 
 GPUTEX_ICON_SIZE = 100, 100
 
@@ -68,6 +70,15 @@ class IconsEnum(Enum):
         if path.exists() and path.is_file():
             return str(path)
         return None
+
+    @property
+    def image_size(self):
+        if size := icon_sizes.get(self.collection + '@' + self.identifier, None):
+            return size
+        if filepath := self.filepath:
+            size = icon_sizes[self.collection + '@' + self.identifier] = imagesize.get(filepath)
+            return size
+        return [0, 0]
 
     @property
     def identifier(self) -> str:

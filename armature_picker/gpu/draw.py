@@ -152,7 +152,7 @@ def draw(owner: object, graphic_id: str, pos: Vector, size: Vector, angle: float
     if graphic_id is None:
         is_dirty = True
     else:
-        is_dirty = dirty or owner.dirty if dirty is not None else owner.dirty
+        is_dirty = dirty or owner.dirty if owner is not None and dirty is not None else owner.dirty
     if not is_dirty and (batch := get_batch_from_cache(owner.uuid, graphic_id)) is not None:
         pass
     else:
