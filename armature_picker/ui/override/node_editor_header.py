@@ -20,7 +20,7 @@ def draw(self, context: Context):
     layout.template_header()
 
     layout = layout.row()
-    layout.enabled = node_tree is not None and context.active_object.type in {'ARMATURE'} and context.active_object.mode in {'POSE'}
+    layout.enabled = context.active_object.type in {'ARMATURE'} and context.active_object.mode in {'POSE'}
 
     if node_tree is not None:
         layout.prop(node_tree, 'picker_mode', text='')
