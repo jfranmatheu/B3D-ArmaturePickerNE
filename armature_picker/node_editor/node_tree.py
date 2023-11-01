@@ -627,6 +627,7 @@ class AP_NodeTree(NodeTree):
                 if event.value == 'CLICK':
                     if not event.shift:
                         deselect_all_bones_from_active(context)
+                        context.region.tag_redraw()
                     return {'FINISHED'}
 
                 if event.value == 'CLICK_DRAG':
