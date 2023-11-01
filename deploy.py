@@ -104,9 +104,14 @@ with TemporaryDirectory(prefix=F'{MODULE_NAME}_build_') as temp_dir:
 
     fmt = VersionFormatter()
     build_name = fmt.format(VERSION_FORMAT, MODULE_NAME=MODULE_NAME, V=version, B=blender)
-    build_zip_path = str(builds_dir / build_name)
+    build_zip_path = builds_dir / build_name
 
-    zipname = make_archive(build_zip_path, 'zip', temp_dir)
+    i = 1
+    while build_zip_path.exists():
+        build_zip_path = builds_dir / (build_name + '.00' + str(i))
+        i += 1
+
+    zipname = make_archive(str(build_zip_path), 'zip', temp_dir)
 
     if USE_PY_PACKER:
         system(f'copy /B "{str(init_py)}" + "{zipname}" "{str(build_zip_path)}.py"')
