@@ -24,6 +24,8 @@ from ..utils.node_editor import get_node_editor_view_size, set_node_editor_visib
 from ..utils.armature import deselect_all_bones_from_active
 from ..utils.geometry import angle_signed, rect_overlap, Box, point_inside_rect
 from armature_picker.prefs import get_active_theme_style, get_prefs_wg_settings
+from .nodes._button_common import APNODE_Button_Common
+from .nodes import APNODE_Image
 
 
 # ----------------------------------------------------------------
@@ -512,10 +514,10 @@ class AP_NodeTree(NodeTree):
                          modal_draw_callback: callable = None,
                          use_advanced_mouse: bool = False) -> None:
 
-        if use_advanced_mouse and self.active_node is not None:
-            self.inject_modal_mouse = Mouse.init(event, context, local_space__rect=self.active_node.rect_transform)
+        if use_advanced_mouse: # or self.active_node is not None:
+            self.inject_modal_mouse = Mouse.init(event, context, local_space__rect=self.active_node.rect_transform if self.active_node is not None else None)
             def _modal_update_wrapper(context: Context, event: Event, mouse_pos: Vector):
-                self.inject_modal_mouse.update(event, context, local_space__rect=self.active_node.rect_transform)
+                self.inject_modal_mouse.update(event, context, local_space__rect=self.active_node.rect_transform if self.active_node is not None else None)
                 return modal_callback(context, event, self.inject_modal_mouse)
             self.inject_modal = _modal_update_wrapper
         else:
@@ -528,7 +530,7 @@ class AP_NodeTree(NodeTree):
 
     def _invoke(self, context: Context, event: Event) -> set[str]:
         # Skip navigation km.
-        if event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE', 'T', 'N', 'TAB', 'X', 'DEL', 'S', 'M'}:
+        if event.type in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE', 'T', 'N', 'TAB', 'X', 'DEL', 'M'}:
             if event.value != 'PRESS':
                 return {'PASS_THROUGH'}
             if event.type == 'WHEELUPMOUSE':
@@ -539,8 +541,6 @@ class AP_NodeTree(NodeTree):
                 self.on_view_resize(context)
             elif event.type == 'MIDDLEMOUSE':
                 bpy.ops.view2d.pan('INVOKE_DEFAULT')
-            elif event.type == 'S' and event.ctrl:
-                bpy.ops.wm.save_mainfile(False)
             elif event.type == 'N':
                 context.space_data.show_region_ui = not context.space_data.show_region_ui
             elif event.type == 'T':
@@ -555,6 +555,9 @@ class AP_NodeTree(NodeTree):
                 if len(self.picker_layers) > 1 and len(self.get_selected_nodes(context, include_active=True)) != 0:
                     bpy.ops.armature_picker.move_selected_to_another_layer('INVOKE_DEFAULT')
             return {'FINISHED'}
+
+        if event.type == 'S' and event.ctrl:
+            bpy.ops.wm.save_mainfile(False)
 
         if event.type == 'A' and not event.shift and event.value == 'PRESS':
             # bpy.ops.node.select_all(action='TOGGLE')
@@ -785,6 +788,16 @@ class AP_NodeTree(NodeTree):
                                       modal_enter_callback=self.modal__rotate_node__enter,
                                       modal_exit_callback=self.modal__rotate_node__exit,
                                       modal_draw_callback=self.modal__rotate_node__draw)
+                return {'RUNNING_MODAL'}
+
+            if (event.type == 'S' and event.value == 'RELEASE'): # and self.active_node is not None:
+                self.modal_nodes = sel_nodes
+                self.set_inject_modal(context, event,
+                                      modal_callback=self.modal__scale_node__update,
+                                      modal_enter_callback=self.modal__scale_node__enter,
+                                      modal_exit_callback=self.modal__scale_node__exit,
+                                      modal_draw_callback=self.modal__scale_node__draw,
+                                      use_advanced_mouse=False)
                 return {'RUNNING_MODAL'}
 
         if G_hovered_node is not None and hovered_node is not None and event.type == 'LEFTMOUSE':
@@ -1115,6 +1128,89 @@ class AP_NodeTree(NodeTree):
             5 * ui_scale,
             color=(1, 0, 0, 1.0)
         )
+
+    # MODAL: SCALE Selected Nodes.
+    # ----------------------------------------------------------------
+
+    def modal__scale_node__enter(self, context: Context, event: Event, mouse_pos: Vector) -> None:
+        self.prev_node_dimensions = [tuple(node.rect_transform.dimensions) for node in self.modal_nodes]
+
+        orig = Vector((0, 0))
+        for node in self.modal_nodes:
+            orig += Vector(node.rect_transform.origin)
+        orig /= len(self.modal_nodes)
+        self.modal_scale_origin_view = orig
+        orig = get_node_editor_region_coord(context, orig)
+        self.modal_scale_origin_region = orig
+
+        if len(self.modal_nodes) == 1:
+            self.modal_node_mouse_distances = [(get_node_editor_region_coord(context, node.rect_transform.origin) - mouse_pos).length for node in self.modal_nodes]
+        else:
+            self.modal_node_mouse_distances = [(get_node_editor_region_coord(context, node.rect_transform.origin) - orig).length for node in self.modal_nodes]
+
+        Cursor.set_icon(context, CursorIcon.SCROLL_XY)
+
+    def modal__scale_node__update(self, context: Context, event: Event, mouse_pos: Vector) -> int:
+        if self.modal_nodes is None or (event.type == 'LEFTMOUSE' and event.value == 'RELEASE'):
+            return -1
+
+        scale_vec = (self.modal_scale_origin_region - mouse_pos)
+
+        view_zoom = 1 / get_node_editor_zoom(context)
+        mvec_dist = scale_vec.length # * view_zoom
+        # dim_off = Vector((mvoff, mvoff))
+
+        def scale_node(_node: Node, _dim: tuple[int, int], _dist: float):
+            if _node.locked:
+                return
+            _mvoff = (mvec_dist - _dist) * view_zoom
+            dimensions = tuple(int(v) for v in Vector(_dim) + Vector((_mvoff, _mvoff)))
+
+            if ((isinstance(_node, APNODE_Button_Common) and _node.use_image) or isinstance(_node, APNODE_Image)) and\
+                _node.image is not None and _node.keep_aspect_ratio:
+                # dim.x -> scale_x
+                # new_dim.x -> new_scale_x ?
+                _node.image_scale_x = _node.image_scale_x * dimensions[0] / _dim[0]
+            else:
+                _node.rect_transform.dimensions = dimensions
+
+        {scale_node(node, orig_dim, orig_dist) for (node, orig_dim, orig_dist) in zip(self.modal_nodes, self.prev_node_dimensions, self.modal_node_mouse_distances)}
+        return 1
+
+    def modal__scale_node__exit(self, context: Context, mouse_pos: Vector, cancel: bool) -> None:
+        if cancel:
+            for (node, prev_node_dim) in zip(self.modal_nodes, self.prev_node_dimensions):
+                node.rect_transform.dimensions = prev_node_dim
+
+        del self.prev_node_dimensions
+        del self.modal_scale_origin_view
+        del self.modal_scale_origin_region
+
+        self.modal_nodes = None
+
+        Cursor.set_icon(context, CursorIcon.DEFAULT)
+
+    def modal__scale_node__draw(self, context: Context, ui_scale: float, sel_nodes: list[Node], in_edit: bool, in_view2d: bool) -> None:
+        if in_view2d:
+            pass
+
+        else:
+            draw.just_a_line(
+                self.modal_scale_origin_region,
+                self.mouse_pos,
+                2 * ui_scale,
+                (.9, .9, .9, .7)
+            )
+            draw.just_a_point(
+                self.modal_scale_origin_region,
+                4 * ui_scale,
+                (0, 0, 0, 1)
+            )
+            draw.just_a_point(
+                self.modal_scale_origin_region,
+                3 * ui_scale,
+                (1, 1, 1, 1)
+            )
 
 
     # MODAL: Resize Selected Nodes.

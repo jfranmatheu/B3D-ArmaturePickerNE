@@ -431,6 +431,17 @@ def offscreen(node: object, graphic_id: str, off: GPUOffScreen, origin: Vector |
     image_ui(node, graphic_id, off.texture_color, origin=origin)
 
 
+def just_a_line(A: Vector, B: Vector, line_thickness: float, color: RGBA = None, shader=SHADER_UNIFORM_COLOR, **uniforms) -> None:
+    batch: GPUBatch = batch_for_shader(shader, 'LINES', {'pos': [A, B]})
+    if color is not None:
+        shader.uniform_float('color', color)
+    for key, value in uniforms.items():
+            shader.uniform_float(key, value)
+    state.line_width_set(line_thickness)
+    batch.draw(shader)
+    state.line_width_set(1.0)
+
+
 def just_a_point(pos: Vector, radius: int, color: RGBA = None, rotation: float = 0, shader=SHADER_UNIFORM_COLOR, **uniforms) -> None:
     with gpu.matrix.push_pop():
         # gpu.matrix.translate(Vector(pos) * -1)
