@@ -106,10 +106,13 @@ with TemporaryDirectory(prefix=F'{MODULE_NAME}_build_') as temp_dir:
     build_name = fmt.format(VERSION_FORMAT, MODULE_NAME=MODULE_NAME, V=version, B=blender)
     build_zip_path = builds_dir / build_name
 
-    i = 1
-    while build_zip_path.exists():
-        build_zip_path = builds_dir / (build_name + '.00' + str(i))
+    i = 0
+    _build_zip_path = builds_dir / (build_name + '.zip')
+    while _build_zip_path.exists():
         i += 1
+        _build_zip_path = builds_dir / (build_name + '.00' + str(i) + '.zip')
+    if i != 0:
+        build_zip_path = builds_dir / (build_name + '.00' + str(i))
 
     zipname = make_archive(str(build_zip_path), 'zip', temp_dir)
 
