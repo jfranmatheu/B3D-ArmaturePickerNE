@@ -625,7 +625,8 @@ class AP_NodeTree(NodeTree):
 
             if G_hovered_node is None:
                 if event.value == 'CLICK':
-                    deselect_all_bones_from_active(context)
+                    if not event.shift:
+                        deselect_all_bones_from_active(context)
                     return {'FINISHED'}
 
                 if event.value == 'CLICK_DRAG':
