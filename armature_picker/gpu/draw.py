@@ -434,12 +434,16 @@ def offscreen(node: object, graphic_id: str, off: GPUOffScreen, origin: Vector |
 def just_a_line(A: Vector, B: Vector, line_thickness: float, color: RGBA = None, shader=SHADER_UNIFORM_COLOR, **uniforms) -> None:
     batch: GPUBatch = batch_for_shader(shader, 'LINES', {'pos': [A, B]})
     if color is not None:
+        if color[-1] != 1:
+            state.blend_set('ALPHA')
         shader.uniform_float('color', color)
     for key, value in uniforms.items():
             shader.uniform_float(key, value)
     state.line_width_set(line_thickness)
     batch.draw(shader)
     state.line_width_set(1.0)
+    if color is not None:
+        if color[-1] != 1:state.blend_set('NONE')
 
 
 def just_a_point(pos: Vector, radius: int, color: RGBA = None, rotation: float = 0, shader=SHADER_UNIFORM_COLOR, **uniforms) -> None:
