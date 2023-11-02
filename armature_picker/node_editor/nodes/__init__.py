@@ -1,4 +1,4 @@
-from .bone_picker.node import AP_BonePickerNode
+from .bone_picker.node import APNODE_BonePicker
 from .bone_picker_geo.node import APNODE_BonePickerGeo
 from .image.node import APNODE_Image
 from .label.node import APNODE_Label
@@ -14,8 +14,8 @@ NODES = (
             'name': 'Bone-Picker',
             'icon': 'CONSTRAINT_BONE',
             'items': (
-                (AP_BonePickerNode, 'Button', 'SEQ_SEQUENCER'),
-                (AP_BonePickerNode.bl_idname + '@' + 'init_preset_image', 'Button Image', 'IMAGE_PLANE'),
+                (APNODE_BonePicker, 'Button', 'SEQ_SEQUENCER'),
+                (APNODE_BonePicker.bl_idname + '@' + 'init_preset_image', 'Button Image', 'IMAGE_PLANE'),
                 (APNODE_BonePickerGeo, 'Geometry Shape', 'MESH_MONKEY'),
             )
         },

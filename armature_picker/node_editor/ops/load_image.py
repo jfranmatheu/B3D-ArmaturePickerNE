@@ -5,7 +5,7 @@ from bpy.props import StringProperty, BoolProperty
 
 from armature_picker.node_editor.poll import poll_check
 from armature_picker.node_editor.nodes.image.node import APNODE_Image
-from armature_picker.node_editor.nodes.bone_picker.node import AP_BonePickerNode
+from armature_picker.node_editor.nodes.bone_picker.node import APNODE_BonePicker
 from armature_picker.node_editor.nodes.button_script.node import APNODE_ButtonScript
 from armature_picker.utils.node_editor import get_node_editor_view_size
 from armature_picker.utils.geometry import calculate_scale_to_fit_box_in_box
@@ -30,7 +30,7 @@ class AP_OT_load_image_for_active_node(Operator, ExportHelper):
 
     @classmethod
     def poll(cls, context: Context):
-        return poll_check(context, 'EDIT', use_active_node=(APNODE_Image, AP_BonePickerNode, APNODE_ButtonScript))
+        return poll_check(context, 'EDIT', use_active_node=(APNODE_Image, APNODE_BonePicker, APNODE_ButtonScript))
 
     def execute(self, context):
         image = bpy.data.images.load(self.filepath)
@@ -41,7 +41,7 @@ class AP_OT_load_image_for_active_node(Operator, ExportHelper):
         if isinstance(active_node, APNODE_Image):
             active_node.image = image
             active_node.keep_aspect_ratio = True
-        elif isinstance(active_node, (AP_BonePickerNode, APNODE_ButtonScript)) and active_node.use_image:
+        elif isinstance(active_node, (APNODE_BonePicker, APNODE_ButtonScript)) and active_node.use_image:
             active_node.image = image
             active_node.keep_aspect_ratio = True
         else:

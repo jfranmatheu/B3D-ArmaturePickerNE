@@ -13,7 +13,7 @@ from armature_picker.paths import Paths
 
 
 
-class AP_BonePickerNode(APNODE_BonePicker_NodeProps, APNODE_BonePicker_Common, AP_Node, Node):
+class APNODE_BonePicker(APNODE_BonePicker_NodeProps, APNODE_BonePicker_Common, AP_Node, Node):
     bl_idname = 'AP_NODE_bone_picker'
     bl_label = 'Bone Picker'
     bl_description = 'Bone Picker Button'
