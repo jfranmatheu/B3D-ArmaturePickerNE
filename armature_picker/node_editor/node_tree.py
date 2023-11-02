@@ -762,6 +762,14 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
 
     # ----------------------------------------------------------------
 
+    def draw_base(self, ui_scale: float, in_edit: bool) -> None:
+        if in_edit:
+            draw.just_a_line(
+                (0, -10000),
+                (0, 10000),
+                line_thickness=1 * ui_scale,
+                color=(1, .344, .344, .5)
+            )
 
     def _draw(self, context: Context) -> None:
         if not hasattr(self, 'uuid'):
@@ -769,6 +777,8 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
 
         ui_scale = context.preferences.system.ui_scale
         in_edit = self.picker_mode == 'EDIT'
+        
+        self.draw_base(ui_scale, in_edit)
 
         refresh: bool = False
         zoom = get_node_editor_zoom(context)
@@ -790,6 +800,8 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
         with gpu.matrix.push_pop():
             gpu.matrix.translate(offset)
             gpu.matrix.scale_uniform(zoom)
+            
+            self.draw_base(ui_scale, in_edit)
 
             for node_layer_nodes in sorted_nodes_cache[self.uuid]:
                 for node in node_layer_nodes:
