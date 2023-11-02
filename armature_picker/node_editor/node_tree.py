@@ -1160,6 +1160,10 @@ class AP_NodeTree(NodeTree):
     # ----------------------------------------------------------------
 
     def modal__scale_node__enter(self, context: Context, event: Event, mouse_pos: Vector) -> None:
+        for node in self.modal_nodes:
+            if isinstance(node, APNODE_Button_Common) and node.fit_to_text:
+                node.fit_to_text = False
+
         self.prev_node_dimensions = [tuple(node.rect_transform.dimensions) for node in self.modal_nodes]
         self.modal_scale_axis = {'X', 'Y'}
 
