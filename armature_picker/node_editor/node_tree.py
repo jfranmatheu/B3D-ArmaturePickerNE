@@ -1,4 +1,4 @@
-import bpy
+from bpy import ops as OPS
 from bpy.types import NodeTree, Context, Event, Node, PoseBone
 from bpy.props import BoolProperty, EnumProperty, StringProperty, PointerProperty, IntProperty, CollectionProperty
 from mathutils import Vector
@@ -486,30 +486,30 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
             if not isEventValue.PRESS:
                 return OpsReturn.PASS
             if EVENT_TYPE == 'WHEELUPMOUSE':
-                bpy.ops.view2d.zoom_in('INVOKE_DEFAULT')
+                OPS.view2d.zoom_in('INVOKE_DEFAULT')
                 self.on_view_resize(context)
             elif EVENT_TYPE == 'WHEELDOWNMOUSE':
-                bpy.ops.view2d.zoom_out('INVOKE_DEFAULT')
+                OPS.view2d.zoom_out('INVOKE_DEFAULT')
                 self.on_view_resize(context)
             elif EVENT_TYPE == 'MIDDLEMOUSE':
-                bpy.ops.view2d.pan('INVOKE_DEFAULT')
+                OPS.view2d.pan('INVOKE_DEFAULT')
             elif EVENT_TYPE == 'N':
                 context.space_data.show_region_ui = not context.space_data.show_region_ui
             elif EVENT_TYPE == 'T':
                 context.space_data.show_region_toolbar = not context.space_data.show_region_toolbar
             elif EVENT_TYPE in {'X', 'DEL'}:
-                bpy.ops.node.delete('INVOKE_DEFAULT')
+                OPS.node.delete('INVOKE_DEFAULT')
                 ensure_nodes_cache(self)
             elif EVENT_TYPE == 'TAB':
                 self.picker_mode = 'POSE' if self.picker_mode == 'EDIT' else 'EDIT'
                 context.area.tag_redraw()
             elif EVENT_TYPE == 'M' and self.picker_mode == 'EDIT':
                 if len(self.picker_layers) > 1 and len(self.get_selected_nodes(context, include_active=True)) != 0:
-                    bpy.ops.armature_picker.move_selected_to_another_layer('INVOKE_DEFAULT')
+                    OPS.armature_picker.move_selected_to_another_layer('INVOKE_DEFAULT')
             return OpsReturn.FINISH
 
         if isEvent(EventType.S, EventValue.PRESS, ctrl=True):
-            bpy.ops.wm.save_mainfile(False)
+            OPS.wm.save_mainfile(False)
             return OpsReturn.FINISH
 
         if isEvent(EventType.A, EventValue.PRESS, shift=False):
@@ -579,7 +579,7 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
             from .ops.insert_keyframe import MT_insert_keyframe
             # context.window_manager.popup_menu_pie(event, MT_insert_keyframe.draw)
             with context.temp_override(window=context.window, area=context.area, bone=context.active_bone):
-                bpy.ops.wm.call_menu_pie('INVOKE_DEFAULT', name=MT_insert_keyframe.bl_idname)
+                OPS.wm.call_menu_pie('INVOKE_DEFAULT', name=MT_insert_keyframe.bl_idname)
             self.dirty = True
             return OpsReturn.FINISH
 
@@ -606,7 +606,7 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
         if isEventType.RIGHTMOUSE and isEventValue.PRESS:
             if len(context.selected_nodes) == 0 and context.active_node is None:
                 return OpsReturn.FINISH
-            bpy.ops.wm.call_menu('INVOKE_DEFAULT', name=AP_MT_context_menu.bl_idname)
+            OPS.wm.call_menu('INVOKE_DEFAULT', name=AP_MT_context_menu.bl_idname)
             return OpsReturn.FINISH
 
         if EVENT_TYPE in {'C', 'V'} and event.ctrl and isEventValue.CLICK:
@@ -623,13 +623,13 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
                     print("No widgets widgets in clipboard")
                     return OpsReturn.CANCEL
                 print("Pasted %i widgets from clipboard" % len(G_clipboard_nodes))
-                bpy.ops.node.select_all(False, action='DESELECT')
+                OPS.node.select_all(False, action='DESELECT')
                 get_node = self.nodes.get
                 for cb_node_name in G_clipboard_nodes:
                     if cb_node := get_node(cb_node_name, None):
                         cb_node.select = True
                 G_clipboard_nodes = None
-                bpy.ops.node.duplicate('INVOKE_DEFAULT', False)
+                OPS.node.duplicate('INVOKE_DEFAULT', False)
                 sel_nodes = self.get_selected_nodes(context, include_active=True)
                 if len(sel_nodes) == 0:
                     return OpsReturn.CANCEL
@@ -645,18 +645,18 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
         if G_hovered_node is None:
             if isEventType.LEFTMOUSE:
                 if isEventValue.RELEASE:
-                    bpy.ops.node.select_all(False, action='DESELECT')
+                    OPS.node.select_all(False, action='DESELECT')
                     return OpsReturn.FINISH
                 if isEventValue.CLICK_DRAG:
                     return PickerModal.BOX_SELECT(self, context, event, None)
 
         if EVENT_TYPE == 'A' and isEventValue.RELEASE and event.shift:
             from .ops.add_node.pie_menu import MT_add_node
-            bpy.ops.wm.call_menu_pie('INVOKE_DEFAULT', name=MT_add_node.bl_idname)
+            OPS.wm.call_menu_pie('INVOKE_DEFAULT', name=MT_add_node.bl_idname)
             return OpsReturn.FINISH
 
         if EVENT_TYPE == 'D' and isEventValue.RELEASE and event.shift:
-            bpy.ops.node.duplicate('INVOKE_DEFAULT', False)
+            OPS.node.duplicate('INVOKE_DEFAULT', False)
             sel_nodes = self.get_selected_nodes(context, include_active=True)
             if len(sel_nodes) == 0:
                 return OpsReturn.CANCEL
@@ -716,7 +716,7 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
                         self.nodes.active = None
                     return OpsReturn.FINISH
                 if hovered_node.locked:
-                    bpy.ops.node.select_all(False, action='DESELECT')
+                    OPS.node.select_all(False, action='DESELECT')
                     self.nodes.active = hovered_node
                     return OpsReturn.FINISH
                 elif hovered_node.select and event.shift and self.nodes.active == hovered_node:
@@ -725,7 +725,7 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
                 else:
                     # hovered_node.select_node(context, deselect_all=not event.shift, toggle=False, set_active=True)
                     if not event.shift:
-                        bpy.ops.node.select_all(False, action='DESELECT')
+                        OPS.node.select_all(False, action='DESELECT')
                     hovered_node.select = True
                     self.nodes.active = hovered_node
 
