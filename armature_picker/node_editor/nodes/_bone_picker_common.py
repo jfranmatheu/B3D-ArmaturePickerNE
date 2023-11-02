@@ -36,6 +36,8 @@ class APNODE_BonePicker_CommonProps:
     # ----- UPDATES -----------------------------------
 
     def update_bone_name(self, context: Context) -> None:
+        if self.bone_name != '':
+            self.name = self.bone_name
         if self.label == '':
             self.label = self.bone_name.replace('_', ' ').replace('.', ' ').title()
 
