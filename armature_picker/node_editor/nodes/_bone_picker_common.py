@@ -175,6 +175,15 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps):
 
 
     # ----- SELECT METHODS --------------------------------
+    
+    @property
+    def mirror_bone_name(self) -> str | None:
+        if self.bone_loc_constraint == 'LEFT':
+            return self.bone_name[-1] + 'R'
+        elif self.bone_loc_constraint == 'RIGHT':
+            return self.bone_name[-1] + 'L'
+        else:
+            return None
 
     def get_bone(self, context: Context, from_pose_data: bool = False) -> Bone:
         if context.active_object is None or context.active_object.type != 'ARMATURE':
@@ -189,18 +198,19 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps):
     def get_mirror_bone(self, context: Context, from_pose_data: bool = False) -> Bone:
         if context.active_object is None or context.active_object.type != 'ARMATURE':
             return None
-        armature: Armature = context.active_object.data
-        if self.bone_loc_constraint == 'LEFT':
-            mirror_bone_name = self.bone_name[-1] + 'R'
-        elif self.bone_loc_constraint == 'RIGHT':
-            mirror_bone_name = self.bone_name[-1] + 'L'
-        else:
+        if self.bone_loc_constraint not in {'LEFT', 'RIGHT'}:
             return None
+        armature: Armature = context.active_object.data
         if from_pose_data:
             bones = context.active_object.pose.bones
         else:
             bones = armature.bones if context.mode == 'POSE' else armature.edit_bones
-        return bones.get(mirror_bone_name, None)
+        return bones.get(self.mirror_bone_name, None)
+    
+    def get_mirror_node(self) -> 'APNODE_BonePicker_Common' | None:
+        if self.bone_loc_constraint not in {'LEFT', 'RIGHT'}:
+            return None
+        return self.node_tree.nodes.get(self.mirror_bone_name, None)
 
     def select_bone(self, context: Context, deselect_all: bool = True, make_active: bool = True) -> None:
         if context.active_object is None or context.active_object.type != 'ARMATURE':
