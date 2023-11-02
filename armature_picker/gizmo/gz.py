@@ -1,4 +1,5 @@
 from bpy.types import Context, Gizmo as GZ
+from armature_picker.utils.event import set_global_event
 
 
 def get_tree(context: Context):
@@ -12,9 +13,11 @@ class TheAPGZ(GZ):
     def test_select(gz,c,l): return get_tree(c)._test_select(c,l)
     def invoke(gz,c,e):
         # print("TheAPGZ::invoke", e.type, e.value)
+        set_global_event(e)
         return get_tree(c)._invoke(c,e)
     def modal(gz,c,e,t):
         # print("TheAPGZ::modal", e.type, e.value)
+        set_global_event(e)
         return get_tree(c)._modal(c,e,t)
     def exit(gz,c,ca):
         # print("TheAPGZ::exit", ca)

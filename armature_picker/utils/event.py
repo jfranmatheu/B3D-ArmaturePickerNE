@@ -1,11 +1,37 @@
 from bpy.types import Event, View2D, Context
 from mathutils import Vector, Matrix
+from string import Template
 
 from .geometry import rotate_point
 from .node_editor import get_node_editor_zoom, get_node_editor_region_coord
 from .math import clamp
 
 from math import trunc, modf
+
+
+EVENT_TYPE = 'NONE'
+EVENT_VALUE = 'NONE'
+
+
+event_check_property_template = Template(
+"""
+@property
+def ${event}(self) -> bool:
+\tglobal ${global_name}
+\treturn ${global_name} == '${event}'
+"""
+)
+
+def set_global_event(event: Event):
+    global EVENT_TYPE
+    global EVENT_VALUE
+    EVENT_TYPE = event.type
+    EVENT_VALUE = event.value
+
+def get_global_event() -> tuple[str, str]:
+    global EVENT_TYPE
+    global EVENT_VALUE
+    return EVENT_TYPE, EVENT_VALUE
 
 
 class EventValue:
@@ -24,6 +50,19 @@ class EventValue:
     WEST = 'WEST'
     NORTH_WEST = 'NORTH_WEST'
     NOTHING = 'NOTHING'
+
+
+event_values = [_type for _type in dir(EventValue) if not _type.startswith('_')]
+
+event_values_code = ""
+for event_value in event_values:
+    event_values_code += event_check_property_template.substitute(
+        global_name='EVENT_VALUE',
+        event=event_value
+    )
+
+class isEventValue(EventValue):
+    exec(event_values_code)
 
 
 class EventType:
@@ -57,6 +96,20 @@ class EventType:
     NUM_ONE = 'ONE'
     NUM_TWO = 'TWO'
     NUM_THREE = 'THREE'
+
+
+event_types = [_type for _type in dir(EventType) if not _type.startswith('_')]
+
+event_types_code = ""
+for event_type in event_types:
+    event_types_code += event_check_property_template.substitute(
+        global_name='EVENT_TYPE',
+        event=event_type
+    )
+
+
+class isEventType(EventType):
+    exec(event_types_code)
 
 
 class _RectTransform:
