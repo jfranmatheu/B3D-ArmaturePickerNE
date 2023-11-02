@@ -64,7 +64,7 @@ class AP_OT_import_geo_collection(MoveNodesModal, Operator):
         if coll is None:
             return OpsReturn.CANCEL
 
-        from .add_node.op import new_node
+        from .add_node.op_add_node import new_node
         from ..nodes import APNODE_BonePickerGeo
 
         pose_bones = context.active_object.pose.bones

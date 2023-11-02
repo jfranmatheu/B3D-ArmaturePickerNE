@@ -1,7 +1,7 @@
 from bpy.types import Context, Menu, UILayout
 
 from ...nodes import NODES
-from .op import AP_OT_add_node
+from .op_add_node import AP_OT_add_node
 
 
 class MT_add_node(Menu):
