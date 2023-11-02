@@ -38,6 +38,15 @@ class APNODE_BonePicker_CommonProps:
     def update_bone_name(self, context: Context) -> None:
         if self.bone_name != '':
             self.name = self.bone_name
+            if self.bone_name.endswith('L'):
+                self.bone_loc_constraint = 'LEFT'
+            elif self.bone_name.endswith('R'):
+                self.bone_loc_constraint = 'RIGHT'
+            elif bone := self.get_bone(context):
+                if bone.location.x == 0:
+                    self.bone_loc_constraint = 'CENTER'
+                else:
+                    self.bone_loc_constraint = 'NONE'
         if self.label == '':
             self.label = self.bone_name.replace('_', ' ').replace('.', ' ').title()
 
@@ -48,6 +57,18 @@ class APNODE_BonePicker_CommonProps:
 
 
     # ----- PROPERTIES --------------------------------
+
+    bone_loc_constraint: EnumProperty(
+        name="Bone Location Constraint",
+        description="The type of comnstraint to apply to the bone location. LEFT, RIGHT, CENTER...",
+        items=(
+            ('NONE', 'NONE', ''),
+            ('LEFT', 'LEFT', ''),
+            ('RIGHT', 'RIGHT', ''),
+            ('CENTER', 'CENTER', ''),
+        ),
+        default='NONE'
+    )
 
     bone_name: EnumProperty(
         name="Bone Name",
@@ -233,7 +254,7 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps):
 
                 # return {'RUNNING_MODAL'}
 
-    
+
     # DRAWING. #################################################################
 
     def draw__pose(self, context: Context, view_loc: Vector, rect: RectTransform, style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
