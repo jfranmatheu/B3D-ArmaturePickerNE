@@ -165,7 +165,43 @@ class PickerTransformModals:
             for to_remove_node in to_remove_nodes:
                 self.modal_nodes.remove(to_remove_node)
 
-        # ----------------------------------------------------------------
+    # ----------------------------------------------------------------
+
+    # INVOKE: Move nodes by increments in the given direction.
+    # ----------------------------------------------------------------
+
+    def move_node_increment(self, context: Context, nodes: list[AP_Node], direction: Vector) -> None:
+        move_dir = direction * 10 * context.preferences.system.ui_scale
+        for node in nodes:
+
+            rect: RectTransform = node.rect_transform
+            pos = Vector(rect.origin) + move_dir
+
+            # Apply Mirror Constraints to BonePicker Widgets.
+            if isinstance(node, APNODE_BonePicker_Common):
+                if node.bone_loc_constraint == 'CENTER':
+                    pos.x = 0 # Lock to Y axis at X=0.
+                elif node.bone_loc_constraint == 'LEFT':
+                    dim_right_to_origin = rect.dimensions[0] * (1 - rect.pivot[0])
+                    right = pos.x + dim_right_to_origin
+                    if right > 0:
+                        pos.x = - dim_right_to_origin
+                elif node.bone_loc_constraint == 'RIGHT':
+                    dim_left_to_origin = rect.dimensions[0] * rect.pivot[0]
+                    left = pos.x - dim_left_to_origin
+                    if left < 0:
+                        pos.x = dim_left_to_origin
+
+                origin = tuple(int(v) for v in pos)
+                rect.origin = origin
+
+                if mirror_node := node.get_mirror_node():
+                    mirror_node.rect_transform.origin = (-origin[0], origin[1])
+
+            else:
+                rect.origin = tuple(int(v) for v in pos)
+
+        context.region.tag_redraw()
 
 
     # MODAL: Move Selected Nodes.

@@ -669,11 +669,7 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
         if len(sel_nodes) != 0:
             # Move nodes by increments by using arrow keys.
             if EVENT_TYPE in ARROW_DIRECTIONS and isEventValue.PRESS:
-                print("About to move selected nodes")
-                move_dir = ARROW_DIRECTIONS[EVENT_TYPE] * 10 * context.preferences.system.ui_scale
-                for node in sel_nodes:
-                    node.rect_transform.origin = tuple(int(v) for v in Vector(node.rect_transform.origin) + move_dir)
-                context.region.tag_redraw()
+                self.move_node_increment(context, sel_nodes, ARROW_DIRECTIONS[EVENT_TYPE])
                 return OpsReturn.FINISH
 
         if self.nodes.active is not None:
