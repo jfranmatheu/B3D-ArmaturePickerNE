@@ -179,9 +179,9 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps):
     @property
     def mirror_bone_name(self) -> str | None:
         if self.bone_loc_constraint == 'LEFT':
-            return self.bone_name[-1] + 'R'
+            return self.bone_name[:-1] + 'R'
         elif self.bone_loc_constraint == 'RIGHT':
-            return self.bone_name[-1] + 'L'
+            return self.bone_name[:-1] + 'L'
         else:
             return None
 
