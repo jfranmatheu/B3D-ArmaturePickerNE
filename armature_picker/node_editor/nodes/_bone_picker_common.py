@@ -37,7 +37,7 @@ class APNODE_BonePicker_CommonProps:
 
     def update_bone_name(self, context: Context) -> None:
         if self.bone_name != '':
-            self.name = self.bone_name
+            # self.name = self.bone_name
             if self.bone_name.endswith('L'):
                 self.bone_loc_constraint = 'LEFT'
             elif self.bone_name.endswith('R'):
@@ -175,7 +175,7 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps):
 
 
     # ----- SELECT METHODS --------------------------------
-    
+
     @property
     def mirror_bone_name(self) -> str | None:
         if self.bone_loc_constraint == 'LEFT':
@@ -206,11 +206,17 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps):
         else:
             bones = armature.bones if context.mode == 'POSE' else armature.edit_bones
         return bones.get(self.mirror_bone_name, None)
-    
-    def get_mirror_node(self) -> 'APNODE_BonePicker_Common' | None:
+
+    def get_mirror_node(self) -> 'APNODE_BonePicker_Common':
         if self.bone_loc_constraint not in {'LEFT', 'RIGHT'}:
             return None
-        return self.node_tree.nodes.get(self.mirror_bone_name, None)
+        mirror_bone_name = self.mirror_bone_name
+        for widget in self.node_tree.widgets_from_active_layer:
+            if isinstance(widget, APNODE_BonePicker_Common):
+                if widget.bone_name == mirror_bone_name:
+                    return widget
+        return None
+        # return self.node_tree.nodes.get(self.mirror_bone_name, None)
 
     def select_bone(self, context: Context, deselect_all: bool = True, make_active: bool = True) -> None:
         if context.active_object is None or context.active_object.type != 'ARMATURE':
