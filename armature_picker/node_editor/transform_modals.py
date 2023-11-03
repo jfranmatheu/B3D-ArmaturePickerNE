@@ -7,7 +7,7 @@ from enum import Enum, auto
 from typing import Union, List
 
 from armature_picker.utils.cursor import Cursor, CursorIcon
-from armature_picker.utils.event import Mouse, EventType, EventValue
+from armature_picker.utils.event import Mouse, EventType, EventValue, get_mouse_pos
 from ..gpu import draw
 from .nodes._base import AP_Node, RectTransform
 from ..utils.node_editor import get_node_editor_zoom, get_node_editor_view_point, get_node_editor_offset, get_node_editor_region_coord
@@ -17,6 +17,9 @@ from ..utils.operator import OpsReturn
 from .nodes._button_common import APNODE_Button_Common
 from .nodes._bone_picker_common import APNODE_BonePicker_Common
 from .nodes import APNODE_Image
+
+
+BonePickerNodeType = Union[AP_Node, APNODE_BonePicker_Common, APNODE_Button_Common]
 
 
 class DummyPicker:
@@ -100,8 +103,12 @@ class PickerTransformModals:
 
         if isinstance(modal_nodes, AP_Node):
             self.active_node = modal_nodes
+            self.modal_nodes = [modal_nodes]
         else:
             self.modal_nodes = modal_nodes
+
+        if self.modal_nodes is not None:
+            self.modal__preprocess_mirror_bone_pickers(context, event)
 
         if use_advanced_mouse: # or self.active_node is not None:
             self.inject_modal_mouse = Mouse.init(event, context, local_space__rect=self.active_node.rect_transform if self.active_node is not None else None)
@@ -117,16 +124,13 @@ class PickerTransformModals:
             modal_enter_callback(context, event, self.mouse_pos)
 
 
-    # MODAL: Move Selected Nodes.
-    # ----------------------------------------------------------------
-
-    def modal__move_node__enter(self, context: Context, event: Event, mouse_pos: Vector) -> None:
+    def modal__preprocess_mirror_bone_pickers(self, context: Context, event: Event):
         # ----------------------------------------------------------------
         # Process bone picker nodes with mirror node. (L/R) support.
-        view_pos = get_node_editor_view_point(context, mouse_pos)
+        view_pos = get_node_editor_view_point(context, get_mouse_pos(event))
         preferred_side: str = 'LEFT' if view_pos < 0 else 'RIGHT'
         to_remove_nodes = set()
-        self.mirror_nodes = {}
+        self.mirror_nodes: dict[BonePickerNodeType, BonePickerNodeType] = {}
         for node in self.modal_nodes:
             if not isinstance(node, APNODE_BonePicker_Common):
                 continue
@@ -159,6 +163,11 @@ class PickerTransformModals:
 
         # ----------------------------------------------------------------
 
+
+    # MODAL: Move Selected Nodes.
+    # ----------------------------------------------------------------
+
+    def modal__move_node__enter(self, context: Context, event: Event, mouse_pos: Vector) -> None:
         self.prev_node_location = [tuple(node.rect_transform.origin) for node in self.modal_nodes]
         node_region_location = [get_node_editor_region_coord(context, node.rect_transform.origin) for node in self.modal_nodes]
         self.node_location_offset = [prev_node_loc - mouse_pos for prev_node_loc in node_region_location]
@@ -204,7 +213,7 @@ class PickerTransformModals:
             else:
                 self.modal_move_axis.add('X')
 
-        def move_node(_node: Node, _node_loc, _node_loc_offset: Vector):
+        def move_node(_node: Node, _prev_node_origin: Vector, _node_loc_offset: Vector):
             if _node.locked:
                 return
 
@@ -235,9 +244,9 @@ class PickerTransformModals:
             if len(self.modal_move_axis) in {0, 2}:
                 pass
             elif 'X' in self.modal_move_axis:
-                pos.y = _node_loc[1]
+                pos.y = _prev_node_origin[1]
             elif 'Y' in self.modal_move_axis:
-                pos.x = _node_loc[0]
+                pos.x = _prev_node_origin[0]
 
             # MOVE!
             rect.move_to(pos)
@@ -282,6 +291,13 @@ class PickerTransformModals:
         def rotate_node(_node: Node, _rot: float):
             if _node.locked:
                 return
+
+            # Apply Axis and Mirror Constraints to BonePicker Widgets.
+            if isinstance(_node, APNODE_BonePicker_Common):
+                # Rotate mirror node accordingly if existing.
+                if _mirror_node := self.mirror_nodes.get(_node, None):
+                    _mirror_node.rect_transform.rotation = -_rot
+
             _node.rect_transform.rotation = _rot
 
         {rotate_node(node, orig_rot + angle_offset) for (node, orig_rot) in zip(self.modal_nodes, self.prev_node_rotation)}
@@ -359,30 +375,44 @@ class PickerTransformModals:
         mvec_dist = scale_vec.length # * view_zoom
         # dim_off = Vector((mvoff, mvoff))
 
-        def scale_node(_node: Node, _dim: tuple[int, int], _dist: float):
+        def scale_node(_node: AP_Node, _dim: tuple[int, int], _dist: float):
             if _node.locked:
                 return
+            rect: RectTransform = _node.rect_transform
             _mvoff = (mvec_dist - _dist) * view_zoom
-            dimensions = tuple(int(v) for v in Vector(_dim) + Vector((_mvoff, _mvoff)))
+            dimensions = Vector(_dim) + Vector((_mvoff, _mvoff))
 
+            # Special case for buttons with image.
             if ((isinstance(_node, APNODE_Button_Common) and _node.use_image) or isinstance(_node, APNODE_Image)) and\
                 _node.image is not None and _node.keep_aspect_ratio:
-                # dim.x -> scale_x
+                # dim.x -> scale_xsss
                 # new_dim.x -> new_scale_x ?
-                _node.image_scale_x = _node.image_scale_x * dimensions[0] / _dim[0]
+                new_scale_x = _node.image_scale_x * dimensions[0] / _dim[0]
+                _node.image_scale_x = new_scale_x
+
+                if isinstance(_node, APNODE_BonePicker_Common):
+                    # Scale mirror node image accordingly if existing.
+                    if _mirror_node := self.mirror_nodes.get(_node, None):
+                        # It must respect the same conditions...
+                        if _mirror_node.use_image and _mirror_node.image is not None and _mirror_node.keep_aspect_ratio:
+                            _mirror_node.rect_transform.dimensions = dimensions
             else:
+                # Common-case.
                 if len(self.modal_scale_axis) in {0, 2}:
-                    _node.rect_transform.dimensions = dimensions
+                    pass
                 elif 'X' in self.modal_scale_axis:
-                    _node.rect_transform.dimensions = (
-                        dimensions[0],
-                        _dim[1]
-                    )
+                    dimensions.y = _dim[1]
                 elif 'Y' in self.modal_scale_axis:
-                    _node.rect_transform.dimensions = (
-                        _dim[0],
-                        dimensions[1]
-                    )
+                    dimensions.x = _dim[0]
+
+                dimensions = tuple(int(v) for v in dimensions)
+                rect.dimensions = dimensions
+
+                if isinstance(_node, APNODE_BonePicker_Common):
+                    # Scale mirror node accordingly if existing.
+                    if _mirror_node := self.mirror_nodes.get(_node, None):
+                        _mirror_node.rect_transform.dimensions = dimensions
+
 
         {scale_node(node, orig_dim, orig_dist) for (node, orig_dim, orig_dist) in zip(self.modal_nodes, self.prev_node_dimensions, self.modal_node_mouse_distances)}
         return 1
@@ -443,6 +473,12 @@ class PickerTransformModals:
         elif self.node_border_id == 'BOTTOM':
             self.rect_border_attr = 'y_min'
             self.node_start_min = rect.y_min
+        elif self.node_border_id == 'RIGHT':
+            self.rect_border_attr = 'x_max'
+            self.node_start_min = rect.x_max
+        elif self.node_border_id == 'TOP':
+            self.rect_border_attr = 'y_max'
+            self.node_start_min = rect.y_max
 
         if isinstance(node, APNODE_Button_Common) and node.fit_to_text:
             node.fit_to_text = False
@@ -493,25 +529,67 @@ class PickerTransformModals:
         if self.use_keep_image_aspect_ratio:
             prev_origin = tuple(rect.origin)
 
+        # ----------------------------------------------------------------
+
         if is_hor_border:
-            rect_dir_v = (rect.bottom_right - rect.bottom_left).normalized()
             if is_min_border:
-                rect.x_min = get_node_editor_view_point(context, mouse.current).x ## rect.x_min + mouse.local_delta_int.x * inv_zoom ## self.node_start_min + mouse.local_offset.x * inv_zoom
+                # X-MIN.
+                value = get_node_editor_view_point(context, mouse.current).x ## rect.x_min + mouse.local_delta_int.x * inv_zoom ## self.node_start_min + mouse.local_offset.x * inv_zoom
             elif is_max_border:
+                # X-MAX.
                 if rect.rotation == 0:
-                    rect.x_max = get_node_editor_view_point(context, mouse.current).x
+                    value = get_node_editor_view_point(context, mouse.current).x
                 else:
-                    rect.x_max = rect.x_max + mouse.local_delta_int.x * inv_zoom
+                    value = rect.x_max + mouse.local_delta_int.x * inv_zoom
 
         elif is_vert_border:
-            rect_dir_v = (rect.top_right - rect.top_left).normalized()
             if is_min_border:
-                rect.y_min = get_node_editor_view_point(context, mouse.current).y ## rect.y_min + mouse.local_delta_int.y * inv_zoom ## self.node_start_min + mouse.local_offset.y * inv_zoom
+                # Y-MIN.
+                value = get_node_editor_view_point(context, mouse.current).y ## rect.y_min + mouse.local_delta_int.y * inv_zoom ## self.node_start_min + mouse.local_offset.y * inv_zoom
             elif is_max_border:
+                # Y-MAX.
                 if rect.rotation == 0:
-                    rect.y_max = get_node_editor_view_point(context, mouse.current).y
+                    value = get_node_editor_view_point(context, mouse.current).y
                 else:
-                    rect.y_max = rect.y_max + mouse.local_delta_int.y * inv_zoom
+                    value = rect.y_max + mouse.local_delta_int.y * inv_zoom
+
+        # ----------------------------------------------------------------
+        # Apply Mirror Constraints to BonePicker Widgets.
+        mirror_node = None
+        if isinstance(node, APNODE_BonePicker_Common):
+            # Get the border_id that should be resized in the mirror node.
+            if is_hor_border:
+                if is_min_border:
+                    mirror_border_attr = 'x_max'
+                else:
+                    mirror_border_attr = 'x_min'
+                mirror_value = -value
+            else:
+                mirror_border_attr = self.rect_border_attr
+
+            # Pass to prevent overlapping in L/R mirror nodes.
+            # And to maintain a consistent width for CENTER bone picker widgets.
+            if is_hor_border:
+                if node.bone_loc_constraint == 'CENTER':
+                    setattr(node.rect_transform, mirror_border_attr, mirror_value)
+                elif node.bone_loc_constraint == 'LEFT' and is_max_border:
+                    if value > 0:
+                        value = 0
+                        mirror_value = 0
+                elif node.bone_loc_constraint == 'RIGHT' and is_min_border:
+                    if value < 0:
+                        value = 0
+                        mirror_value = 0
+
+            # Move mirror node accordingly if existing.
+            if mirror_node := self.mirror_nodes.get(node, None):
+                mirror_prev_origin = tuple(rect.origin)
+                setattr(mirror_node.rect_transform, mirror_border_attr, mirror_value)
+        # ----------------------------------------------------------------
+
+        # Apply border displacement to node!
+        setattr(node.rect_transform, self.rect_border_attr, value)
+
 
         # rect.update_from_coords(context)
         if hasattr(node, 'apply_transform_dimensions_constraints'):
@@ -522,8 +600,12 @@ class PickerTransformModals:
 
         if self.use_keep_image_aspect_ratio:
             rect.origin = prev_origin
+            if mirror_node is not None:
+                rect.origin = mirror_prev_origin
 
         node.update_graphics(context)
+        if mirror_node is not None:
+            mirror_node.update_graphics(context)
         return 1
 
     def modal__resize_node__exit(self, context: Context, mouse_pos: Vector, cancel: bool) -> None:
