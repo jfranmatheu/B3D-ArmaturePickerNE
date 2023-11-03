@@ -15,6 +15,7 @@ from ..utils.armature import deselect_all_bones_from_active
 from ..utils.geometry import angle_signed, Box, rect_overlap
 from ..utils.operator import OpsReturn
 from .nodes._button_common import APNODE_Button_Common
+from .nodes._bone_picker_common import APNODE_BonePicker_Common
 from .nodes import APNODE_Image
 
 
@@ -96,7 +97,7 @@ class PickerTransformModals:
                          modal_exit_callback: callable = None,
                          modal_draw_callback: callable = None,
                          use_advanced_mouse: bool = False) -> None:
-        
+
         if isinstance(modal_nodes, AP_Node):
             self.active_node = modal_nodes
         else:
@@ -120,6 +121,44 @@ class PickerTransformModals:
     # ----------------------------------------------------------------
 
     def modal__move_node__enter(self, context: Context, event: Event, mouse_pos: Vector) -> None:
+        # ----------------------------------------------------------------
+        # Process bone picker nodes with mirror node. (L/R) support.
+        view_pos = get_node_editor_view_point(context, mouse_pos)
+        preferred_side: str = 'LEFT' if view_pos < 0 else 'RIGHT'
+        to_remove_nodes = set()
+        self.mirror_nodes = {}
+        for node in self.modal_nodes:
+            if not isinstance(node, APNODE_BonePicker_Common):
+                continue
+            if node in to_remove_nodes:
+                continue
+            if node.bone_loc_constraint not in {'LEFT', 'RIGHT'}:
+                continue
+
+            # Get mirror node and determine if current node is in the preferred side or not.
+            keep_curr_node = preferred_side == node.bone_loc_constraint
+            mirror_node = node.get_mirror_node()
+
+            # Exclude mirror node (or current node, depending on the prefered side)
+            # to avoid moving both L/R nodes at the same time (CAOS!)
+            if mirror_node in self.modal_nodes:
+                if keep_curr_node:
+                    self.mirror_nodes[node] = mirror_node
+                    to_remove_nodes.add(mirror_node)
+                else:
+                    self.mirror_nodes[mirror_node] = node
+                    to_remove_nodes.add(node)
+            else:
+                self.mirror_nodes[node] = mirror_node
+
+        # Safely remove nodes from the non-prefered side of the picker
+        # when we detect that both L and R nodes are selected for this modal.
+        if len(to_remove_nodes) != 0:
+            for to_remove_node in to_remove_nodes:
+                self.modal_nodes.remove(to_remove_node)
+
+        # ----------------------------------------------------------------
+
         self.prev_node_location = [tuple(node.rect_transform.origin) for node in self.modal_nodes]
         node_region_location = [get_node_editor_region_coord(context, node.rect_transform.origin) for node in self.modal_nodes]
         self.node_location_offset = [prev_node_loc - mouse_pos for prev_node_loc in node_region_location]
@@ -168,18 +207,40 @@ class PickerTransformModals:
         def move_node(_node: Node, _node_loc, _node_loc_offset: Vector):
             if _node.locked:
                 return
+
+            rect: RectTransform = _node.rect_transform
+            pos = (mouse_pos - offset + _node_loc_offset) * inv_zoom
+
+            # Apply Axis and Mirror Constraints to BonePicker Widgets.
+            if isinstance(_node, APNODE_BonePicker_Common):
+                if _node.bone_loc_constraint == 'CENTER':
+                    pos.x = 0 # Lock to Y axis at X=0.
+                elif _node.bone_loc_constraint == 'LEFT':
+                    dim_right_to_origin = rect.dimensions[0] * (1 - rect.pivot[0])
+                    right = pos.x + dim_right_to_origin
+                    if right > 0:
+                        pos.x = - dim_right_to_origin
+                elif _node.bone_loc_constraint == 'RIGHT':
+                    dim_left_to_origin = rect.dimensions[0] * rect.pivot[0]
+                    left = pos.x - dim_left_to_origin
+                    if left < 0:
+                        pos.x = dim_left_to_origin
+
+                # Move mirror node accordingly if existing.
+                if _mirror_node := self.mirror_nodes.get(_node, None):
+                    mirror_pos = pos.copy()
+                    mirror_pos.x *= -1
+                    _mirror_node.rect_transform.move_to(mirror_pos)
+
             if len(self.modal_move_axis) in {0, 2}:
-                _node.rect_transform.move_to((mouse_pos - offset + _node_loc_offset) * inv_zoom)
+                pass
             elif 'X' in self.modal_move_axis:
-                _node.rect_transform.move_to((
-                    (mouse_pos.x - offset.x + _node_loc_offset.x) * inv_zoom,
-                    _node_loc[1]
-                ))
+                pos.y = _node_loc[1]
             elif 'Y' in self.modal_move_axis:
-                _node.rect_transform.move_to((
-                    _node_loc[0],
-                    (mouse_pos.y - offset.y + _node_loc_offset.y) * inv_zoom
-                ))
+                pos.x = _node_loc[0]
+
+            # MOVE!
+            rect.move_to(pos)
 
         {move_node(node, prev_loc, node_loc_offset) for (node, prev_loc, node_loc_offset) in zip(self.modal_nodes, self.prev_node_location, self.node_location_offset)}
         return 1
