@@ -258,6 +258,11 @@ class PickerTransformModals:
         if cancel:
             for (node, prev_node_loc) in zip(self.modal_nodes, self.prev_node_location):
                 node.rect_transform.move_to(prev_node_loc)
+                # MIRROR -----
+                if isinstance(node, APNODE_BonePicker_Common):
+                    if mirror_node := self.mirror_nodes.get(node, None):
+                        mirror_node.rect_transform.move_to((-prev_node_loc[0], prev_node_loc[1]))
+
             del self.prev_node_location
             del self.node_location_offset
 
@@ -307,6 +312,10 @@ class PickerTransformModals:
         if cancel:
             for (node, prev_node_rot) in zip(self.modal_nodes, self.prev_node_rotation):
                 node.rect_transform.rotation = prev_node_rot
+                # MIRROR -----
+                if isinstance(node, APNODE_BonePicker_Common):
+                    if mirror_node := self.mirror_nodes.get(node, None):
+                        mirror_node.rect_transform.rotation = -prev_node_rot
 
         del self.prev_node_rotation
         del self.modal_rotation_origin_region
@@ -421,6 +430,10 @@ class PickerTransformModals:
         if cancel:
             for (node, prev_node_dim) in zip(self.modal_nodes, self.prev_node_dimensions):
                 node.rect_transform.dimensions = prev_node_dim
+                # MIRROR -----
+                if isinstance(node, APNODE_BonePicker_Common):
+                    if mirror_node := self.mirror_nodes.get(node, None):
+                        mirror_node.rect_transform.dimensions = prev_node_dim
 
         del self.prev_node_dimensions
         del self.modal_scale_origin_view
@@ -488,6 +501,17 @@ class PickerTransformModals:
         else:
             self.use_keep_image_aspect_ratio = False
 
+        # ----------------------------------------------------------------
+        # MIRROR NODE!
+        if isinstance(node, APNODE_BonePicker_Common):
+            self.mirror_node = self.mirror_nodes.get(node, None)
+            if self.mirror_node is not None:
+                self.mirror_node.fit_to_text = False
+                self.prev_mirror_node_coords = list(self.mirror_node.rect_transform.coords)
+        else:
+            self.mirror_node = None
+        # ----------------------------------------------------------------
+
         Cursor.set_icon(context, CursorIcon.DOT)
 
 
@@ -514,7 +538,7 @@ class PickerTransformModals:
 
         zoom = get_node_editor_zoom(context)
         inv_zoom = 1/zoom
-        offset = get_node_editor_offset(context)
+        # offset = get_node_editor_offset(context)
 
         # OLD METHOD
         # BUG ISSUE: looks like local_rect_space Mouse type stuff is wiggling around when modifying the minimum values (x_min, y_min).
@@ -555,7 +579,6 @@ class PickerTransformModals:
 
         # ----------------------------------------------------------------
         # Apply Mirror Constraints to BonePicker Widgets.
-        mirror_node = None
         if isinstance(node, APNODE_BonePicker_Common):
             # Get the border_id that should be resized in the mirror node.
             if is_hor_border:
@@ -566,6 +589,7 @@ class PickerTransformModals:
                 mirror_value = -value
             else:
                 mirror_border_attr = self.rect_border_attr
+                mirror_value = value
 
             # Pass to prevent overlapping in L/R mirror nodes.
             # And to maintain a consistent width for CENTER bone picker widgets.
@@ -582,9 +606,9 @@ class PickerTransformModals:
                         mirror_value = 0
 
             # Move mirror node accordingly if existing.
-            if mirror_node := self.mirror_nodes.get(node, None):
+            if self.mirror_node is not None:
                 mirror_prev_origin = tuple(rect.origin)
-                setattr(mirror_node.rect_transform, mirror_border_attr, mirror_value)
+                setattr(self.mirror_node.rect_transform, mirror_border_attr, mirror_value)
         # ----------------------------------------------------------------
 
         # Apply border displacement to node!
@@ -600,20 +624,29 @@ class PickerTransformModals:
 
         if self.use_keep_image_aspect_ratio:
             rect.origin = prev_origin
-            if mirror_node is not None:
-                rect.origin = mirror_prev_origin
+            if self.mirror_node is not None:
+                self.mirror_node.rect_transform.origin = mirror_prev_origin
 
         node.update_graphics(context)
-        if mirror_node is not None:
-            mirror_node.update_graphics(context)
+        if self.mirror_node is not None:
+            self.mirror_node.update_graphics(context)
         return 1
 
     def modal__resize_node__exit(self, context: Context, mouse_pos: Vector, cancel: bool) -> None:
-        rect: RectTransform = self.active_node.rect_transform
+        node = self.active_node
+        rect: RectTransform = node.rect_transform
 
         if cancel:
             rect.coords = self.prev_node_coords
             rect.update_from_coords(context)
+
+            # ----------------------------------------------------------------
+            # MIRROR CANCEL.
+            if self.mirror_node is not None:
+                mirror_rect: RectTransform = self.mirror_node.rect_transform
+                mirror_rect.coords = self.prev_mirror_node_coords
+                mirror_rect.update_from_coords(context)
+            # ----------------------------------------------------------------
 
         elif rect.rotation != 0 or not rect.can_update_origin_on_redimension:
             v_dir_angle = (Vector(rect.coords_rotated[2]) - Vector(rect.coords_rotated[1])).normalized()
@@ -628,10 +661,21 @@ class PickerTransformModals:
             rotated_offset_x = origin_in_local.x * cos(rotation_angle) - origin_in_local.y * sin(rotation_angle)
             rotated_offset_y = origin_in_local.x * sin(rotation_angle) + origin_in_local.y * cos(rotation_angle)
 
-            rect.origin = (
+            adjusted_origin = (
                 int(rect.coords_rotated[1][0] + rotated_offset_x - v_dir_angle.x * .25),
                 int(rect.coords_rotated[1][1] + rotated_offset_y - v_dir_angle.y * .25)
             )
+            rect.origin = adjusted_origin
+
+            # ----------------------------------------------------------------
+            # MIRROR ADJUSTMENT.
+            if self.mirror_node is not None:
+                self.mirror_node.rect_transform.origin = (-adjusted_origin[0], adjusted_origin[1])
+            # ----------------------------------------------------------------
+
+        if self.mirror_node is not None:
+            del self.prev_mirror_node_coords
+            self.mirror_node = None
 
         if hasattr(self, 'node_start_min'):
             del self.rect_border_attr
