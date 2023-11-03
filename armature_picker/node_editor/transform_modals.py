@@ -144,7 +144,7 @@ class PickerTransformModals:
             mirror_node = node.get_mirror_node()
             if mirror_node is None:
                 continue
-            
+
             mirror_node.select = True
 
             # Exclude mirror node (or current node, depending on the prefered side)
@@ -355,11 +355,7 @@ class PickerTransformModals:
         self.modal_scale_origin_view = orig
         orig = get_node_editor_region_coord(context, orig)
         self.modal_scale_origin_region = orig
-
-        if len(self.modal_nodes) == 1:
-            self.modal_node_mouse_distances = [(get_node_editor_region_coord(context, node.rect_transform.origin) - mouse_pos).length for node in self.modal_nodes]
-        else:
-            self.modal_node_mouse_distances = [(get_node_editor_region_coord(context, node.rect_transform.origin) - orig).length for node in self.modal_nodes]
+        self.modal_scale_start_dist = (mouse_pos - orig).length
 
         Cursor.set_icon(context, CursorIcon.SCROLL_XY)
 
@@ -380,18 +376,17 @@ class PickerTransformModals:
             else:
                 self.modal_scale_axis.add('X')
 
-        scale_vec = (self.modal_scale_origin_region - mouse_pos)
+        scale_curr_dist = (mouse_pos - self.modal_scale_origin_region).length
 
         view_zoom = 1 / get_node_editor_zoom(context)
-        mvec_dist = scale_vec.length # * view_zoom
-        # dim_off = Vector((mvoff, mvoff))
+        mvec_dist = (scale_curr_dist - self.modal_scale_start_dist) * view_zoom
+        mvoff = Vector((mvec_dist, mvec_dist))
 
-        def scale_node(_node: AP_Node, _dim: tuple[int, int], _dist: float):
+        def scale_node(_node: AP_Node, _dim: tuple[int, int]):
             if _node.locked:
                 return
             rect: RectTransform = _node.rect_transform
-            _mvoff = (mvec_dist - _dist) * view_zoom
-            dimensions = Vector(_dim) + Vector((_mvoff, _mvoff))
+            dimensions = Vector(_dim) + mvoff
 
             # Special case for buttons with image.
             if ((isinstance(_node, APNODE_Button_Common) and _node.use_image) or isinstance(_node, APNODE_Image)) and\
@@ -425,7 +420,7 @@ class PickerTransformModals:
                         _mirror_node.rect_transform.dimensions = dimensions
 
 
-        {scale_node(node, orig_dim, orig_dist) for (node, orig_dim, orig_dist) in zip(self.modal_nodes, self.prev_node_dimensions, self.modal_node_mouse_distances)}
+        {scale_node(node, orig_dim) for (node, orig_dim) in zip(self.modal_nodes, self.prev_node_dimensions)}
         return 1
 
     def modal__scale_node__exit(self, context: Context, mouse_pos: Vector, cancel: bool) -> None:
