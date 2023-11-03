@@ -43,7 +43,7 @@ class APNODE_BonePicker_CommonProps:
             elif self.bone_name.endswith('R'):
                 self.bone_loc_constraint = 'RIGHT'
             elif bone := self.get_bone(context):
-                if bone.location.x == 0:
+                if bone.tail_local.x == 0 and bone.head_local.x == 0:
                     self.bone_loc_constraint = 'CENTER'
                 else:
                     self.bone_loc_constraint = 'NONE'
