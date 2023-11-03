@@ -1,5 +1,5 @@
 import bpy
-from bpy.types import Context, Event, Operator, Armature
+from bpy.types import Context, Event, Operator, Armature, Bone, PoseBone
 from mathutils import Vector
 
 from armature_picker.node_editor.poll import poll_check
@@ -21,13 +21,16 @@ class AP_OT_import_selected_bones(MoveNodesModal, Operator):
         return poll_check(context, 'EDIT', use_active_object=True, use_picker_editor=True, use_active_node=False)
 
     def invoke(self, context: Context, event: Event) -> OpsReturn:
-        selected_bones = context.selected_pose_bones_from_active_object
+        selected_bones: list[PoseBone] = context.selected_pose_bones_from_active_object
         if selected_bones is None or len(selected_bones) == 0:
             return OpsReturn.CANCEL
         self.armature: Armature = context.active_object.data
+        self.set_active_node = lambda node: setattr(context.space_data.node_tree.nodes, 'active', node)
         self.get_node = context.space_data.node_tree.nodes.get
         self.get_bone = get_bone = self.armature.bones.get
-        self.selected_bones = set([get_bone(bone.name) for bone in selected_bones])
+        self.selected_bones: set[Bone] = set([get_bone(bone.name) for bone in selected_bones])
+        for bone in self.selected_bones:
+            bone.select = False
         self.created_nodes = []
         self.next_node(context, event)
         return add_modal_handler(context, self)
@@ -50,10 +53,10 @@ class AP_OT_import_selected_bones(MoveNodesModal, Operator):
 
         # Create BonePicker out of this bone.
         node = self.create_bone_picker(context, event, bone)
-        print(node.mirror_bone_name)
+        ## print(node.mirror_bone_name)
 
         if mirror_bone := node.get_mirror_bone(context):
-            print(mirror_bone)
+            ## print(mirror_bone)
             # If the mirror bone is in the modal selection set, remove it!
             # to avoid duplicate since we will process L/R bones together.
             if mirror_bone in self.selected_bones:
@@ -66,6 +69,7 @@ class AP_OT_import_selected_bones(MoveNodesModal, Operator):
         refresh_nodes_cache(context.space_data.node_tree)
 
         # Start modal process :-)
+        self.set_active_node(node)
         self.modal_nodes = [node]
         self.created_nodes.append(node)
         self.modal__move_node__enter(context, event, get_mouse_pos(event))
