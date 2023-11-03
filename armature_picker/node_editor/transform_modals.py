@@ -128,7 +128,7 @@ class PickerTransformModals:
         # ----------------------------------------------------------------
         # Process bone picker nodes with mirror node. (L/R) support.
         view_pos = get_node_editor_view_point(context, get_mouse_pos(event))
-        preferred_side: str = 'LEFT' if view_pos < 0 else 'RIGHT'
+        preferred_side: str = 'LEFT' if view_pos.x < 0 else 'RIGHT'
         to_remove_nodes = set()
         self.mirror_nodes: dict[BonePickerNodeType, BonePickerNodeType] = {}
         for node in self.modal_nodes:
