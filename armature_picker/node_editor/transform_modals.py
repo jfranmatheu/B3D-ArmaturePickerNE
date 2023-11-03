@@ -237,9 +237,7 @@ class PickerTransformModals:
 
                 # Move mirror node accordingly if existing.
                 if _mirror_node := self.mirror_nodes.get(_node, None):
-                    mirror_pos = pos.copy()
-                    mirror_pos.x *= -1
-                    _mirror_node.rect_transform.move_to(mirror_pos)
+                    _mirror_node.rect_transform.move_to((-pos.x, pos.y))
 
             if len(self.modal_move_axis) in {0, 2}:
                 pass
