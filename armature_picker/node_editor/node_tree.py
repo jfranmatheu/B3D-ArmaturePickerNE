@@ -592,12 +592,7 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
                 return OpsReturn.FINISH
 
             if isEventValue.CLICK_DRAG:
-                self.set_inject_modal(context, event,
-                                    modal_callback=self.modal__box_select__update,
-                                    modal_enter_callback=self.modal__box_select__enter,
-                                    modal_exit_callback=self.modal__box_select__exit,
-                                    modal_draw_callback=self.modal__box_select__draw)
-                return OpsReturn.RUN
+                return PickerModal.BOX_SELECT(self, context, event, None)
 
 
     def invoke__edit(self, context: Context, event: Event) -> set[str] | None:
