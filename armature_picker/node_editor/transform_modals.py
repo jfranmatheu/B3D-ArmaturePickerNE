@@ -142,6 +142,8 @@ class PickerTransformModals:
             # Get mirror node and determine if current node is in the preferred side or not.
             keep_curr_node = preferred_side == node.bone_loc_constraint
             mirror_node = node.get_mirror_node()
+            if mirror_node is None:
+                continue
 
             # Exclude mirror node (or current node, depending on the prefered side)
             # to avoid moving both L/R nodes at the same time (CAOS!)
