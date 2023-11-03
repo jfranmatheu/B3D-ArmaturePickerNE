@@ -201,8 +201,9 @@ def draw_node(node: object, graphic_id: str, shader: GPUShader, use_uv: bool = F
     _draw_batch(batch, shader, **uniforms)
 
 
-def draw_node_cage(node: object, graphic_id: str, shader: GPUShader, margin: float, thickness: float | None = None, **uniforms):
-    if not node.dirty and (batch := get_batch_from_cache(node.uuid, graphic_id)) is not None:
+def draw_node_cage(node: object, graphic_id: str, shader: GPUShader, margin: float, thickness: float | None = None, dirty: bool | None = None, **uniforms):
+    is_dirty = dirty or node.dirty if dirty is not None else node.dirty
+    if not is_dirty and (batch := get_batch_from_cache(node.uuid, graphic_id)) is not None:
         pass
     else:
         batch = batch_for_shader(shader, 'LINE_LOOP', get_rect_cage_coords(node.rect_transform, margin))
@@ -376,11 +377,11 @@ def text_cached(data_id: str,
 def _box(node: object, graphic_id: str, margin: float, line_thickness: float, color: RGBA, _shader=SHADER_UNIFORM_COLOR):
     draw_node_cage(node, graphic_id, _shader, thickness=line_thickness, color=color)
 
-def box_ui(node: object, graphic_id: str, margin: float, line_thickness: float, color: RGBA, _shader=SHADER_POLYLINE_UNIFORM_COLOR):
+def box_ui(node: object, graphic_id: str, margin: float, line_thickness: float, color: RGBA, dirty: bool | None = None, _shader=SHADER_POLYLINE_UNIFORM_COLOR):
     state.blend_set('ALPHA')
     fb = gpu.state.active_framebuffer_get()
     x, y, w, h = fb.viewport_get()
-    draw_node_cage(node, graphic_id, _shader, margin=margin, lineWidth=line_thickness, color=color, viewportSize=(w, h))
+    draw_node_cage(node, graphic_id, _shader, margin=margin, lineWidth=line_thickness, color=color, viewportSize=(w, h), dirty=dirty)
 
 def box(node: object, graphic_id: str, pos: Vector, size: Vector, padding: float, line_thickness: float, color: RGBA, _shader=SHADER_POLYLINE_UNIFORM_COLOR):
     state.blend_set('ALPHA')

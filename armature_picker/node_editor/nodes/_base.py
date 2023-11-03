@@ -183,6 +183,14 @@ class AP_Node(NodeTransformProps):
         set_dirty_state(self.uuid, state)
 
     @property
+    def dirty_cage(self) -> bool:
+        return self.get_state('DIRTY_CAGE', False)
+
+    @dirty_cage.setter
+    def dirty_cage(self, state: bool) -> bool:
+        self.set_state('DIRTY_CAGE', state)
+
+    @property
     def dirty_label(self) -> bool:
         return _dirty_label_cache.get(self.uuid, False)
 
@@ -449,8 +457,11 @@ class AP_Node(NodeTransformProps):
             self, 'SELECT_CAGE',
             margin=2,
             line_thickness=cage_thickness,
-            color=color
+            color=color,
+            dirty=self.dirty_cage
         )
+        if self.dirty_cage:
+            self.set_state('DIRTY_CAGE', False)
 
     def draw__pose(self, context: Context, view_loc: Vector, rect: RectTransform, style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         ''' Specific drawing for POSE mode '''

@@ -528,7 +528,7 @@ class NodeTransformProps:
         pass
 
     def on_update_rect_post(self, context: Context, rect_transform: RectTransform) -> None:
-        pass
+        self.dirty_cage = True
 
     rect_transform: PointerProperty(type=RectTransform)
 
