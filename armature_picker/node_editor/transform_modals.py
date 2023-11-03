@@ -506,7 +506,8 @@ class PickerTransformModals:
         if isinstance(node, APNODE_BonePicker_Common):
             self.mirror_node = self.mirror_nodes.get(node, None)
             if self.mirror_node is not None:
-                self.mirror_node.fit_to_text = False
+                if self.mirror_node.fit_to_text:
+                    self.mirror_node.fit_to_text = False
                 self.prev_mirror_node_coords = list(self.mirror_node.rect_transform.coords)
         else:
             self.mirror_node = None
