@@ -144,6 +144,8 @@ class PickerTransformModals:
             mirror_node = node.get_mirror_node()
             if mirror_node is None:
                 continue
+            
+            mirror_node.select = True
 
             # Exclude mirror node (or current node, depending on the prefered side)
             # to avoid moving both L/R nodes at the same time (CAOS!)
