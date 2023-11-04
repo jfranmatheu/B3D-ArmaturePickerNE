@@ -35,9 +35,10 @@ def on_active_object_change(context: Context, view_layer_objects: LayerObjects, 
     act_armature_id = act_armature.as_pointer()
     if last_armature_id != act_armature_id:
         last_armature_id = act_armature_id
-        if picker := act_armature.picker:
-            if area := get_armature_picker_editor(context, ret_area=True):
-                area.tag_redraw()
-                area.spaces[0].node_tree = picker
+        picker = act_armature.picker
+        if area := get_armature_picker_editor(context, ret_area=True):
+            area.tag_redraw()
+            area.spaces[0].node_tree = picker
 
+            if picker is not None:
                 ensure_nodes_cache(picker)
