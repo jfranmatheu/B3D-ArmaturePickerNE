@@ -66,7 +66,6 @@ def get_gputex(bl_image: Image) -> GPUBatch | None:
         _gputex_cache[bl_image['uuid']] = get_gputex_from_image(bl_image)
     return _gputex_cache[bl_image['uuid']]
 
-
 def set_image(image: Image, _shader: SHADERS.IMA) -> bool:
     if isinstance(image, str):
         t=get_gputex_from_addon_image(image)
@@ -272,7 +271,7 @@ def text(pos: Vector,
          use_shadow: bool = False,
          shadow_level: int = 3, # 3, 5, 0
          shadow_color: tuple[float, float, float, float] = (0, 0, 0, .9),
-         shadow_offset: tuple = (1, -1)) -> Vector:
+         shadow_offset: tuple = (1, -1)) -> Tuple[Vector, Vector]:
     if size < 10:
         return
 
@@ -329,7 +328,7 @@ def text(pos: Vector,
     if width != 0 and word_wrap:
         blf.disable(0, blf.WORD_WRAP)
     state.blend_set(blend_state)
-    return pos
+    return pos, text_dim
 
 
 def text_cached(data_id: str,
