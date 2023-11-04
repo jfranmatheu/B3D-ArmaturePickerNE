@@ -4,10 +4,12 @@
 import bpy
 from bpy.types import SpaceNodeEditor, Context
 from mathutils import Vector
+import gpu
 
 from armature_picker.gpu import draw
 from armature_picker.icons import Icons
 from armature_picker.utils.geometry import calculate_scale_to_fit_box_in_box
+from armature_picker.utils.node_editor import get_node_editor_zoom, get_node_editor_offset, get_node_editor_view_size
 
 
 draw_handler = None
@@ -68,10 +70,7 @@ def draw_fallback_wrong_object_type(context: Context) -> None:
     if not gputex:
         return
     size = icon.image_size
-    # aspect_ratio = size[1] / size[0]
     wanted_dimensions, scale = calculate_scale_to_fit_box_in_box((context.region.width, context.region.height), size)
-    # w = int(min(int(context.region.width * 0.5), 128) * scale * aspect_ratio)
-    # h = w * aspect_ratio
     w, h = wanted_dimensions
     w = min(w, size[0] * 2 * ui_scale)
     h = min(h, size[1] * 2 * ui_scale)
@@ -91,6 +90,49 @@ def draw_fallback_wrong_object_type(context: Context) -> None:
     )
 
 
+def draw_fallbak_no_widgets(context: Context) -> None:
+    ui_scale = context.preferences.system.ui_scale
+    gputex = draw.get_gputex_from_addon_image('picker_placeholder.png')
+    if gputex is None:
+        return
+
+    isize = Vector((gputex.width, gputex.height)) * ui_scale
+    ipos = Vector((0, 0)) - isize * 0.5
+
+    zoom = get_node_editor_zoom(context)
+    offset = get_node_editor_offset(context)
+    view_size = get_node_editor_view_size(context)
+
+    with gpu.matrix.push_pop():
+        gpu.matrix.translate(offset)
+        gpu.matrix.scale_uniform(zoom)
+
+        draw.image_opa(
+            None, None,
+            ipos, isize, 0,
+            image_or_gputex=gputex,
+            opa=.1
+        )
+
+        context.space_data.node_tree.draw_base(ui_scale, True)
+
+        draw.text(
+            Vector((0, isize.y * 0.5)),
+            "Placeholder",
+            int(56 * ui_scale), (0.5, 0), 0,
+            (1, 1, 1), .5
+        )
+
+        text_pos, text_dim = draw.text(
+            Vector((0, -isize.y * 0.5)),
+            "Start with Shift+A to add your first widget!",
+            int(36 * ui_scale), (0.5, 1), 0,
+            (1, .6, .25), .5,
+            width=int(view_size.x - 8 * ui_scale * 1/zoom)
+        )
+
+
+
 def draw_callback() -> None:
     context= bpy.context
     if context.space_data.node_tree is None:
@@ -104,6 +146,9 @@ def draw_callback() -> None:
         return
     if context.active_object.mode != 'POSE':
         draw_fallback_wrong_mode(context)
+        return
+    if len(context.space_data.node_tree.nodes) == 0:
+        draw_fallbak_no_widgets(context)
         return
     context.space_data.node_tree._draw(context)
 
