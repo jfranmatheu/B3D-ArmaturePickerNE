@@ -21,6 +21,7 @@ from .offscreen import draw_offscreen, get_offscreen
 from ..utils.geometry import rotate_point
 from .shaders import SHADERS
 from ..utils.math import map_value
+from armature_picker.paths import Paths
 
 
 RGBA = Tuple[float, float, float, float]
@@ -67,12 +68,23 @@ def get_gputex(bl_image: Image) -> GPUBatch | None:
 
 
 def set_image(image: Image, _shader: SHADERS.IMA) -> bool:
-    t=get_gputex(image) if isinstance(image, Image) else image
+    if isinstance(image, str):
+        t=get_gputex_from_addon_image(image)
+    else:
+        t=get_gputex(image) if isinstance(image, Image) else image
     if t is None:
         return False
     state.blend_set('ALPHA')
     _shader.uniform_sampler('image', t)
     return True
+
+def get_gputex_from_addon_image(filename: str) -> GPUTexture:
+    if filename not in _gputex_cache:
+        tmp_image = bpy.data.images.load(Paths.LIB_IMAGES(filename))
+        _gputex_cache[filename] = get_gputex_from_image(tmp_image)
+        bpy.data.images.remove(tmp_image)
+        del tmp_image
+    return _gputex_cache[filename]
 
 
 # ----------------------------------------------------------------
