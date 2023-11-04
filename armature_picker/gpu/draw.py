@@ -226,17 +226,9 @@ def draw_node_cage(node: object, graphic_id: str, shader: GPUShader, margin: flo
     if thickness: state.line_width_set(1.0)
 
 
-def draw_cage(node: object, graphic_id: str, pos: Vector, size: Vector, pad: float, shader: GPUShader, thickness: float | None = None, **uniforms):
-    if not node.dirty and (batch := get_batch_from_cache(node.uuid, graphic_id)) is not None:
-        pass
-    else:
-        batch = batch_for_shader(shader, 'LINE_LOOP', get_cage_coords(*pos, *size, pad))
-        set_batch_to_cache(node.uuid, graphic_id, batch)
-    for key, value in uniforms.items():
-        shader.uniform_float(key, value)
-    if thickness: state.line_width_set(thickness)
-    batch.draw(shader)
-    if thickness: state.line_width_set(1.0)
+def draw_cage(node: object, graphic_id: str, pos: Vector, size: Vector, pad: float, shader: GPUShader = SHADER_POLYLINE_UNIFORM_COLOR, **uniforms):
+    pad_v = Vector((pad, pad))
+    draw(node, graphic_id, pos - pad_v, size + pad_v * 2, 0, shader, origin=None, dirty=None, use_uv=False, wg=False, **uniforms)
 
 
 # ----------------------------------------------------------------
@@ -328,7 +320,7 @@ def text(pos: Vector,
     if width != 0 and word_wrap:
         blf.disable(0, blf.WORD_WRAP)
     state.blend_set(blend_state)
-    return pos, text_dim
+    return pos, Vector(text_dim) if text_dim is not None else None
 
 
 def text_cached(data_id: str,
