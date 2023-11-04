@@ -403,9 +403,18 @@ def circle_ui(node: object, margin: float, line_thickness: float, color: RGBA):
 def image(owner: object, graphic_id: str,
        pos: Vector, size: Vector, rotation: float,
        image: Image | GPUTexture,
-       origin: Vector | None = None, _shader=SHADERS.IMA) -> None:
+       origin: Vector | None = None, _shader=SHADERS.IMA,
+       **extra_uniforms) -> None:
     if not set_image(image, _shader): return
-    draw(owner, graphic_id, pos, size, rotation, _shader, use_uv=True, wg=False, origin=origin)
+    draw(owner, graphic_id, pos, size, rotation, _shader, use_uv=True, wg=False, origin=origin, **extra_uniforms)
+
+
+def image_opa(owner: object, graphic_id: str,
+       pos: Vector, size: Vector, rotation: float,
+       image_or_gputex: Image | GPUTexture,
+       opa: float,
+       origin: Vector | None = None, _shader=SHADERS.IMA_OPA) -> None:
+    image(owner, graphic_id, pos, size, rotation, image_or_gputex, origin, _shader, o=opa)
 
 
 def image_bbox(owner: object, graphic_id: str,
