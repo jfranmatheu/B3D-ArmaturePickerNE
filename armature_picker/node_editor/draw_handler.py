@@ -120,14 +120,14 @@ def draw_fallbak_no_widgets(context: Context) -> None:
             Vector((0, isize.y * 0.5)),
             "Placeholder",
             int(56 * ui_scale), (0.5, 0), 0,
-            (1, 1, 1), .5
+            (1, 1, 1), .4
         )
 
         text_pos, text_dim = draw.text(
             Vector((0, -isize.y * 0.5)),
             "Start with Shift+A to add your first widget!",
             int(36 * ui_scale), (0.5, 1), 0,
-            (1, .6, .25), .5,
+            (1, .6, .25), .8,
             width=int(view_size.x - 8 * ui_scale * 1/zoom)
         )
 
