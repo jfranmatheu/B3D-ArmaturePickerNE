@@ -834,7 +834,7 @@ class PickerTransformModals:
 
         else:
             draw.box(
-                self.get_graphic_user('MODAL_BOX_SELECT'), 'BOX_SELECT',
+                None, None,
                 self.box.pos, self.box.size,
                 padding=0,
                 line_thickness=2.0,
