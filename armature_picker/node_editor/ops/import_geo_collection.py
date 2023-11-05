@@ -164,6 +164,6 @@ class AP_OT_import_geo_collection(MoveNodesModal, Operator):
             node.style.use_object_color = self.use_object_color
 
         self.modal_nodes = nodes
-        self.modal__move_node__enter(context, self.event, None)
+        self.modal__move_node__enter(context, self.event, mouse_region_pos)
         del self.event
         return add_modal_handler(context, self)

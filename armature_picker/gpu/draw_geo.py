@@ -10,11 +10,23 @@ import numpy as np
 from ..utils.geometry import is_inside_triangle, check_point_in_convex_hull
 from ..utils.iter import iter_grouper
 from .draw import RGBA, SHADERS #, get_batch_from_cache, set_batch_to_cache
+from ..data.pg.geometry import AP_PG_Geometry
 
 # ----------------------------------------------------------------
 
 
 _geo_cache: dict[str, 'Geometry'] = {}
+
+
+class BonePickerGeo:
+    uuid: str
+    object: Object
+    dirty: bool
+    dirty_geo: bool
+    geo_scale: float
+    geometry: AP_PG_Geometry
+    color: tuple[float, float, float, float]
+    geo_precision: str
 
 
 class Geometry:
@@ -30,42 +42,27 @@ class Geometry:
 
 
     @classmethod
-    def get(cls, node, safe_context: bool = True) -> 'Geometry':
-        if node.object is None:
-            return None
+    def get(cls, node: BonePickerGeo, safe_context: bool = True) -> 'Geometry':
         if (geo := _geo_cache.get(node.uuid, None)) is not None:
-            if safe_context:
-                if node.dirty_geo:
-                    geo.update_geometry(node)
-                    geo.update_batch(node)
-                elif node.dirty:
-                    geo.update_batch(node)
+            if node.dirty_geo:
+                geo.update_geometry(node)
+                geo.update_batch(node)
+            elif node.dirty:
+                geo.update_batch(node)
             return geo
         _geo_cache[node.uuid] = cls(node)
         return _geo_cache[node.uuid]
 
-    def __init__(self, node) -> None:
+    def __init__(self, node: BonePickerGeo) -> None:
         self.uuid = node.uuid
         self.update_geometry(node)
         self.update_batch(node)
 
-    def update_origin(self, object: Object) -> None:
-        self.origin = np.array((object.location.x, object.location.y))
+    def update_geometry(self, node: BonePickerGeo) -> None:
+        self.indices = node.geometry.indices
+        self.coords_rel = node.geometry.coords_rel # vertices[:, :2].round(2)
 
-    def update_geometry(self, node) -> None:
-        self.update_origin(node.object)
-        mesh: Mesh = node.object.data
-        mesh.calc_loop_triangles()
-        vertices = np.empty((len(mesh.vertices), 3), 'f')
-        indices = np.empty((len(mesh.loop_triangles), 3), 'i')
-        mesh.vertices.foreach_get(
-            "co", np.reshape(vertices, len(mesh.vertices) * 3))
-        mesh.loop_triangles.foreach_get(
-            "vertices", np.reshape(indices, len(mesh.loop_triangles) * 3))
-        self.indices = indices
-        self.coords_rel = vertices[:, :2].round(2)
-
-    def update_batch(self, node) -> None:
+    def update_batch(self, node: BonePickerGeo) -> None:
         scale = node.geo_scale
         self.coords = self.coords_rel * scale + np.array(node.rect_transform.origin)
         coords_list = self.coords.tolist()
@@ -106,7 +103,7 @@ class Geometry:
         return False
 
 
-    def draw(self, node, color: RGBA, hovered: bool) -> None:
+    def draw(self, node: BonePickerGeo, color: RGBA, hovered: bool) -> None:
         state.blend_set('ALPHA')
         SHADERS.COLOR_UNIFORM.uniform_float('u_color', Vector(color) * 1.2 if hovered else color)
         self.batch.draw(SHADERS.COLOR_UNIFORM)

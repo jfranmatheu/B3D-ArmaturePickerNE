@@ -8,6 +8,7 @@ from ....utils.math import clamp
 from ....gpu import draw_geo
 from armature_picker.prefs.styles import BonePickerGeo_LocalStyle, BonePickerGeo_Style
 from armature_picker.prefs.settings import BonePickerGeo_Settings
+from armature_picker.data.pg.geometry import AP_PG_Geometry
 
 
 class APNODE_BonePickerGeo_NodeProps:
@@ -23,11 +24,15 @@ class APNODE_BonePickerGeo_NodeProps:
     # ----------------------------------------------------------------
 
     def update_dimensions(self, context: Context) -> None:
-        if self.object is None:
-            return
-
         self.dirty = True
         draw_geo.Geometry.get(self)
+
+        scale = self.geo_scale
+        dim = self.geometry.dimensions
+        self.rect_transform.dimensions = (
+            int(dim[0] * scale),
+            int(dim[1] * scale)
+        )
 
         context.area.tag_redraw()
 
@@ -35,20 +40,22 @@ class APNODE_BonePickerGeo_NodeProps:
         if self.object is None:
             return
 
-        scale = self.geo_scale
         dim = self.object.dimensions
-        self.rect_transform.dimensions = (
-            int(dim[0] * scale),
-            int(dim[1] * scale)
-        )
+        self.geometry.dimensions = (dim[0], dim[1])
+        self.geometry.color = self.object.color
 
         self.dirty_geo = True
+        self.geometry.update(self.object.data)
         self.update_dimensions(context)
         self.dirty_geo = False
+
+        self.object = None
 
 
     # PROPERTIES
     # ----------------------------------------------------------------
+
+    geometry: PointerProperty(type=AP_PG_Geometry)
 
     object: PointerProperty(
         name="Mesh Object",

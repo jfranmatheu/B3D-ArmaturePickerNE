@@ -23,9 +23,13 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Com
     def init(self, context):
         super().init(context)
 
-        self.dirty_geo = True
+        self.dirty = True
         self.use_override_theme = True
 
+        self.dirty_geo = True
+        self.geometry.init()
+        draw_geo.Geometry.get(self)
+        self.dirty_geo = False
 
     @property
     def dirty_geo(self) -> bool:
@@ -68,15 +72,14 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Com
             )
             return
 
-        if self.object is not None:
-            if wg_settings.display_on_hover_only and not hovered and self.node_tree.picker_mode in {'POSE'}:
-                pass
+        if wg_settings.display_on_hover_only and not hovered and self.node_tree.picker_mode in {'POSE'}:
+            pass
+        else:
+            if local_style.use_object_color:
+                color = self.geometry.color
             else:
-                if local_style.use_object_color:
-                    color = self.object.color
-                else:
-                    color = local_style.get_color(theme_style)
-                geo.draw(self, color=color, hovered=hovered)
+                color = local_style.get_color(theme_style)
+            geo.draw(self, color=color, hovered=hovered)
 
         if self.use_ik_fk and geo:
             ikfk_size = Vector((self.ik_fk_size, self.ik_fk_size))
