@@ -226,9 +226,18 @@ def draw_node_cage(node: object, graphic_id: str, shader: GPUShader, margin: flo
     if thickness: state.line_width_set(1.0)
 
 
-def draw_cage(node: object, graphic_id: str, pos: Vector, size: Vector, pad: float, shader: GPUShader = SHADER_POLYLINE_UNIFORM_COLOR, **uniforms):
-    pad_v = Vector((pad, pad))
-    draw(node, graphic_id, pos - pad_v, size + pad_v * 2, 0, shader, origin=None, dirty=None, use_uv=False, wg=False, **uniforms)
+def draw_cage(owner: object, graphic_id: str, pos: Vector, size: Vector, pad: float, dirty: bool | None = None, shader: GPUShader = SHADER_POLYLINE_UNIFORM_COLOR, **uniforms):
+    if graphic_id is None:
+        is_dirty = True
+    else:
+        is_dirty = dirty or owner.dirty if owner is not None and dirty is not None else owner.dirty
+    if not is_dirty and (batch := get_batch_from_cache(owner.uuid, graphic_id)) is not None:
+        pass
+    else:
+        batch = batch_for_shader(shader, 'LINE_LOOP', get_cage_coords(*pos, *size, pad))
+        if graphic_id is not None:
+            set_batch_to_cache(owner.uuid, graphic_id, batch)
+    _draw_batch(batch, shader, **uniforms)
 
 
 # ----------------------------------------------------------------
@@ -390,7 +399,7 @@ def box(node: object, graphic_id: str, pos: Vector, size: Vector, padding: float
     state.blend_set('ALPHA')
     fb = gpu.state.active_framebuffer_get()
     x, y, w, h = fb.viewport_get()
-    draw_cage(node, graphic_id, pos, size, padding, _shader, lineWidth=line_thickness, color=color, viewportSize=(w, h))
+    draw_cage(node, graphic_id, pos, size, pad=padding, shader=_shader, dirty=node is None, lineWidth=line_thickness, color=color, viewportSize=(w, h))
 
 
 def circle_ui(node: object, margin: float, line_thickness: float, color: RGBA):
