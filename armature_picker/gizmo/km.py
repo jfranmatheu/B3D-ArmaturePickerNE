@@ -33,11 +33,16 @@ class TheAPGZKM:
     @classmethod
     def setup_keymap(cls, keyconfig: KeyConfig) -> KeyMap:
         print("Setup Keymaps")
-        return create_km(cls, keyconfig)
+        return create_km(cls, None) # (cls, keyconfig)
 
 
-def create_km(cls, keyconfig):
+def create_km(cls=None, keyconfig=None):
+    if cls is None:
+        from .gzg import TheAPGZG
+        cls = TheAPGZG
     # keyconfig = bpy.context.window_manager.keyconfigs.addon
+    if keyconfig is None:
+        keyconfig = bpy.context.window_manager.keyconfigs.addon
     if km := keyconfig.keymaps.get(cls.bl_idname, None):
         if km.keymap_items and len(km.keymap_items) > 1:
             return km
