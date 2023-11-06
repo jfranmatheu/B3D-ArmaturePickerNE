@@ -103,7 +103,7 @@ class AP_OT_import_geo_collection(MoveNodesModal, Operator):
             if self.apply_rotation or self.apply_scale:
                 bpy.ops.object.transform_apply(location=False, rotation=self.apply_rotation, scale=self.apply_scale)
             if self.center_origins:
-                bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='MEDIAN')
+                bpy.ops.object.origin_set(type='ORIGIN_GEOMETRY', center='BOUNDS') # 'MEDIAN
 
             for ob in valid_objects:
                 ob.select_set(False)
