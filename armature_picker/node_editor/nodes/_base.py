@@ -285,7 +285,8 @@ class AP_Node(NodeTransformProps):
                 last_state: str = self.get_state('HOVERED_BORDER', 'NONE')
                 if self.test_borders(context, self.rect_transform, view_loc, view_zoom):
                     ok = True
-                if last_state != self.get_state('HOVERED_BORDER', 'NONE'):
+                    context.region.tag_redraw()
+                elif last_state != self.get_state('HOVERED_BORDER', 'NONE'):
                     context.region.tag_redraw()
             elif self.get_state('HOVERED_BORDER', 'NONE') != 'NONE':
                 self.set_state('HOVERED_BORDER', 'NONE')
