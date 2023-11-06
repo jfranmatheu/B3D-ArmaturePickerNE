@@ -277,7 +277,7 @@ class AP_Node(NodeTransformProps):
 
     # ----- ON HOVER --------------------------------
 
-    def _test_select(self, context: Context, in_edit: bool, is_active: bool, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
+    def _test_select(self, context: Context, in_edit: bool, is_active: bool, view_loc: Vector, view_zoom: float) -> bool:
         ''' Internal. '''
         if in_edit:
             ok = self.on_hover__edit(context, is_active, self.rect_transform, view_loc, view_zoom)
@@ -292,13 +292,13 @@ class AP_Node(NodeTransformProps):
                 self.set_state('HOVERED_BORDER', 'NONE')
                 Cursor.set_icon(context, CursorIcon.DEFAULT)
         else:
-            ok = self.on_hover__pose(context, self.rect_transform, region_loc, view_loc, view_zoom, reg_offset)
+            ok = self.on_hover__pose(context, self.rect_transform, view_loc, view_zoom)
 
         if ok:
             if not self.is_hovered():
                 context.region.tag_redraw()
                 self.set_hovered(True)
-                self.on_hover_enter(context, region_loc, view_loc)
+                self.on_hover_enter(context, view_loc)
             return True
         else:
             if self.is_hovered():
@@ -307,7 +307,7 @@ class AP_Node(NodeTransformProps):
                 self.on_hover_exit(context)
             return False
 
-    def on_hover__pose(self, context: Context, rect: RectTransform, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
+    def on_hover__pose(self, context: Context, rect: RectTransform, view_loc: Vector, _view_zoom: float) -> bool:
         return point_inside_rect(view_loc, rect.bottom_left, rect.size, rect.rotation)
 
     def on_hover__edit(self, context: Context, is_active: bool, rect: RectTransform, view_loc: Vector, view_zoom: float) -> bool:
@@ -317,7 +317,7 @@ class AP_Node(NodeTransformProps):
         # Why 3? is the margin of the selection cage (2) + half the cage line thickness (2/2).
         return point_inside_rect(view_loc, rect.bottom_left - Vector((3, 3)) if is_active else rect.bottom_left, rect.size + Vector((6, 6)) if is_active else rect.size, rect.rotation)
 
-    def on_hover_enter(self, context: Context, region_loc: Vector, view_loc: Vector) -> None:
+    def on_hover_enter(self, context: Context, view_loc: Vector) -> None:
         pass
 
     def on_hover_exit(self, context: Context | None = None) -> None:
