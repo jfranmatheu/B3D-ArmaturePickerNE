@@ -356,9 +356,10 @@ class APNODE_Button_Common(APNODE_Button_CommonProps):
                     outline_color=(1.0, 1.0, .1, 1.0) if active else (1.0, .6, .1, 1.0)
                 )
             else:
-                draw.image_ui(
+                draw.image_ui_opa(
                     self, 'BUTTON_IMAGE',
-                    image=self.image
+                    image=self.image,
+                    opa=1.0 if hovered else .75
                 )
             return
 
