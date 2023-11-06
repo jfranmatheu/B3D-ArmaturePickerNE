@@ -381,6 +381,7 @@ class PickerTransformModals:
         for node in self.modal_nodes:
             if isinstance(node, APNODE_Button_Common):
                 if node.fit_to_text:
+                    node['prev_fit_to_text'] = node.fit_to_text
                     node.fit_to_text = False
             elif isinstance(node, APNODE_BonePickerGeo):
                 node['prev_geo_scale'] = node.geo_scale
@@ -479,6 +480,10 @@ class PickerTransformModals:
         if cancel:
             for (node, prev_node_dim) in zip(self.modal_nodes, self.prev_node_dimensions):
                 node.rect_transform.dimensions = prev_node_dim
+                if isinstance(node, APNODE_Button_Common):
+                    if 'prev_fit_to_text' in node:
+                        node.fit_to_text = node['prev_fit_to_text']
+                        del node['prev_fit_to_text']
                 # MIRROR -----
                 if isinstance(node, APNODE_BonePicker_Common):
                     if mirror_node := self.mirror_nodes.get(node, None):
