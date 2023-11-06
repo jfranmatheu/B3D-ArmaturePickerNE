@@ -49,8 +49,8 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Com
                 self.set_state('ik_fk_hovered', True)
                 return True
             self.set_state('ik_fk_hovered', False)
-            if self.geo_precision == 'FAST':
-                return True
+            # if self.geo_precision == 'FAST':
+            #     return True
             if geo := draw_geo.Geometry.get(self, safe_context=False):
                 return geo.on_hover(self, view_loc)
         return False

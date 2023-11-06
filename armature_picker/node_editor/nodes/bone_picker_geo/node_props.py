@@ -73,7 +73,7 @@ class APNODE_BonePickerGeo_NodeProps:
         name="Precision",
         description="Method to use to determine if the cursor is hovering the geometry",
         items=(
-            ('FAST', 'Fast', "Use bounding box of the geometry"),
+            # ('FAST', 'Fast', "Use bounding box of the geometry"),
             ('CONVEX', "Convex Hull", "Creates a convex hull from the given geometry object"),
             ('PRECISE', "Precise", "The most precise but slower method. Good for complex geometry with holes and multiple parts")
         ),
