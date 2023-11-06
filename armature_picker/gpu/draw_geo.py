@@ -7,7 +7,7 @@ from mathutils import Vector, geometry
 
 import numpy as np
 
-from ..utils.geometry import is_inside_triangle, check_point_in_convex_hull
+from ..utils.geometry import is_inside_triangle, check_point_in_convex_hull, is_point_inside_triangle
 from ..utils.iter import iter_grouper
 from .draw import RGBA, SHADERS, SHADER_POLYLINE_UNIFORM_COLOR #, get_batch_from_cache, set_batch_to_cache
 from ..data.pg.geometry import AP_PG_Geometry
@@ -93,7 +93,7 @@ class Geometry:
             convex_hull = self.convex_hull
             if len(convex_hull) == 3:
                 A, B, C = convex_hull
-                if is_inside_triangle(*A, *B, *C, *p):
+                if is_point_inside_triangle(p, A, B, C):
                     return True
                 return False
             if check_point_in_convex_hull(convex_hull, p):
@@ -104,7 +104,7 @@ class Geometry:
         co = self.coords
         for tri_indices in self.indices:
             A, B, C = tri_indices
-            if is_inside_triangle(*co[A], *co[B], *co[C], *p):
+            if is_point_inside_triangle(p, co[A], co[B], co[C]):
                 return True
         return False
 
