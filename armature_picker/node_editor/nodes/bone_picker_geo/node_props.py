@@ -77,7 +77,7 @@ class APNODE_BonePickerGeo_NodeProps:
             ('CONVEX', "Convex Hull", "Creates a convex hull from the given geometry object"),
             ('PRECISE', "Precise", "The most precise but slower method. Good for complex geometry with holes and multiple parts")
         ),
-        default='PRECISE',
+        default='CONVEX',
         # update=update_dimensions
     )
 
