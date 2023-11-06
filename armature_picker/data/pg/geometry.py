@@ -1,4 +1,4 @@
-from bpy.types import PropertyGroup, Mesh
+from bpy.types import PropertyGroup, Mesh, Object
 from bpy.props import CollectionProperty, IntVectorProperty, FloatVectorProperty
 
 import numpy as np
@@ -30,7 +30,7 @@ class AP_PG_Geometry(PropertyGroup):
     ''' Geometry data for BonePickerGeo Widgets. '''
     vertices_coll: CollectionProperty(type=AP_PG_Vert)
     tris_coll: CollectionProperty(type=AP_PG_Tri)
-    dimensions: FloatVectorProperty(name="Geometry Dimensions", default=(10, 10), min=10, size=2)
+    dimensions: FloatVectorProperty(name="Geometry Dimensions", min=0, size=2)
     color: FloatVectorProperty(name="Geometry Color", default=(1, 0.9, 0.1, 1), min=0, max=1, size=4, subtype='COLOR')
 
     @property
@@ -49,8 +49,13 @@ class AP_PG_Geometry(PropertyGroup):
         for vert_indices in defaults_indices:
             add_tri().vert_indices = vert_indices
 
-    def update(self, mesh: Mesh) -> None:
+    def update(self, mesh_object: Object) -> None:
+        mesh: Mesh = mesh_object.data
         self.clear()
+
+        # dim = mesh_object.dimensions
+        # self.dimensions = (dim[0], dim[1])
+        self.color = mesh_object.color
 
         mesh.calc_loop_triangles()
         vertices = np.empty((len(mesh.vertices), 3), 'f')
@@ -59,6 +64,13 @@ class AP_PG_Geometry(PropertyGroup):
             "co", np.reshape(vertices, len(mesh.vertices) * 3))
         mesh.loop_triangles.foreach_get(
             "vertices", np.reshape(indices, len(mesh.loop_triangles) * 3))
+        
+        min_x = min(vertices, key=lambda co: co[0])[0]
+        max_x = max(vertices, key=lambda co: co[0])[0]
+        min_y = min(vertices, key=lambda co: co[1])[1]
+        max_y = max(vertices, key=lambda co: co[1])[1]
+
+        self.dimensions = (max_x - min_x, max_y - min_y)
 
         add_vert = self.vertices_coll.add
         add_tri = self.tris_coll.add
