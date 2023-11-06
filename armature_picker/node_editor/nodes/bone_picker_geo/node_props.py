@@ -36,30 +36,24 @@ class APNODE_BonePickerGeo_NodeProps:
 
         self.update_graphics(context)
 
-    def update_object(self, context: Context) -> None:
-        if self.object is None:
-            return
-
+    def load_shape_from_geometry(self, context: Context, object: Object) -> None:
         self.dirty_geo = True
-        self.geometry.update(self.object)
+        self.geometry.update(object)
         self.update_dimensions(context)
         self.dirty_geo = False
-
-        self.object = None
 
 
     # PROPERTIES
     # ----------------------------------------------------------------
 
-    geometry: PointerProperty(type=AP_PG_Geometry)
-
     object: PointerProperty(
         name="Mesh Object",
         description="Object that will be used to render the bone picker button graphics.\nTrace your mesh in the X/Y coordinates and ensure there is no loose parts",
         type=Object,
-        poll=lambda node, ob: ob.type == 'MESH' and ob.dimensions[-1] == 0,
-        update=update_object
+        poll=lambda node, ob: ob.type == 'MESH' and ob.dimensions[-1] == 0
     )
+
+    geometry: PointerProperty(type=AP_PG_Geometry)
 
     geo_scale: FloatProperty(
         name="Geometry Scale",
@@ -80,8 +74,3 @@ class APNODE_BonePickerGeo_NodeProps:
         default='CONVEX',
         # update=update_dimensions
     )
-
-
-    def draw_object_props(self, layout: UILayout) -> None:
-        layout.prop(self, 'object')
-        layout.prop(self, 'geo_precision')
