@@ -34,7 +34,7 @@ class APNODE_BonePickerGeo_NodeProps:
             int(dim[1] * scale)
         )
 
-        context.area.tag_redraw()
+        self.update_graphics(context)
 
     def update_object(self, context: Context) -> None:
         if self.object is None:
@@ -66,7 +66,7 @@ class APNODE_BonePickerGeo_NodeProps:
         default=20,
         min=1.0,
         max=1000,
-        update=update_object
+        update=update_dimensions
     )
 
     geo_precision: EnumProperty(
