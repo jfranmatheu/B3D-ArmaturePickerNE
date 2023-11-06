@@ -70,9 +70,10 @@ class Geometry:
         self.coords_rel = node.geometry.coords_rel # vertices[:, :2].round(2)
         self.convex_hull_indices = geometry.convex_hull_2d(self.coords_rel) # Also used for the outline.
 
-    def update_batch(self, node: BonePickerGeo) -> None:
-        scale = node.geo_scale
-        self.coords = (self.coords_rel * scale + np.array(node.rect_transform.origin)).tolist()
+    def update_batch(self, node: BonePickerGeo, update_coords: bool = True) -> None:
+        if update_coords:
+            scale = node.geo_scale
+            self.coords = (self.coords_rel * scale + np.array(node.rect_transform.origin)).tolist()
         # print(self.coords)
         self.batch = batch_for_shader(
             SHADERS.COLOR_UNIFORM, 'TRIS',
