@@ -52,7 +52,7 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Com
             if self.geo_precision == 'FAST':
                 return True
             if geo := draw_geo.Geometry.get(self, safe_context=False):
-                return geo.on_hover(view_loc)
+                return geo.on_hover(self, view_loc)
         return False
 
 
@@ -60,6 +60,10 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Com
 
 
     # ----- DRAWING --------------------------------
+    def draw_sel_cage(self, color: tuple, cage_thickness: float = 2) -> None:
+        pass
+        # return super().draw_sel_cage(color, cage_thickness)
+
 
     def draw_common(self, context: Context, view_loc: Vector, rect: RectTransform, theme_style: BonePickerGeo_Style, wg_settings: BonePickerGeo_Settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         local_style: BonePickerGeo_LocalStyle = self.style
@@ -80,6 +84,12 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Com
             else:
                 color = local_style.get_color(theme_style)
             geo.draw(self, color=color, hovered=hovered)
+            if selected:
+                if self.locked:
+                    color = (.5, .5, .5, .5)
+                else:
+                    color = (1.0, 1.0, .1, 1.0) if active else (1.0, .6, .1, 1.0)
+                geo.draw_outline(self, color=color, line_thickness=2.0 * scale)
 
         if self.use_ik_fk and geo:
             ikfk_size = Vector((self.ik_fk_size, self.ik_fk_size))

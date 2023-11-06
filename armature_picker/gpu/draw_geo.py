@@ -9,7 +9,7 @@ import numpy as np
 
 from ..utils.geometry import is_inside_triangle, check_point_in_convex_hull
 from ..utils.iter import iter_grouper
-from .draw import RGBA, SHADERS #, get_batch_from_cache, set_batch_to_cache
+from .draw import RGBA, SHADERS, SHADER_POLYLINE_UNIFORM_COLOR #, get_batch_from_cache, set_batch_to_cache
 from ..data.pg.geometry import AP_PG_Geometry
 
 # ----------------------------------------------------------------
@@ -38,7 +38,14 @@ class Geometry:
     indices: np.ndarray
 
     batch: GPUBatch
+    batch_outline: GPUBatch
+
     convex_hull: tuple
+    convex_hull_indices: list[int]
+
+    @property
+    def convex_hull(self):
+        return tuple(self.coords[idx] for idx in self.convex_hull_indices)
 
 
     @classmethod
@@ -61,40 +68,39 @@ class Geometry:
     def update_geometry(self, node: BonePickerGeo) -> None:
         self.indices = node.geometry.indices
         self.coords_rel = node.geometry.coords_rel # vertices[:, :2].round(2)
+        self.convex_hull_indices = geometry.convex_hull_2d(self.coords_rel) # Also used for the outline.
 
     def update_batch(self, node: BonePickerGeo) -> None:
         scale = node.geo_scale
-        self.coords = self.coords_rel * scale + np.array(node.rect_transform.origin)
-        coords_list = self.coords.tolist()
+        self.coords = (self.coords_rel * scale + np.array(node.rect_transform.origin)).tolist()
         # print(self.coords)
         self.batch = batch_for_shader(
             SHADERS.COLOR_UNIFORM, 'TRIS',
-            {"pos": coords_list}, # , "color": vertex_colors
+            {"pos": self.coords}, # , "color": vertex_colors
             indices=self.indices.tolist(),
         )
+        self.batch.program_set(SHADERS.COLOR_UNIFORM)
+        self.batch_outline: GPUBatch = batch_for_shader(
+            SHADERS.COLOR_UNIFORM, 'LINE_LOOP',
+            {"pos": self.convex_hull}
+        )
+        self.batch_outline.program_set(SHADER_POLYLINE_UNIFORM_COLOR)
 
-        if node.geo_precision == 'CONVEX':
-            convex_hull_indices = geometry.convex_hull_2d(coords_list)
-            # print("Convex Hull Indices:", convex_hull_indices)
-            self.convex_hull = tuple(coords_list[idx] for idx in convex_hull_indices)
-            # print("Convex Hull Vertices:", gz.convex_hull)
-        elif hasattr(self, 'convex_hull'):
-            del self.convex_hull
-
-
-    def on_hover(self, p: Vector) -> bool:
-        ''' ConvexHull Method. '''
-        if hasattr(self, 'convex_hull'):
-            if len(self.convex_hull) == 3:
-                A, B, C = self.convex_hull
+    def on_hover(self, node: BonePickerGeo, p: Vector) -> bool:
+        ''' - precision: 'FAST' or 'EXACT' '''
+        # ConvexHull / FAST Method.
+        if node.geo_precision == 'CONVEX_HULL':
+            convex_hull = self.convex_hull
+            if len(convex_hull) == 3:
+                A, B, C = convex_hull
                 if is_inside_triangle(*A, *B, *C, *p):
                     return True
                 return False
-            if check_point_in_convex_hull(self.convex_hull, p):
+            if check_point_in_convex_hull(convex_hull, p):
                 return True
             return False
 
-        ''' Precise Method. '''
+        # Precise / EXACT Method.
         co = self.coords
         for tri_indices in self.indices:
             A, B, C = tri_indices
@@ -106,4 +112,12 @@ class Geometry:
     def draw(self, node: BonePickerGeo, color: RGBA, hovered: bool) -> None:
         state.blend_set('ALPHA')
         SHADERS.COLOR_UNIFORM.uniform_float('u_color', Vector(color) * 1.2 if hovered else color)
-        self.batch.draw(SHADERS.COLOR_UNIFORM)
+        self.batch.draw()
+
+    def draw_outline(self, node: BonePickerGeo, color: RGBA, line_thickness: float = 2.0) -> None:
+        fb = gpu.state.active_framebuffer_get()
+        x, y, w, h = fb.viewport_get()
+        d = dict(lineWidth=line_thickness, color=color, viewportSize=(w, h))
+        for key, value in d.items():
+            SHADER_POLYLINE_UNIFORM_COLOR.uniform_float(key, value)
+        self.batch_outline.draw()
