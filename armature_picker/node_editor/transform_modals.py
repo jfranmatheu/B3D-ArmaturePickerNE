@@ -486,13 +486,15 @@ class PickerTransformModals:
                         del node['prev_fit_to_text']
                 # MIRROR -----
                 if isinstance(node, APNODE_BonePicker_Common):
-                    if mirror_node := self.mirror_nodes.get(node, None):
+                    mirror_node = self.mirror_nodes.get(node, None)
+  
+                    if isinstance(node, APNODE_BonePickerGeo):
+                        node.geo_scale = node['prev_geo_scale']
+                        if mirror_node is not None:
+                            mirror_node.geo_scale = node['prev_geo_scale']
+                        del node['prev_geo_scale']
+                    else:
                         mirror_node.rect_transform.dimensions = prev_node_dim
-                if isinstance(node, APNODE_BonePickerGeo):
-                    node.geo_scale = node['prev_geo_scale']
-                    if mirror_node is not None:
-                        mirror_node.geo_scale = node['prev_geo_scale']
-                    del node['prev_geo_scale']
 
         del self.prev_node_dimensions
         del self.modal_scale_origin_view
