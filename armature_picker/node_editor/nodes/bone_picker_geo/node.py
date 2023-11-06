@@ -71,7 +71,9 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Com
     def draw_sel_cage(self, color: tuple, cage_thickness: float = 2) -> None:
         pass
         # return super().draw_sel_cage(color, cage_thickness)
-
+    
+    def draw_redimension_handles(self, context: Context, view_loc: Vector, scale: float) -> None:
+        pass
 
     def draw_common(self, context: Context, view_loc: Vector, rect: RectTransform, theme_style: BonePickerGeo_Style, wg_settings: BonePickerGeo_Settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         local_style: BonePickerGeo_LocalStyle = self.style

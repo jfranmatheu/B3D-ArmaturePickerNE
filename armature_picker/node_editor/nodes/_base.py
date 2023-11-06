@@ -508,102 +508,108 @@ class AP_Node(NodeTransformProps):
 
             # GIZMO HANDLES FOR INTERACTIVE RE-DIMENSION.
             if active and not self.locked:
-                view_zoom = get_node_editor_zoom(context)
-
-                border_id = self.get_state('HOVERED_BORDER', 'NONE')
-                in_modal = self.in_modal
-
-                rotation_angle = degrees(rect.rotation)
-
-                handles = {
-                    'LEFT': (
-                        rect.get_point_relative(0.0, 0.5, offset=Vector((-3, 0)), apply_rotation=True, rotate_from_origin=True),
-                        radians(rotation_angle + 180)
-                    ),
-                    'RIGHT': (
-                        rect.get_point_relative(1.0, 0.5, offset=Vector((3, 0)), apply_rotation=True, rotate_from_origin=True),
-                        radians(rotation_angle)
-                    ),
-                    'BOTTOM': (
-                        rect.get_point_relative(0.5, 0.0, offset=Vector((0, -3)), apply_rotation=True, rotate_from_origin=True),
-                        radians(rotation_angle + 270)
-                    ),
-                    'TOP': (
-                        rect.get_point_relative(0.5, 1.0, offset=Vector((0, 3)), apply_rotation=True, rotate_from_origin=True),
-                        radians(rotation_angle + 90)
-                    ),
-                }
+                self.draw_redimension_handles(context, view_loc, scale)
 
 
-                for handle_id, (handle_pos, handle_orientation) in handles.items():
-                    handle_hovered = border_id==handle_id
-                    if in_modal and not handle_hovered:
-                        continue
+    def draw_redimension_handles(self, context: Context, view_loc: Vector, scale: float) -> None:
+        rect: RectTransform = self.rect_transform
 
-                    # draw.just_a_point(
-                    #     handle_pos,
-                    #     radius=4.0,
-                    #     color=(1, 1, 0, 1) if handle_hovered else (1, 1, 1, 1),
-                    #     rotation=rect.rotation,
-                    # )
+        view_zoom = get_node_editor_zoom(context)
 
-                    draw_shape.chevron(
-                        handle_pos,
-                        handle_orientation, # pi-(handle_orientation+pi*0.5),
-                        2 * view_zoom if handle_hovered else 2.5 * view_zoom,
-                        (0, 0, 0, .92),
-                        (1, 1, 1, 1) if handle_hovered else (1, 1, 1, .64),
-                        line_width=1 * view_zoom,
-                        antialias=1,
-                    )
+        border_id = self.get_state('HOVERED_BORDER', 'NONE')
+        in_modal = self.in_modal
 
-                    if handle_hovered and not in_modal:
-                        if handle_orientation <= 0:
-                            opp_handle_orientation = pi + handle_orientation
-                        else:
-                            opp_handle_orientation = handle_orientation - pi
+        rotation_angle = degrees(rect.rotation)
 
-                        # BACK.
-                        draw_shape.arrow_ang_90(
-                            view_loc,
-                            handle_orientation,
-                            12 * scale, # * view_zoom,
-                            (0, 0, 0, 1),
-                            (0, 0, 0, 1),
-                            line_width=3.6 * scale, #  * view_zoom,
-                            antialias=1,
-                        )
+        handles = {
+            'LEFT': (
+                rect.get_point_relative(0.0, 0.5, offset=Vector((-3, 0)), apply_rotation=True, rotate_from_origin=True),
+                radians(rotation_angle + 180)
+            ),
+            'RIGHT': (
+                rect.get_point_relative(1.0, 0.5, offset=Vector((3, 0)), apply_rotation=True, rotate_from_origin=True),
+                radians(rotation_angle)
+            ),
+            'BOTTOM': (
+                rect.get_point_relative(0.5, 0.0, offset=Vector((0, -3)), apply_rotation=True, rotate_from_origin=True),
+                radians(rotation_angle + 270)
+            ),
+            'TOP': (
+                rect.get_point_relative(0.5, 1.0, offset=Vector((0, 3)), apply_rotation=True, rotate_from_origin=True),
+                radians(rotation_angle + 90)
+            ),
+        }
 
-                        draw_shape.arrow_ang_90(
-                            view_loc,
-                            opp_handle_orientation,
-                            12 * scale, #  * view_zoom,
-                            (0, 0, 0, 1),
-                            (0, 0, 0, 1),
-                            line_width=3.6 * scale, #  * view_zoom,
-                            antialias=1.0,
-                        )
 
-                        # FRONT.
-                        draw_shape.arrow_ang_90(
-                            view_loc,
-                            handle_orientation,
-                            12 * scale, # * view_zoom,
-                            (1, 1, 1, 1),
-                            (1, 1, 1, 1),
-                            line_width=2.4 * scale, #  * view_zoom,
-                            antialias=1,
-                        )
+        for handle_id, (handle_pos, handle_orientation) in handles.items():
+            handle_hovered = border_id==handle_id
+            if in_modal and not handle_hovered:
+                continue
 
-                        draw_shape.arrow_ang_90(
-                            view_loc,
-                            opp_handle_orientation,
-                            12 * scale, #  * view_zoom,
-                            (1, 1, 1, 1),
-                            (1, 1, 1, 1),
-                            line_width=2.4 * scale, #  * view_zoom,
-                            antialias=1.0,
-                        )
+            # draw.just_a_point(
+            #     handle_pos,
+            #     radius=4.0,
+            #     color=(1, 1, 0, 1) if handle_hovered else (1, 1, 1, 1),
+            #     rotation=rect.rotation,
+            # )
+
+            draw_shape.chevron(
+                handle_pos,
+                handle_orientation, # pi-(handle_orientation+pi*0.5),
+                2 * view_zoom if handle_hovered else 2.5 * view_zoom,
+                (0, 0, 0, .92),
+                (1, 1, 1, 1) if handle_hovered else (1, 1, 1, .64),
+                line_width=1 * view_zoom,
+                antialias=1,
+            )
+
+            if handle_hovered and not in_modal:
+                if handle_orientation <= 0:
+                    opp_handle_orientation = pi + handle_orientation
+                else:
+                    opp_handle_orientation = handle_orientation - pi
+
+                # BACK.
+                draw_shape.arrow_ang_90(
+                    view_loc,
+                    handle_orientation,
+                    12 * scale, # * view_zoom,
+                    (0, 0, 0, 1),
+                    (0, 0, 0, 1),
+                    line_width=3.6 * scale, #  * view_zoom,
+                    antialias=1,
+                )
+
+                draw_shape.arrow_ang_90(
+                    view_loc,
+                    opp_handle_orientation,
+                    12 * scale, #  * view_zoom,
+                    (0, 0, 0, 1),
+                    (0, 0, 0, 1),
+                    line_width=3.6 * scale, #  * view_zoom,
+                    antialias=1.0,
+                )
+
+                # FRONT.
+                draw_shape.arrow_ang_90(
+                    view_loc,
+                    handle_orientation,
+                    12 * scale, # * view_zoom,
+                    (1, 1, 1, 1),
+                    (1, 1, 1, 1),
+                    line_width=2.4 * scale, #  * view_zoom,
+                    antialias=1,
+                )
+
+                draw_shape.arrow_ang_90(
+                    view_loc,
+                    opp_handle_orientation,
+                    12 * scale, #  * view_zoom,
+                    (1, 1, 1, 1),
+                    (1, 1, 1, 1),
+                    line_width=2.4 * scale, #  * view_zoom,
+                    antialias=1.0,
+                )
 
 
     def draw_common(self, context: Context, view_loc: Vector, rect: RectTransform, style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
