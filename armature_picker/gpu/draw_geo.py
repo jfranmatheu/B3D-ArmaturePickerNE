@@ -89,7 +89,7 @@ class Geometry:
     def on_hover(self, node: BonePickerGeo, p: Vector, force_convex_hull: bool = False) -> bool:
         ''' - precision: 'FAST' or 'EXACT' '''
         # ConvexHull / FAST Method.
-        if node.geo_precision == 'CONVEX_HULL' or force_convex_hull:
+        if node.geo_precision == 'CONVEX' or force_convex_hull:
             convex_hull = self.convex_hull
             if len(convex_hull) == 3:
                 A, B, C = convex_hull
