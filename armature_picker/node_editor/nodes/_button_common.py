@@ -353,6 +353,7 @@ class APNODE_Button_Common(APNODE_Button_CommonProps):
                 draw.image_ui_outline(
                     self, 'BUTTON_IMAGE',
                     image=self.image,
+                    outline_thickness=6,
                     outline_color=(1.0, 1.0, .1, 1.0) if active else (1.0, .6, .1, 1.0)
                 )
             else:

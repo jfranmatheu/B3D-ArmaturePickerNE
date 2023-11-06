@@ -444,8 +444,8 @@ def image_ui_opa(node: object, graphic_id: str, image: Image | GPUTexture, opa: 
     image_ui(node, graphic_id, image, None, _shader, o=opa)
 
 
-def image_ui_outline(node: object, graphic_id: str, image: Image | GPUTexture, outline_color: RGBA, origin: Vector | None = None, _shader=SHADERS.IMA_OUTLINE) -> None:
-    image_ui(node, graphic_id, image, origin, _shader, u_outline_color=outline_color)
+def image_ui_outline(node: object, graphic_id: str, image: Image | GPUTexture, outline_thickness: float, outline_color: RGBA, origin: Vector | None = None, _shader=SHADERS.IMA_OUTLINE) -> None:
+    image_ui(node, graphic_id, image, origin, _shader, u_outline_color=outline_color, u_dimensions=node.rect_transform.size) #, u_outline_thickness=outline_thickness)
 
 
 def offscreen(node: object, graphic_id: str, off: GPUOffScreen, origin: Vector | None = None) -> None:
