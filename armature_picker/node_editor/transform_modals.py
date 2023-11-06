@@ -16,6 +16,7 @@ from ..utils.geometry import angle_signed, Box, rect_overlap
 from ..utils.operator import OpsReturn
 from .nodes._button_common import APNODE_Button_Common
 from .nodes._bone_picker_common import APNODE_BonePicker_Common
+from .nodes.bone_picker_geo.node import APNODE_BonePickerGeo
 from .nodes import APNODE_Image
 
 
@@ -378,8 +379,11 @@ class PickerTransformModals:
 
     def modal__scale_node__enter(self, context: Context, event: Event, mouse_pos: Vector) -> None:
         for node in self.modal_nodes:
-            if isinstance(node, APNODE_Button_Common) and node.fit_to_text:
-                node.fit_to_text = False
+            if isinstance(node, APNODE_Button_Common):
+                if node.fit_to_text:
+                    node.fit_to_text = False
+            elif isinstance(node, APNODE_BonePickerGeo):
+                node['prev_geo_scale'] = node.geo_scale
 
         self.prev_node_dimensions = [tuple(node.rect_transform.dimensions) for node in self.modal_nodes]
         self.modal_scale_axis = {'X', 'Y'}
@@ -438,6 +442,18 @@ class PickerTransformModals:
                         # It must respect the same conditions...
                         if _mirror_node.use_image and _mirror_node.image is not None and _mirror_node.keep_aspect_ratio:
                             _mirror_node.rect_transform.dimensions = dimensions
+
+            elif isinstance(_node, APNODE_BonePickerGeo):
+                # Special case for custom shape bone pickers.
+                new_scale = _node['prev_geo_scale'] * dimensions[0] / _dim[0]
+                _node.geo_scale = new_scale
+
+                # Scale mirror node image accordingly if existing.
+                if _mirror_node := self.mirror_nodes.get(_node, None):
+                    # It must respect the same conditions...
+                    if isinstance(_mirror_node, APNODE_BonePickerGeo):
+                        _mirror_node.geo_scale = new_scale
+
             else:
                 # Common-case.
                 if len(self.modal_scale_axis) in {0, 2}:
@@ -467,6 +483,11 @@ class PickerTransformModals:
                 if isinstance(node, APNODE_BonePicker_Common):
                     if mirror_node := self.mirror_nodes.get(node, None):
                         mirror_node.rect_transform.dimensions = prev_node_dim
+                if isinstance(node, APNODE_BonePickerGeo):
+                    node.geo_scale = node['prev_geo_scale']
+                    if mirror_node is not None:
+                        mirror_node.geo_scale = node['prev_geo_scale']
+                    del node['prev_geo_scale']
 
         del self.prev_node_dimensions
         del self.modal_scale_origin_view
