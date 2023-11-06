@@ -61,6 +61,9 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Com
                 return geo.on_hover(self, view_loc, force_convex_hull=True)
         return False
 
+    def test_borders(self, context: Context, rect: RectTransform, view_loc: Vector, view_zoom: float) -> bool:
+        return False
+
     # ----- INVOKE --------------------------------
 
 
