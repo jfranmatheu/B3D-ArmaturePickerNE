@@ -57,6 +57,12 @@ class APNODE_SliderRadial(APNODE_SliderRadial_NodeProps, APNODE_Slider_Common, A
             return True
         return False
 
+    def on_hover__edit(self, context: Context, is_active: bool, rect: RectTransform, view_loc: Vector, view_zoom: float) -> bool:
+        if is_active:
+            return point_inside_circle(view_loc, Vector(rect.origin), rect.dimensions[0] * 0.5 + 3)
+        else:
+            return self.on_hover__pose(context, rect, None, view_loc, view_zoom, None)
+
 
     # ----- MODAL --------------------------------
 
