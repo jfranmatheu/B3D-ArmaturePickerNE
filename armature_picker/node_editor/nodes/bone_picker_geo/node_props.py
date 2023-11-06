@@ -78,7 +78,7 @@ class APNODE_BonePickerGeo_NodeProps:
             ('PRECISE', "Precise", "The most precise but slower method. Good for complex geometry with holes and multiple parts")
         ),
         default='PRECISE',
-        update=update_dimensions
+        # update=update_dimensions
     )
 
 
