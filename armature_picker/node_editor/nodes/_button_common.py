@@ -269,9 +269,9 @@ class APNODE_Button_Common(APNODE_Button_CommonProps):
 
     # ----- ON HOVER --------------------------------
 
-    def on_hover(self, context: Context, in_edit: bool, rect: RectTransform, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
+    def on_hover__pose(self, context: Context, rect: RectTransform, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
         if point_inside_rect(view_loc, rect.bottom_left, rect.size, rect.rotation, origin=Vector(rect.origin)):
-            if self.use_image and self.image is not None and not in_edit:
+            if self.use_image and self.image is not None:
                 global offscreen
                 # bbox_n = rect.bound_box_norm
                 bbox_size = tuple(int(v) for v in (rect.bound_box_size))

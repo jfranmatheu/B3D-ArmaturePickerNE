@@ -425,7 +425,7 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
                     continue
                 if node.wg_type not in selectable_wg_types:
                     continue
-                if node._test_select(context, not in_pose, region_loc, view_loc, view_zoom, region_offset):
+                if node._test_select(context, not in_pose, node==active_node, region_loc, view_loc, view_zoom, region_offset):
                     G_hovered_node = node.uuid
                     #### print("hovered_node", node.label)
                     return 1

@@ -277,34 +277,44 @@ class AP_Node(NodeTransformProps):
 
     # ----- ON HOVER --------------------------------
 
-    def _test_select(self, context: Context, in_edit: bool, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
+    def _test_select(self, context: Context, in_edit: bool, is_active: bool, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
         ''' Internal. '''
-        if (in_edit and self.test_bbox(context, in_edit, self.rect_transform, view_loc, view_zoom)) or\
-            (not in_edit and self.on_hover(context, in_edit, self.rect_transform, region_loc, view_loc, view_zoom, reg_offset)):
-            context.region.tag_redraw()
-            self.set_hovered(True)
-            self.on_hover_enter(context, region_loc, view_loc)
-            return True
-        elif self.is_hovered():
-            context.region.tag_redraw()
-            self.set_hovered(False)
-            self.on_hover_exit(context)
-        return False
+        if in_edit:
+            ok = self.on_hover__edit(context, is_active, self.rect_transform, view_loc, view_zoom)
+            if is_active:
+                last_state: str = self.get_state('HOVERED_BORDER', 'NONE')
+                if self.test_borders(context, self.rect_transform, view_loc, view_zoom):
+                    ok = True
+                if last_state != self.get_state('HOVERED_BORDER', 'NONE'):
+                    context.region.tag_redraw()
+            elif self.get_state('HOVERED_BORDER', 'NONE') != 'NONE':
+                self.set_state('HOVERED_BORDER', 'NONE')
+                Cursor.set_icon(context, CursorIcon.DEFAULT)
+        else:
+            ok = self.on_hover__pose(context, self.rect_transform, region_loc, view_loc, view_zoom, reg_offset)
 
-    def on_hover(self, context: Context, in_edit: bool, rect: RectTransform, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
+        if ok:
+            if not self.is_hovered():
+                context.region.tag_redraw()
+                self.set_hovered(True)
+                self.on_hover_enter(context, region_loc, view_loc)
+            return True
+        else:
+            if self.is_hovered():
+                context.region.tag_redraw()
+                self.set_hovered(False)
+                self.on_hover_exit(context)
+            return False
+
+    def on_hover__pose(self, context: Context, rect: RectTransform, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
         return point_inside_rect(view_loc, rect.bottom_left, rect.size, rect.rotation)
 
-    def test_bbox(self, context: Context, in_edit: bool, rect: RectTransform, view_loc: Vector, view_zoom: float) -> bool:
-        is_active = self == self.node_tree.nodes.active
+    def on_hover__edit(self, context: Context, is_active: bool, rect: RectTransform, view_loc: Vector, view_zoom: float) -> bool:
+        return self.test_bbox(is_active, rect, view_loc)
+
+    def test_bbox(self, is_active: bool, rect: RectTransform, view_loc: Vector) -> bool:
         # Why 3? is the margin of the selection cage (2) + half the cage line thickness (2/2).
-        ok = point_inside_rect(view_loc, rect.bottom_left - Vector((3, 3)) if is_active else rect.bottom_left, rect.size + Vector((6, 6)) if is_active else rect.size, rect.rotation)
-        if in_edit and is_active:
-            if self.test_borders(context, rect, view_loc, view_zoom):
-                ok = True
-        elif self.get_state('HOVERED_BORDER', 'NONE') != 'NONE':
-            self.set_state('HOVERED_BORDER', 'NONE')
-            Cursor.set_icon(context, CursorIcon.DEFAULT)
-        return ok
+        return point_inside_rect(view_loc, rect.bottom_left - Vector((3, 3)) if is_active else rect.bottom_left, rect.size + Vector((6, 6)) if is_active else rect.size, rect.rotation)
 
     def on_hover_enter(self, context: Context, region_loc: Vector, view_loc: Vector) -> None:
         pass

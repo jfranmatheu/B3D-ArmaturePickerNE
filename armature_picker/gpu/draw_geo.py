@@ -86,10 +86,10 @@ class Geometry:
         )
         self.batch_outline.program_set(SHADER_POLYLINE_UNIFORM_COLOR)
 
-    def on_hover(self, node: BonePickerGeo, p: Vector) -> bool:
+    def on_hover(self, node: BonePickerGeo, p: Vector, force_convex_hull: bool = False) -> bool:
         ''' - precision: 'FAST' or 'EXACT' '''
         # ConvexHull / FAST Method.
-        if node.geo_precision == 'CONVEX_HULL':
+        if node.geo_precision == 'CONVEX_HULL' or force_convex_hull:
             convex_hull = self.convex_hull
             if len(convex_hull) == 3:
                 A, B, C = convex_hull

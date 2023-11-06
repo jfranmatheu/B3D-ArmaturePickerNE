@@ -57,8 +57,8 @@ class APNODE_BonePicker(APNODE_BonePicker_NodeProps, APNODE_BonePicker_Common, A
 
     # ----- ON HOVER --------------------------------
 
-    def on_hover(self, context: Context, in_edit: bool, rect: RectTransform, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
-        if super().on_hover(context, in_edit, rect, region_loc, view_loc, view_zoom, reg_offset):
+    def on_hover__pose(self, context: Context, rect: RectTransform, region_loc: Vector, view_loc: Vector, view_zoom: float, reg_offset: Vector) -> bool:
+        if super().on_hover__pose(context, rect, region_loc, view_loc, view_zoom, reg_offset):
             self.set_state('ik_fk_hovered', False)
             return True
         elif self.use_ik_fk:
