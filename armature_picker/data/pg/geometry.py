@@ -1,5 +1,6 @@
 from bpy.types import PropertyGroup, Mesh, Object
 from bpy.props import CollectionProperty, IntVectorProperty, FloatVectorProperty
+from mathutils import Vector
 
 import numpy as np
 
@@ -34,6 +35,10 @@ class AP_PG_Geometry(PropertyGroup):
     color: FloatVectorProperty(name="Geometry Color", default=(1, 0.9, 0.1, 1), min=0, max=1, size=4, subtype='COLOR')
 
     @property
+    def center(self) -> tuple[float, float]:
+        return Vector(self.dimensions) * 0.5
+
+    @property
     def coords_rel(self):
         return np.array([tuple(v.co) for v in self.vertices_coll])
 
@@ -64,7 +69,7 @@ class AP_PG_Geometry(PropertyGroup):
             "co", np.reshape(vertices, len(mesh.vertices) * 3))
         mesh.loop_triangles.foreach_get(
             "vertices", np.reshape(indices, len(mesh.loop_triangles) * 3))
-        
+
         min_x = min(vertices, key=lambda co: co[0])[0]
         max_x = max(vertices, key=lambda co: co[0])[0]
         min_y = min(vertices, key=lambda co: co[1])[1]
