@@ -15,7 +15,7 @@ class _RectTransform:
     coords: list[Vector]
     coords_rotated: list[Vector]
 
-    def convert_abs_coord_to_rel_coord(self, point: Vector, context: Context | None = None) -> Vector: pass
+    def convert_abs_coord_to_rel_coord(self, point: Vector) -> Vector: pass
 
 
 class Mouse:

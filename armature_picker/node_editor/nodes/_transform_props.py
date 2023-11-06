@@ -1,6 +1,6 @@
 from bpy.types import Context, UILayout, PropertyGroup, Node, NodeTree
 from bpy.props import StringProperty, IntProperty, FloatProperty, BoolProperty, FloatVectorProperty, IntVectorProperty, EnumProperty, PointerProperty
-from mathutils import Vector
+from mathutils import Vector, Matrix
 
 from math import pi, cos, sin
 
@@ -491,27 +491,48 @@ class RectTransform(PropertyGroup):
     def point_inside_rect(self, point: Vector) -> bool:
         return point_inside_rect(point, self.position, self.size, self.rotation, self.origin)
 
-    def convert_abs_coord_to_rel_coord(self, region_point: Vector, context: Context | None = None) -> Vector:
+    def convert_abs_coord_to_rel_coord(self, view_point: Vector) -> Vector:
         ''' Point should be inside rect
             If passing context, point should be in region space coordinates, otherwise in view space.
             Returned coords will be between 0 and 1.
             By default it uses its BoundingBox. '''
         bbox = self.bound_box
-        p = region_point.copy()
+        p = view_point.copy()
 
-        if context:
-            if self.rotation != 0:
-                o = get_node_editor_region_coord(context, Vector(self.origin))
-                p = rotate_point(p, o, -self.rotation)
+        if self.rotation != 0:
+            # o = Vector(self.origin)
+            # p = rotate_point(p, o, -self.rotation)
 
-            bbox = [get_node_editor_region_coord(context, co) for co in bbox]
-            scale = get_node_editor_zoom(context)
-        else:
-            scale = 1
+            # Project from View2D to Region.
+            top_left, bottom_left, bottom_right, top_right = self.coords_rotated
+
+            # Change from region to local coordinates.
+            l_co = Vector(bottom_left)
+            l_hor = Vector(bottom_right) - l_co
+            l_ver = Vector(top_left) - l_co
+
+            a, b = l_hor.x, l_ver.x
+            c, d = l_hor.y, l_ver.y
+
+            A_det = a * d - b * c
+            if A_det == 0:
+                return (-1, -1)
+
+            A = Matrix((
+                (a, b), # a b
+                (c, d)  # c d
+            ))
+            A.invert()
+
+            Q = view_point - l_co
+
+            local_rel_mouse = A @ Q
+            print("local mouse:", local_rel_mouse)
+            return local_rel_mouse
 
         ## print(point, bbox)
 
-        bbox_size = self.bound_box_size * scale
+        bbox_size = self.bound_box_size
         p = p - bbox[1] # left bottom corner of the bounding box.
         p = Vector((
             p.x / bbox_size.x,

@@ -50,7 +50,7 @@ class APNODE_SliderLinear(APNODE_Slider_NodeProps, APNODE_Slider_Common, AP_Node
 
         if self.clamp_slider:
             rect: RectTransform = self.rect_transform
-            rel_mouse = mouse.local_rel # rect.convert_abs_coord_to_rel_coord(mouse.current, context)
+            rel_mouse = mouse.local_rel
 
             value = map_value(rel_mouse.x, (0, 1), self.range)
 

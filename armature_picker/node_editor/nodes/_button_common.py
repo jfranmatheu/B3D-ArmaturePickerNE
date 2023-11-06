@@ -1,6 +1,7 @@
 from ._base import Context, UILayout
 from ._transform_props import RectTransform
 
+from gpu_extras.presets import draw_texture_2d
 from bpy.types import Context, UILayout, Image
 from mathutils import Vector, Matrix
 import gpu
@@ -274,9 +275,9 @@ class APNODE_Button_Common(APNODE_Button_CommonProps):
             if self.use_image and self.image is not None:
                 global offscreen
                 # bbox_n = rect.bound_box_norm
-                bbox_size = tuple(int(v) for v in (rect.bound_box_size))
+                bbox_size = tuple(rect.dimensions) # tuple(int(v) for v in (rect.bound_box_size))
                 # coords_rot_n = rect.coords_rotated_norm
-                mpos_in_bbox_space = rect.convert_abs_coord_to_rel_coord(region_loc, context)
+                mpos_in_bbox_space = rect.convert_abs_coord_to_rel_coord(view_loc)
 
                 if offscreen is None or offscreen.width != bbox_size[0] or offscreen.height != bbox_size[1]:
                     if offscreen is not None:
@@ -286,8 +287,6 @@ class APNODE_Button_Common(APNODE_Button_CommonProps):
                 ## print("BBOX Norm:", coords_rot_n, bbox_size)
                 ## print("Bottom-Left:", bbox_n, " --> ", coords_rot_n)
                 ## print("MousePos:", region_loc, " --> ", mpos_in_bbox_space)
-
-                from gpu_extras.presets import draw_texture_2d
 
                 wnd_size = context.window.width, context.window.height
 
@@ -306,10 +305,12 @@ class APNODE_Button_Common(APNODE_Button_CommonProps):
                         mpos_in_bbox_space.y * bbox_size[1]
                     )
 
-                    ## print(px)
+                    ## print(x, y, w, h, wnd_size, bbox_size)
 
-                    if rect.rotation != 0:
-                        px = rotate_point(Vector(px), Vector((0, 0)), -rect.rotation)
+                    ## print(mpos_in_bbox_space, px)
+
+                    # if rect.rotation != 0:
+                    #    px = rotate_point(Vector(px), Vector((0, 0)), -rect.rotation)
 
                     px = tuple(int(v) for v in px)
 
@@ -322,7 +323,7 @@ class APNODE_Button_Common(APNODE_Button_CommonProps):
 
                 px_alpha_value = pick_color_buffer[-1]
 
-                # print("Color:", pick_color_buffer)
+                ## print("Color:", pick_color_buffer)
 
                 if px_alpha_value <= 0.01:
                     return False
