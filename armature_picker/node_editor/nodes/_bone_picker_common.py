@@ -272,8 +272,12 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps):
             if active_tool == 'SELECT':
                 return
 
-            self.select_node(context, deselect_all=False) # not event.shift)
-            self.select_bone(context, deselect_all=False) # event.shift)
+            if self.bone_name == 'NONE':
+                deselect_all_bones_from_active(context)
+                return
+
+            self.select_node(context, deselect_all=not event.shift) # not event.shift)
+            self.select_bone(context, deselect_all=not event.shift) # event.shift)
 
             v3d_context = get_view3d_context(context)
             if v3d_context is None:
