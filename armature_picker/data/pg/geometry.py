@@ -150,12 +150,14 @@ class AP_PG_Geometry(PropertyGroup):
 
     @property
     def coords_rel(self):
+        return np.array([tuple(v.co) for v in self.vertices_coll])
         if self.runtime.coords_rel is None:
             self.runtime.coords_rel = np.array([tuple(v.co) for v in self.vertices_coll])
         return self.runtime.coords_rel
 
     @property
     def indices(self):
+        return tuple([tuple(tri.vert_indices) for tri in self.tris_coll])
         if self.runtime.indices is None:
             self.runtime.indices = tuple([tuple(tri.vert_indices) for tri in self.tris_coll])
         return self.runtime.indices
@@ -167,7 +169,7 @@ class AP_PG_Geometry(PropertyGroup):
         add_tri = self.tris_coll.add
         for vert_indices in indices_list:
             add_tri().vert_indices = vert_indices
-        self._indices = indices_list
+        # self.runtime.indices = indices_list
 
     @coords_rel.setter
     def coords_rel(self, vertices_list: list) -> None:
@@ -177,6 +179,8 @@ class AP_PG_Geometry(PropertyGroup):
         add_vert = self.vertices_coll.add
         for co in vertices_list: # Discard Z coordinate.
             add_vert().co = tuple(co)
+
+        # self.runtime.coords = vertices_list
 
         self.update_dimensions()
 
