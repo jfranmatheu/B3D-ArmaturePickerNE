@@ -9,13 +9,18 @@ from ...utils.armature import deselect_all_bones_from_active
 from ...utils.view3d import get_view3d_context
 
 
+none_bone = ('NONE', 'NONE', '')
+bone_names = [('NONE', "None", "",),]
 
 class APNODE_BonePicker_CommonProps:
 
     def get_bone_names(self, context: Context) -> tuple:
         if context.active_object is not None and context.active_object.type == 'ARMATURE':
-            return tuple((bone.name, bone.name, "") for bone in context.active_object.data.bones)
-        return (('NONE', "None", "",),)
+            bone_names = [(bone.name, bone.name, "") for bone in context.active_object.data.bones]
+            bone_names.insert(0, none_bone)
+        else:
+            bone_names = [none_bone]
+        return bone_names
 
     def get_bone_custom_properties(self, context: Context) -> None:
         if context.active_object is not None and self.use_ik_fk and context.active_object.type == 'ARMATURE':
