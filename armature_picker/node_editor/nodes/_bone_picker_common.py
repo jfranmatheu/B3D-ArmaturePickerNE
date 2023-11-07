@@ -9,12 +9,14 @@ from ...utils.armature import deselect_all_bones_from_active
 from ...utils.view3d import get_view3d_context
 
 
-none_bone = ('NONE', 'NONE', '')
-bone_names = [('NONE', "None", "",),]
+none_bone = ('NONE', 'None', '')
+bone_names = [('NONE', "None", "",)]
 
 class APNODE_BonePicker_CommonProps:
 
     def get_bone_names(self, context: Context) -> tuple:
+        global bone_names
+        global none_bone
         if context.active_object is not None and context.active_object.type == 'ARMATURE':
             bone_names = [(bone.name, bone.name, "") for bone in context.active_object.data.bones]
             bone_names.insert(0, none_bone)
@@ -41,7 +43,7 @@ class APNODE_BonePicker_CommonProps:
     # ----- UPDATES -----------------------------------
 
     def update_bone_name(self, context: Context) -> None:
-        if self.bone_name != '':
+        if self.bone_name != 'NONE':
             # self.name = self.bone_name
             if self.bone_name.endswith('L'):
                 self.bone_loc_constraint = 'LEFT'
@@ -79,7 +81,8 @@ class APNODE_BonePicker_CommonProps:
         name="Bone Name",
         description="Name of the bone to control",
         items=get_bone_names,
-        update=update_bone_name
+        update=update_bone_name,
+        default=None
     )
 
     use_ik_fk: BoolProperty(default=False, name="Use IK/FK", description="This button picker controls a bone that has a IK/FK toggle")

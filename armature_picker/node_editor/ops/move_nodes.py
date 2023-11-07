@@ -30,6 +30,10 @@ class MoveNodesModal:
 
 
     def modal__move_node__enter(self, context: Context, event: Event, mouse_pos: Vector) -> None:
+        zoom = get_node_editor_zoom(context)
+        self.zoom = 1/zoom
+        self.offset = get_node_editor_offset(context)
+
         # ----------------------------------------------------------------
         # Process bone picker nodes with mirror node. (L/R) support.
         view_pos = get_node_editor_view_point(context, mouse_pos)
@@ -79,38 +83,39 @@ class MoveNodesModal:
         self.node_location_offset = [prev_node_loc - mouse_pos for prev_node_loc in self.prev_node_location]
 
     def modal__move_node__update(self, context: Context, event: Event, mouse_pos: Vector) -> int:
-        zoom = get_node_editor_zoom(context)
-        inv_zoom = 1/zoom
-        offset = get_node_editor_offset(context)
+        move_node = self.move_node
+        zoom = self.zoom
+        offset = self.offset
+        {move_node(node, (mouse_pos - offset + node_loc_offset) * zoom) for (node, node_loc_offset) in zip(self.modal_nodes, self.node_location_offset)}
+        self.apply_custom_constraints()
 
-        def move_node(_node: AP_Node, _node_loc_offset: Vector):
-            rect: RectTransform = _node.rect_transform
-            pos = (mouse_pos - offset + _node_loc_offset) * inv_zoom
 
-            # Apply Axis and Mirror Constraints to BonePicker Widgets.
-            if isinstance(_node, APNODE_BonePicker_Common):
-                if _node.bone_loc_constraint == 'CENTER':
-                    pos.x = 0 # Lock to Y axis at X=0.
-                elif _node.bone_loc_constraint == 'LEFT':
-                    dim_right_to_origin = rect.dimensions[0] * (1 - rect.pivot[0])
-                    right = pos.x + dim_right_to_origin
-                    if right > 0:
-                        pos.x = - dim_right_to_origin
-                elif _node.bone_loc_constraint == 'RIGHT':
-                    dim_left_to_origin = rect.dimensions[0] * rect.pivot[0]
-                    left = pos.x - dim_left_to_origin
-                    if left < 0:
-                        pos.x = dim_left_to_origin
+    def move_node(self, node: AP_Node, pos: Vector):
+        rect: RectTransform = node.rect_transform
 
-                # Move mirror node accordingly if existing.
-                if _mirror_node := self.mirror_nodes.get(_node, None):
-                    mirror_pos = pos.copy()
-                    mirror_pos.x *= -1
-                    _mirror_node.rect_transform.move_to(mirror_pos)
+        # Apply Axis and Mirror Constraints to BonePicker Widgets.
+        if isinstance(node, APNODE_BonePicker_Common):
+            if node.bone_loc_constraint == 'CENTER':
+                pos.x = 0 # Lock to Y axis at X=0.
+            elif node.bone_loc_constraint == 'LEFT':
+                dim_right_to_origin = rect.dimensions[0] * (1 - rect.pivot[0])
+                right = pos.x + dim_right_to_origin
+                if right > 0:
+                    pos.x = - dim_right_to_origin
+            elif node.bone_loc_constraint == 'RIGHT':
+                dim_left_to_origin = rect.dimensions[0] * rect.pivot[0]
+                left = pos.x - dim_left_to_origin
+                if left < 0:
+                    pos.x = dim_left_to_origin
 
-            rect.move_to(pos)
+            # Move mirror node accordingly if existing.
+            if node.bone_loc_constraint in {'LEFT', 'RIGHT'} and\
+                (_mirror_node := self.mirror_nodes.get(node, None)) is not None:
+                mirror_pos = pos.copy()
+                mirror_pos.x *= -1
+                _mirror_node.rect_transform.move_to(mirror_pos)
 
-        {move_node(node, node_loc_offset) for (node, node_loc_offset) in zip(self.modal_nodes, self.node_location_offset)}
+        rect.move_to(pos)
 
     def modal__move_node__exit(self, context: Context, mouse_pos: Vector, cancel: bool) -> None:
         if cancel:
@@ -123,6 +128,9 @@ class MoveNodesModal:
             del self.node_location_offset
 
         self.modal_nodes = None
+
+    def apply_custom_constraints(self) -> None:
+        pass
 
 
 

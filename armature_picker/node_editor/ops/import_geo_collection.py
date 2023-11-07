@@ -6,7 +6,7 @@ import bpy
 from armature_picker.node_editor.poll import poll_check
 from ...utils.operator import OpsReturn, add_modal_handler
 from ...utils.node_editor import get_node_editor_offset, get_node_editor_zoom
-from .move_nodes import MoveNodesModal
+from .move_nodes import MoveNodesModal, AP_Node
 
 
 
@@ -67,7 +67,7 @@ class AP_OT_import_geo_collection(MoveNodesModal, Operator):
         from .add_node.op_add_node import new_node
         from ..nodes import APNODE_BonePickerGeo
 
-        pose_bones = context.active_object.pose.bones
+        bones = context.active_object.data.bones
 
         nodes = []
         valid_objects = []
@@ -141,6 +141,8 @@ class AP_OT_import_geo_collection(MoveNodesModal, Operator):
         inv_zoom = 1/zoom
         offset = get_node_editor_offset(context)
 
+        troncal_node = None
+
         for ob in valid_objects:
             # Project coordinates.
             reg_pos = (Vector((ob.location.x * zoom, ob.location.y * zoom)) - mid_point * zoom) * self.px_per_meter
@@ -149,21 +151,58 @@ class AP_OT_import_geo_collection(MoveNodesModal, Operator):
             # Create node and attach Object to it.
             geo_node: APNODE_BonePickerGeo = new_node(
                 context, APNODE_BonePickerGeo.bl_idname, p)
-            geo_node.object = ob
-            geo_node.geo_scale = self.px_per_meter
+            geo_node.load_shape_from_geometry(context, ob, scale=self.px_per_meter)
             geo_node.draw_depth = int(ob.location.z * depth_mult)
 
             # If the object name matches any bone, link it to the node.
-            if bone := pose_bones.get(ob.name):
-                geo_node.bone_name = bone.name
+            if bone := bones.get(ob.name):
+                geo_node['_bone_name'] = bone.name
+                if troncal_node is None and bone.head_local.x == 0 and bone.tail_local.x == 0:
+                    troncal_node = geo_node
+            geo_node.bone_loc_constraint = 'NONE'
+            geo_node.bone_name = 'NONE'
 
             nodes.append(geo_node)
+
+        if troncal_node is not None:
+            ox = troncal_node.rect_transform.origin[0]
+            for geo_node in nodes:
+                geo_node['_ox_diff'] = geo_node.rect_transform.origin[0] - ox
+        #     nodes.insert(0, nodes.pop(nodes.index(troncal_node)))
 
         for node in nodes:
             node.select = True
             node.style.use_object_color = self.use_object_color
 
+        self.troncal_node = troncal_node
         self.modal_nodes = nodes
         self.modal__move_node__enter(context, self.event, mouse_region_pos)
         del self.event
         return add_modal_handler(context, self)
+
+    def modal__move_node__exit(self, context: Context, mouse_pos: Vector, cancel: bool) -> None:
+        if cancel:
+            pass
+        else:
+            for geo_node in self.modal_nodes:
+                if '_bone_name' in geo_node:
+                    geo_node.bone_name = geo_node['_bone_name']
+                    del geo_node['_bone_name']
+
+        if self.troncal_node is not None:
+            for geo_node in self.modal_nodes:
+                del geo_node['_ox_diff']
+            del self.troncal_node
+
+        super().modal__move_node__exit(context, mouse_pos, cancel)
+
+    def apply_custom_constraints(self) -> None:
+        if self.troncal_node is None:
+            return
+
+        troncal_node = self.troncal_node
+        ox = troncal_node.rect_transform.origin[0]
+        if ox == 0:
+            return
+        for geo_node in self.modal_nodes:
+            geo_node.rect_transform.origin[0] = geo_node['_ox_diff']
