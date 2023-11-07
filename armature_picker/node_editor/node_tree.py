@@ -90,6 +90,8 @@ def refresh_nodes_cache(node_tree: 'AP_NodeTree'):
 
     active_node = node_tree.nodes.active
 
+    in_edit = node_tree.picker_mode == 'EDIT'
+
     nodes_by_draw_layer: Dict[int, Set[AP_Node]] = defaultdict(set)
     {nodes_by_draw_layer[node.draw_layer].add(node) for node in nodes}
 
@@ -103,19 +105,22 @@ def refresh_nodes_cache(node_tree: 'AP_NodeTree'):
     for node_layer_index in layer_indices:
         # Filter nodes-in-layer by their draw_depth attribute.
         _nodes = nodes_by_draw_layer[node_layer_index]
-        if active_node in _nodes:
-            _nodes.remove(active_node)
-            active_on_top = True
-        else:
-            active_on_top = False
+
+        if in_edit:
+            if active_node in _nodes:
+                _nodes.remove(active_node)
+                active_on_top = True
+            else:
+                active_on_top = False
 
         sorted_nodes.append(
             sorted(_nodes, key=lambda node: node.draw_depth)
         )
 
-        # Add Active Node on top ALWAYS.
-        if active_on_top:
-            sorted_nodes[-1].append(active_node)
+        if in_edit:
+            # Add Active Node on top ALWAYS.
+            if active_on_top:
+                sorted_nodes[-1].append(active_node)
 
     sorted_nodes_cache[node_tree.uuid] = sorted_nodes
 
@@ -501,6 +506,7 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
                 ensure_nodes_cache(self)
             elif EVENT_TYPE == 'TAB':
                 self.picker_mode = 'POSE' if self.picker_mode == 'EDIT' else 'EDIT'
+                refresh_nodes_cache(self)
                 context.area.tag_redraw()
             elif EVENT_TYPE == 'M' and self.picker_mode == 'EDIT':
                 if len(self.picker_layers) > 1 and len(self.get_selected_nodes(context, include_active=True)) != 0:
