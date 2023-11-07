@@ -5,7 +5,6 @@ from blf import size as set_text_size, dimensions as get_text_dimensions
 from math import ceil
 
 from ....utils.math import clamp
-from ....gpu import draw_geo
 from armature_picker.prefs.styles import BonePickerGeo_LocalStyle, BonePickerGeo_Style
 from armature_picker.prefs.settings import BonePickerGeo_Settings
 from armature_picker.data.pg.geometry import AP_PG_Geometry
@@ -23,35 +22,37 @@ class APNODE_BonePickerGeo_NodeProps:
     # UPDATE
     # ----------------------------------------------------------------
 
-    def update_dimensions(self, context: Context) -> None:
-        self.dirty = True
-        draw_geo.Geometry.get(self)
+    def update_graphics(self, context: Context) -> None:
+        super().update_graphics(context)
+        self.geometry.update_batch(self)
 
+    def update_dimensions(self, context: Context) -> None:
         scale = self.geo_scale
         dim = self.geometry.dimensions
         self.rect_transform.dimensions = (
             int(dim[0] * scale),
             int(dim[1] * scale)
         )
-
         self.update_graphics(context)
 
-    def load_shape_from_geometry(self, context: Context, object: Object) -> None:
-        self.dirty_geo = True
-        self.geometry.update(object)
-        self.update_dimensions(context)
-        self.dirty_geo = False
+    def load_shape_from_geometry(self, context: Context, ob: Object, scale: float = None) -> None:
+        self.geometry.update(self, ob, update_batch=True)
+        if scale is not None:
+            # To avoid twice updates.
+            self.geo_scale = scale
+        else:
+            self.update_dimensions(context)
 
 
     # PROPERTIES
     # ----------------------------------------------------------------
 
-    object: PointerProperty(
-        name="Mesh Object",
-        description="Object that will be used to render the bone picker button graphics.\nTrace your mesh in the X/Y coordinates and ensure there is no loose parts",
-        type=Object,
-        poll=lambda node, ob: ob.type == 'MESH' and ob.dimensions[-1] == 0
-    )
+    # object: PointerProperty(
+    #     name="Mesh Object",
+    #     description="Object that will be used to render the bone picker button graphics.\nTrace your mesh in the X/Y coordinates and ensure there is no loose parts",
+    #     type=Object,
+    #     poll=lambda node, ob: ob.type == 'MESH' and ob.dimensions[-1] == 0
+    # )
 
     geometry: PointerProperty(type=AP_PG_Geometry)
 

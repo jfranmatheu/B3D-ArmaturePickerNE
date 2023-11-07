@@ -7,7 +7,8 @@ from .node_props import APNODE_BonePickerGeo_NodeProps, BonePickerGeo_Style, Bon
 from bpy.types import Context, Armature, Bone, Event, UILayout, Object, Mesh
 from mathutils import Vector
 
-from ....gpu import draw, draw_geo
+from ....gpu import draw
+from armature_picker.data.pg.geometry import AP_PG_Geometry
 from ....utils.geometry import point_inside_rect, get_center, point_inside_circle
 
 
@@ -25,11 +26,7 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Com
 
         self.dirty = True
         self.use_override_theme = True
-
-        self.dirty_geo = True
         self.geometry.init()
-        draw_geo.Geometry.get(self)
-        self.dirty_geo = False
 
     @property
     def dirty_geo(self) -> bool:
@@ -49,16 +46,12 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Com
                 self.set_state('ik_fk_hovered', True)
                 return True
             self.set_state('ik_fk_hovered', False)
-            # if self.geo_precision == 'FAST':
-            #     return True
-            if geo := draw_geo.Geometry.get(self, safe_context=False):
-                return geo.on_hover(self, view_loc)
+            return self.geometry.on_hover(self, view_loc)
         return False
 
     def on_hover__edit(self, context: Context, is_active: bool, rect: RectTransform, view_loc: Vector, view_zoom: float) -> bool:
         if super().on_hover__edit(context, is_active, rect, view_loc, view_zoom):
-            if geo := draw_geo.Geometry.get(self, safe_context=False):
-                return geo.on_hover(self, view_loc, force_convex_hull=True)
+            return self.geometry.on_hover(self, view_loc, force_convex_hull=True)
         return False
 
     def test_borders(self, context: Context, rect: RectTransform, view_loc: Vector, view_zoom: float) -> bool:
@@ -77,20 +70,13 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Com
 
     def draw_common(self, context: Context, view_loc: Vector, rect: RectTransform, theme_style: BonePickerGeo_Style, wg_settings: BonePickerGeo_Settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         local_style: BonePickerGeo_LocalStyle = self.style
-
-        geo = draw_geo.Geometry.get(self)
-        if geo is None:
-            draw.rectangle_ui(
-                self, 'NO_OBJECT',
-                color=(1.0, 0.0, 1.0, 1.0) if hovered else (1, .4, .0, 1.0),
-            )
-            return
+        geo: AP_PG_Geometry = self.geometry
 
         if wg_settings.display_on_hover_only and not hovered and self.node_tree.picker_mode in {'POSE'}:
             pass
         else:
             if local_style.use_object_color:
-                color = self.geometry.color
+                color = geo.color
             else:
                 color = local_style.get_color(theme_style)
             geo.draw(self, color=color, hovered=hovered)
@@ -101,7 +87,7 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Com
                     color = (1.0, 1.0, .1, 1.0) if active else (1.0, .6, .1, 1.0)
                 geo.draw_outline(self, color=color, line_thickness=2.0 * scale)
 
-        if self.use_ik_fk and geo:
+        if self.use_ik_fk:
             ikfk_size = Vector((self.ik_fk_size, self.ik_fk_size))
             ikfk_hovered = self.get_state('ik_fk_hovered', False)
             ikfk_pos = Vector(rect.origin) - ikfk_size * 0.5
