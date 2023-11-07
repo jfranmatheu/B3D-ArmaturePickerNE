@@ -44,6 +44,9 @@ _instances: dict[int, 'RuntimeGeometryData'] = {}
 class RuntimeGeometryData:
     coords: list[tuple[float, float]]
 
+    coords_rel: np.ndarray = None
+    indices: tuple[tuple[int, int, int]] = None
+
     convex_hull_indices: list[int] = None
 
     _batch: GPUBatch
@@ -138,8 +141,8 @@ class AP_PG_Geometry(PropertyGroup):
     dimensions: FloatVectorProperty(name="Geometry Dimensions", default=(2, 2), min=0, size=2)
     color: FloatVectorProperty(name="Geometry Color", default=(1, 0.9, 0.1, 1), min=0, max=1, size=4, subtype='COLOR')
 
-    _coords_rel: np.ndarray = None
-    _indices: tuple[tuple[int, int, int]] = None
+    # _coords_rel: np.ndarray = None
+    # _indices: tuple[tuple[int, int, int]] = None
 
     @property
     def center(self) -> tuple[float, float]:
@@ -147,15 +150,15 @@ class AP_PG_Geometry(PropertyGroup):
 
     @property
     def coords_rel(self):
-        if self._coords_rel is None:
-            self._coords_rel = np.array([tuple(v.co) for v in self.vertices_coll])
-        return self._coords_rel
+        if self.runtime.coords_rel is None:
+            self.runtime.coords_rel = np.array([tuple(v.co) for v in self.vertices_coll])
+        return self.runtime.coords_rel
 
     @property
     def indices(self):
-        if self._indices is None:
-            self._indices = tuple([tuple(tri.vert_indices) for tri in self.tris_coll])
-        return self._indices
+        if self.runtime.indices is None:
+            self.runtime.indices = tuple([tuple(tri.vert_indices) for tri in self.tris_coll])
+        return self.runtime.indices
 
     @indices.setter
     def indices(self, indices_list: list) -> None:
