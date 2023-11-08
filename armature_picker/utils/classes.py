@@ -1,3 +1,6 @@
+from typing import Type, List, Dict
+from collections import defaultdict
+
 
 def get_subclasses_recursive(base_cls, only_outermost: bool = False):
     all_subclasses = []
@@ -15,3 +18,10 @@ def get_subclasses_recursive(base_cls, only_outermost: bool = False):
 
     iter_subclasses(base_cls)
     return all_subclasses
+
+
+def pack_classes_by_modules(classes: list) -> Dict[str, List[Type]]:
+    d = defaultdict(list)
+    for cls in classes:
+        d[cls.__module__].append(cls)
+    return d
