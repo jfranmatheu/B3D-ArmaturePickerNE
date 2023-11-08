@@ -493,6 +493,7 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
 
     def _invoke(self, context: Context, event: Event) -> set[str]:
         EVENT_TYPE, EVENT_VALUE = event.type, event.value
+        is_linked = self.library is not None
 
         # Skip navigation km.
         if EVENT_TYPE in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE', 'T', 'N', 'TAB', 'X', 'DEL', 'M'}:
@@ -513,7 +514,7 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
             elif EVENT_TYPE in {'X', 'DEL'}:
                 OPS.node.delete('INVOKE_DEFAULT')
                 ensure_nodes_cache(self)
-            elif EVENT_TYPE == 'TAB':
+            elif EVENT_TYPE == 'TAB' and not is_linked:
                 self.picker_mode = 'POSE' if self.picker_mode == 'EDIT' else 'EDIT'
                 refresh_nodes_cache(self)
                 context.area.tag_redraw()
