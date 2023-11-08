@@ -523,8 +523,9 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
                     OPS.armature_picker.move_selected_to_another_layer('INVOKE_DEFAULT')
             return OpsReturn.FINISH
 
-        if isEvent(EventType.S, EventValue.PRESS, ctrl=True):
-            OPS.wm.save_mainfile(False)
+        if isEventType.S and event.ctrl:
+            if isEventValue.RELEASE:
+                OPS.wm.save_mainfile(False)
             return OpsReturn.FINISH
 
         if isEvent(EventType.A, EventValue.PRESS, shift=False):
