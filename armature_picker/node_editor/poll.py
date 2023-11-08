@@ -43,8 +43,9 @@ def poll_check(context: Context,
             if not isinstance(use_active_node, bool) and not isinstance(node_tree.nodes.active, use_active_node):
                 return False
     if use_view3d:
-        for area in context.window.screen.areas:
-            if area.type == 'VIEW_3D':
-                return True
+        for window in context.window_manager.windows:
+            for area in window.screen.areas:
+                if area.type == 'VIEW_3D':
+                    return True
         return False
     return True
