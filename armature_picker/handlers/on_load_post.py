@@ -12,6 +12,7 @@ def on_load_post(context: Context, *any_dummy_args):
         if node_group.name.startswith('.'):
             continue
         node_group.reset()
+        node_group.prepare_if_linked()
 
     from ..node_editor.node_tree import reset_globals
     reset_globals()

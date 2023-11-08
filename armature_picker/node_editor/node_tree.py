@@ -172,6 +172,15 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
     bl_icon = 'OUTLINER_OB_ARMATURE' # CON_ARMATURE
 
 
+    def prepare_if_linked(self):
+        ''' Configure it so that it works properly when linked. '''
+        if self.library is None:
+            return
+
+        self.picker_mode = 'POSE'
+        for picker_layer in self.picker_layers:
+            picker_layer.use_pin = True
+
     #----------------------------------------------------------------
     # ID Properties.
 
@@ -773,7 +782,7 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
 
         ui_scale = context.preferences.system.ui_scale
         in_edit = self.picker_mode == 'EDIT'
-        
+
         self.draw_base(ui_scale, in_edit)
 
         refresh: bool = False
@@ -796,7 +805,7 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
         with gpu.matrix.push_pop():
             gpu.matrix.translate(offset)
             gpu.matrix.scale_uniform(zoom)
-            
+
             self.draw_base(ui_scale, in_edit)
 
             for node_layer_nodes in sorted_nodes_cache[self.uuid]:
