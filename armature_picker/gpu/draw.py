@@ -54,6 +54,9 @@ def get_batch_from_cache(data_id: str, graphic_id: str) -> GPUBatch | None:
 def set_batch_to_cache(data_id: str, graphic_id: str, batch: GPUBatch) -> None:
     _batch_cache[data_id][graphic_id] = batch
 
+def clear_batch_cache():
+    _batch_cache.clear()
+
 
 # ----------------------------------------------------------------
 
@@ -84,6 +87,10 @@ def get_gputex_from_addon_image(filename: str) -> GPUTexture:
         bpy.data.images.remove(tmp_image)
         del tmp_image
     return _gputex_cache[filename]
+
+
+def clear_gputex_cache():
+    _gputex_cache.clear()
 
 
 # ----------------------------------------------------------------

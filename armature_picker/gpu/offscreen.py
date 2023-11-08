@@ -11,6 +11,10 @@ _offscreen_cache: dict[str, GPUOffScreen] = {}
 _caching: set[str] = set()
 
 
+def clear_offscreen_cache():
+    _offscreen_cache.clear()
+
+
 def get_offscreen(data_id: str) -> GPUOffScreen | None:
     return _offscreen_cache.get(data_id, None)
 

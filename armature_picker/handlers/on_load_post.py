@@ -15,3 +15,6 @@ def on_load_post(context: Context, *any_dummy_args):
 
     from ..node_editor.node_tree import reset_globals
     reset_globals()
+
+    from ..gpu import clear_graphic_caches
+    clear_graphic_caches()
