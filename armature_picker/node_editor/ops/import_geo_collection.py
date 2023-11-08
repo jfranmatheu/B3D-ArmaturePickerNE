@@ -1,4 +1,4 @@
-from bpy.types import Context, Event, Operator, Node, Collection
+from bpy.types import Context, Event, Operator, Node, Collection, Scene
 from bpy.props import EnumProperty, IntProperty, BoolProperty
 from mathutils import Vector
 import bpy
@@ -9,15 +9,27 @@ from ...utils.node_editor import get_node_editor_offset, get_node_editor_zoom
 from .move_nodes import MoveNodesModal, AP_Node
 
 
+collection_name: str = 'NONE'
+
+
+collection_list = []
+def get_collections(self, context: Context):
+    collection_list.clear()
+    for coll in context.scene.collection.children_recursive:
+        collection_list.append((coll.name, coll.name_full, ""))
+    return collection_list
+
 
 class AP_OT_import_geo_collection(MoveNodesModal, Operator):
     bl_idname = 'armature_picker.import_geo_collection'
     bl_label = 'Import Geo Collection'
     bl_description = "Import all geometry from collection and turn it into a cool picker"
+    bl_property = 'collection'
 
     collection: EnumProperty(
         name="Collection",
-        items=lambda op, ctx: [(coll.name, coll.name_full, "") for coll in ctx.scene.collection.children]
+        items=get_collections,
+        # options={'HIDDEN'}
     )
 
     use_object_color: BoolProperty(
@@ -52,28 +64,30 @@ class AP_OT_import_geo_collection(MoveNodesModal, Operator):
     def poll(cls, context: Context):
         return poll_check(context, 'EDIT', use_active_object=False)
 
+
+    # def draw(self, context: Context):
+    #     layout = self.layout
+    #     layout.prop_search(self, 'collection', context.scene.collection, 'children')
+    #     # return super().draw(context)
+
     def invoke(self, context: Context, event: Event) -> OpsReturn:
-        self.event = event
+        # global collection_name
+        # if collection_name is None:
+        #     if res := context.window_manager.invoke_search_popup(self):
+        #         return res
+        # bpy.ops.armature_picker.import_geo_collection()
         return context.window_manager.invoke_props_dialog(self)
 
     def execute(self, context: Context):
         if self.collection == '':
             return OpsReturn.CANCEL
 
-        coll: Collection = context.scene.collection.children.get(self.collection, None)
-        if coll is None:
-            return OpsReturn.CANCEL
+        collection_list: list[Collection] = context.scene.collection.children_recursive
+        for coll in collection_list:
+            if coll.name == self.collection:
+                break
 
-        from .add_node.op_add_node import new_node
-        from ..nodes import APNODE_BonePickerGeo
-
-        bones = context.active_object.data.bones
-
-        nodes = []
         valid_objects = []
-
-        # MID-POINT for offset transform.
-        mid_point = Vector((0, 0))
 
         for ob in coll.objects:
             if ob.type != 'MESH':
@@ -87,6 +101,15 @@ class AP_OT_import_geo_collection(MoveNodesModal, Operator):
 
         if len(valid_objects) == 0:
             return OpsReturn.CANCEL
+
+        from .add_node.op_add_node import new_node
+        from ..nodes import APNODE_BonePickerGeo
+
+        bones = context.active_object.data.bones
+        nodes = []
+
+        # MID-POINT for offset transform.
+        mid_point = Vector((0, 0))
 
         # --------------------------------------
         # APPLY SCALE, ROTATION AND PIVOT TO GEOMETRY.
@@ -176,8 +199,7 @@ class AP_OT_import_geo_collection(MoveNodesModal, Operator):
 
         self.troncal_node = troncal_node
         self.modal_nodes = nodes
-        self.modal__move_node__enter(context, self.event, mouse_region_pos)
-        del self.event
+        self.modal__move_node__enter(context, None, mouse_region_pos)
         return add_modal_handler(context, self)
 
     def modal__move_node__exit(self, context: Context, mouse_pos: Vector, cancel: bool) -> None:
