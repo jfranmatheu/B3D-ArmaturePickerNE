@@ -1,4 +1,4 @@
-from bpy.types import Context, Armature, Bone, Event, UILayout
+from bpy.types import Context, Armature, Bone, Event, UILayout, PoseBone
 from mathutils import Vector
 from bpy.props import StringProperty, IntProperty, FloatProperty, BoolProperty, FloatVectorProperty, EnumProperty, PointerProperty
 from bpy import ops as OPS
@@ -6,7 +6,9 @@ from bpy import ops as OPS
 from ._transform_props import RectTransform
 from ...gpu import draw
 from ...utils.armature import deselect_all_bones_from_active
-from ...utils.view3d import get_view3d_context
+from ...utils.view3d import get_view3d_context, view3d_point_to_region
+from ...utils.cursor import Cursor
+from ...utils.armature import get_bone_co_pose_space
 
 
 none_bone = ('NONE', 'None', '')
@@ -282,6 +284,23 @@ class APNODE_BonePicker_Common(APNODE_BonePicker_CommonProps):
             v3d_context = get_view3d_context(context)
             if v3d_context is None:
                 return
+
+            if v3d_context['window'] != context.window and not event.is_tablet:
+                ''' This doesn't work with tablets cause the jumping cursor position. '''
+                bone: PoseBone = self.get_bone(context, from_pose_data=True)
+                if bone is None:
+                    return
+                # bone_pos = get_bone_co_pose_space(context.active_object, self.bone_name, 'HEAD').translation
+                # bone_pos = bone.tail @ context.active_object.matrix_world
+                bone_pos =  context.active_object.matrix_world @ bone.matrix @ bone.location
+                area_center = Vector((v3d_context['window'].x + v3d_context['area'].width * 0.5, v3d_context['window'].y + v3d_context['area'].height * 0.5))
+                mouse_pos = view3d_point_to_region(v3d_context['area'], bone_pos, default=area_center)
+                # print("prev:", mouse_pos)
+                mouse_pos += Vector((v3d_context['window'].x + v3d_context['area'].x, v3d_context['window'].y + v3d_context['area'].y))
+                # print("next:", mouse_pos)
+                # print("window:", Vector((v3d_context['window'].x, v3d_context['window'].y)))
+                # print("area:", Vector((v3d_context['area'].x, v3d_context['area'].y)))
+                Cursor.wrap(*mouse_pos, v3d_context['window'])
 
             with context.temp_override(**v3d_context):
                 if active_tool == 'MOVE':
