@@ -496,7 +496,7 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
         is_linked = self.library is not None
 
         # Skip navigation km.
-        if EVENT_TYPE in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE', 'T', 'N', 'TAB', 'X', 'DEL', 'M'}:
+        if EVENT_TYPE in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE', 'T', 'N', 'TAB'}:
             if not isEventValue.PRESS:
                 return OpsReturn.PASS
             if EVENT_TYPE == 'WHEELUPMOUSE':
@@ -511,16 +511,10 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
                 context.space_data.show_region_ui = not context.space_data.show_region_ui
             elif EVENT_TYPE == 'T':
                 context.space_data.show_region_toolbar = not context.space_data.show_region_toolbar
-            elif EVENT_TYPE in {'X', 'DEL'}:
-                OPS.node.delete('INVOKE_DEFAULT')
-                ensure_nodes_cache(self)
             elif EVENT_TYPE == 'TAB' and not is_linked:
                 self.picker_mode = 'POSE' if self.picker_mode == 'EDIT' else 'EDIT'
                 refresh_nodes_cache(self)
                 context.area.tag_redraw()
-            elif EVENT_TYPE == 'M' and self.picker_mode == 'EDIT':
-                if len(self.picker_layers) > 1 and len(self.get_selected_nodes(context, include_active=True)) != 0:
-                    OPS.armature_picker.move_selected_to_another_layer('INVOKE_DEFAULT')
             return OpsReturn.FINISH
 
         if isEventType.S and event.ctrl:
@@ -614,10 +608,23 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
     def invoke__edit(self, context: Context, event: Event) -> set[str] | None:
         EVENT_TYPE, _EVENT_VALUE = event.type, event.value
 
-        if isEventType.RIGHTMOUSE and isEventValue.PRESS:
-            if len(context.selected_nodes) == 0 and context.active_node is None:
-                return OpsReturn.FINISH
-            OPS.wm.call_menu('INVOKE_DEFAULT', name=AP_MT_context_menu.bl_idname)
+        if EVENT_TYPE in {'X', 'DEL'}:
+            if isEventValue.PRESS:
+                OPS.node.delete('INVOKE_DEFAULT')
+                ensure_nodes_cache(self)
+            return OpsReturn.FINISH
+
+        elif isEventType.M:
+            if isEventValue.PRESS:
+                if len(self.picker_layers) > 1 and len(self.get_selected_nodes(context, include_active=True)) != 0:
+                    OPS.armature_picker.move_selected_to_another_layer('INVOKE_DEFAULT')
+            return OpsReturn.FINISH
+
+        elif isEventType.RIGHTMOUSE:
+            if isEventValue.PRESS:
+                if len(context.selected_nodes) == 0 and context.active_node is None:
+                    return OpsReturn.FINISH
+                OPS.wm.call_menu('INVOKE_DEFAULT', name=AP_MT_context_menu.bl_idname)
             return OpsReturn.FINISH
 
         if EVENT_TYPE in {'C', 'V'} and event.ctrl and isEventValue.CLICK:
