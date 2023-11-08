@@ -1,5 +1,6 @@
 from enum import Enum
 import bpy
+from bpy.types import Context, Window
 
 
 class CursorIcon(Enum):
@@ -38,8 +39,11 @@ class Cursor:
         context.window.cursor_modal_set(cursor.value)
 
     @staticmethod
-    def wrap(x, y, context=bpy.context):
-        context.window.cursor_warp(int(x), int(y))
+    def wrap(x, y, context: Context | Window = bpy.context):
+        if isinstance(context, Window):
+            context.cursor_warp(int(x), int(y))
+        elif isinstance(context, Context):
+            return Cursor.wrap(x, y, context.window)
 
     @staticmethod
     def restore(context=bpy.context):
