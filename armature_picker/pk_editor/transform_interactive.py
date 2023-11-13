@@ -487,7 +487,7 @@ class PickerTransformModals:
                 # MIRROR -----
                 if isinstance(node, APNODE_BonePicker_Common):
                     mirror_node = self.mirror_nodes.get(node, None)
-  
+
                     if isinstance(node, APNODE_BonePickerGeo):
                         node.geo_scale = node['prev_geo_scale']
                         if mirror_node is not None:
@@ -789,6 +789,8 @@ class PickerTransformModals:
         if event.type not in {EventType.MOUSEMOVE, EventType.INBETWEEN_MOUSEMOVE}:
             return 1
 
+        in_pose = self.picker_mode == 'POSE'
+
         ori_x, ori_y = self.box_origin
         curr_x, curr_y = mouse_pos
 
@@ -810,6 +812,9 @@ class PickerTransformModals:
         for node in self.modal_nodes:
             rect = node.rect_transform
             if rect_overlap(proj_box, rect):
+                if in_pose and isinstance(node, APNODE_BonePicker_Common):
+                    if node.bone_name == 'NONE':
+                        continue
                 node.select = True
             elif node.select:
                 if self.append_selection and node in self.prev_sel_nodes:
@@ -826,6 +831,8 @@ class PickerTransformModals:
             deselect_all_bones_from_active(context)
             for sel_node in self.prev_sel_nodes:
                 sel_node.select = True
+                if in_pose:
+                    sel_node.select_bone(context, deselect_all=False, make_active=False)
 
         else:
             sel_nodes = [node for node in self.modal_nodes if node.select]
@@ -835,8 +842,8 @@ class PickerTransformModals:
                     self.nodes.active.select_bone(context, deselect_all=True, make_active=True)
                     for node in sel_nodes:
                         node.select_bone(context, deselect_all=False, make_active=False)
-                    for sel_node in self.prev_sel_nodes:
-                        sel_node.select_bone(context, deselect_all=False, make_active=False)
+                    # for sel_node in self.prev_sel_nodes:
+                    #     sel_node.select_bone(context, deselect_all=False, make_active=False)
 
                 del sel_nodes
 
@@ -856,9 +863,9 @@ class PickerTransformModals:
             for node in self.modal_nodes:
                 if node.select:
                     if hasattr(node, 'use_image'):
-                        node.draw_sel_cage((.3, .7, 1.0, .92), cage_thickness=2.5, force_draw=True)
+                        node.draw_sel_cage((.3, .7, 1.0, .92), cage_thickness=2.5 * ui_scale, force_draw=True)
                     else:
-                        node.draw_sel_cage((.3, .7, 1.0, .92), cage_thickness=2.5)
+                        node.draw_sel_cage((.3, .7, 1.0, .92), cage_thickness=2.5 * ui_scale)
 
         else:
             draw.box(
