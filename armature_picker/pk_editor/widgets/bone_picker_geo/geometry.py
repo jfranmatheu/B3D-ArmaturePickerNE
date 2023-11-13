@@ -107,11 +107,11 @@ class RuntimeGeometryData:
 
         # print("update_batch")
         batch: GPUBatch = batch_for_shader(
-            SHADERS.COLOR_UNIFORM, 'TRIS',
-            {"pos": self.coords}, # , "color": vertex_colors
+            SHADERS.POLY_COLOR_UNIFORM, 'TRIS',
+            {"pos": self.coords, "pos_rel": (geo.coords_rel + 1.0) / 2.0}, # , "color": vertex_colors
             indices=geo.indices,
         )
-        batch.program_set(SHADERS.COLOR_UNIFORM)
+        batch.program_set(SHADERS.POLY_COLOR_UNIFORM)
         batch_outline: GPUBatch = batch_for_shader(
             SHADERS.COLOR_UNIFORM, 'LINE_LOOP',
             {"pos": self.convex_hull_coords}
@@ -290,7 +290,7 @@ class AP_PG_Geometry(PropertyGroup):
             ## print("No batch")
             self.update_batch(node)
         state.blend_set('ALPHA')
-        SHADERS.COLOR_UNIFORM.uniform_float('u_color', Vector(color) * 1.2 if hovered else color)
+        SHADERS.POLY_COLOR_UNIFORM.uniform_float('u_color', Vector(color) * 1.2 if hovered else color)
         self.runtime.batch.draw()
 
     def draw_outline(self, _node: BonePickerGeo, color: RGBA, line_thickness: float = 2.0) -> None:

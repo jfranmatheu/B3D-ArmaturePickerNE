@@ -13,3 +13,4 @@ class SHADERS:
     NODE = new_sh('UV', 'NODE')
     SHAPE_ARR_ANG_90 = new_sh('BASIC', 'SHAPE_ARR_ANG_90', 'SDF')
     SHAPE_CHEVRON = new_sh('BASIC', 'SHAPE_CHEVRON', 'SDF')
+    POLY_COLOR_UNIFORM = new_sh('POLY', 'POLY_COLOR_UNIFORM')
