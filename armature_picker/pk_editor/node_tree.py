@@ -607,7 +607,7 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
             context.region.tag_redraw()
             return OpsReturn.FINISH
 
-        if isEventValue.CLICK:
+        if isEventValue.PRESS:
             # TRANSFORM HOTKEYS.
             if EVENT_TYPE in {'G', 'R', 'S'}:
                 selected_pose_bones_from_active: list[PoseBone] = context.selected_pose_bones_from_active_object
@@ -631,7 +631,6 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
                             OPS.transform.resize('INVOKE_DEFAULT')
                 return OpsReturn.FINISH
 
-        if isEventValue.PRESS:
             # ANIMATION HOTKEYS.
             if isEventType.SPACE:
                 if event.alt and context.screen.is_animation_playing:
