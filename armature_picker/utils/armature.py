@@ -16,6 +16,16 @@ def deselect_all_bones_from_active(context: Context) -> None:
             bone.select = False
 
 
+def select_all_bones_from_active(context: Context) -> None:
+    if context.active_object is None:
+        return
+    if context.active_object.type != 'ARMATURE':
+        return
+    armature_bones: list[Bone] = context.active_object.data.bones
+    for bone in armature_bones:
+        bone.select = True
+
+
 def get_bone_co_pose_space(armature, bone_name: str, tip_or_head: str = 'HEAD') -> Matrix:
     """Expects an active Armature object, and if run as main an empty object called "Empty" """
     bone: Bone = armature.data.bones[bone_name]
