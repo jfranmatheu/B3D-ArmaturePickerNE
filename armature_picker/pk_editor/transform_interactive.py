@@ -762,17 +762,20 @@ class PickerTransformModals:
         self.box_origin = mouse_pos.copy()
         in_edit = self.picker_mode == 'EDIT'
         self.append_selection = event.shift
+        self.deselect_selection = event.ctrl
         self.modal_nodes = self.widgets_from_active_layer if in_edit else [node for node in self.widgets_from_active_layer if node.wg_type.startswith('bone_picker')]
         if in_edit:
             self.prev_sel_nodes = self.get_selected_nodes(context, include_active=True)
         else:
             self.prev_sel_nodes = {_node for _node in self.modal_nodes if _node.test_bone_selected(context)}
 
-        if self.append_selection:
+        if self.append_selection or self.deselect_selection:
             if in_edit:
                 pass
             else:
                 bpy.ops.node.select_all(False, action='DESELECT')
+                if not in_edit:
+                    deselect_all_bones_from_active(context)
                 for prev_sel_node in self.prev_sel_nodes:
                     prev_sel_node.select = True
         else:
@@ -812,14 +815,22 @@ class PickerTransformModals:
         for node in self.modal_nodes:
             rect = node.rect_transform
             if rect_overlap(proj_box, rect):
+                if self.deselect_selection:
+                    if node.select:
+                        node.select = False
+                    continue
                 if in_pose and isinstance(node, APNODE_BonePicker_Common):
                     if node.bone_name == 'NONE':
                         continue
                 node.select = True
             elif node.select:
+                if self.deselect_selection:
+                    continue
                 if self.append_selection and node in self.prev_sel_nodes:
                     continue
                 node.select = False
+            elif self.deselect_selection and node in self.prev_sel_nodes:
+                node.select = True
 
         context.region.tag_redraw()
         return 1
