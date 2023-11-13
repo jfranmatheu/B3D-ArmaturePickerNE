@@ -102,11 +102,11 @@ class AP_Node(NodeTransformProps):
         self.visible = True
 
     # def get_picker_layers(self, context: Context) -> list:
-    #     if len(self.node_tree.pk_layers) == 0:
+    #     if len(self.node_tree.picker_layers) == 0:
     #         global default_picker_layer_items
     #         return default_picker_layer_items
     #     return [
-    #         (picker_layer.uuid, picker_layer.name, '') for picker_layer in self.node_tree.pk_layers
+    #         (picker_layer.uuid, picker_layer.name, '') for picker_layer in self.node_tree.picker_layers
     #     ]
 
     picker_layer: StringProperty(name="Picker Layer",
@@ -117,7 +117,7 @@ class AP_Node(NodeTransformProps):
 
     # DRAW LAYERS
     # ----------------------------------------------------------------
-    # Props to sort node elements by pk_layers and depth for drawing and logic sorting.
+    # Props to sort node elements by picker_layers and depth for drawing and logic sorting.
     # draw_layer: IntProperty(default=0, min=0, max=100, options={'HIDDEN'}) # BUG: draw_layer should be a class property.
     draw_layer = 0
     draw_depth: IntProperty(name="Draw Depth",

@@ -266,7 +266,7 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
     layer_selector_lock_update = False
 
     use_preserve_picker_layer_view: BoolProperty(name="Preserve Picker-Layer View",
-                                                 description="Save and link picker view to picker pk_layers\nand preserve that view on layer switching",
+                                                 description="Save and link picker view to picker layers\nand preserve that view on layer switching",
                                                  default=True)
 
     # ----------------------------------------------------------------

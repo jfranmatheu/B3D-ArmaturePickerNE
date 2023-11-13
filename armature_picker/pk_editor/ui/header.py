@@ -51,7 +51,7 @@ def draw_picker_editor_header(self, context: Context) -> None:
         # IDEAL SOLUTION!
         # row.prop_tabs_enum(node_tree, 'active_picker_layer_selector')
         # row.operator('armature_picker.add_picker_layer', text='', icon='ADD')
-        # row.template_ID_tabs(node_tree, 'pk_layers', new='armature_picker.add_picker_layer')
+        # row.template_ID_tabs(node_tree, 'picker_layers', new='armature_picker.add_picker_layer')
 
         # row.prop_with_popover(node_tree, 'active_picker_layer_selector',
         #                       panel="AP_PT_picker_layers",
