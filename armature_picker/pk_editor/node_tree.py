@@ -503,7 +503,7 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
         is_linked = self.library is not None
 
         # Skip navigation km.
-        if EVENT_TYPE in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE', 'T', 'N', 'TAB'}:
+        if EVENT_TYPE in {'MIDDLEMOUSE', 'WHEELUPMOUSE', 'WHEELDOWNMOUSE', 'T', 'N', 'TAB'} and not event.alt and not event.shift and not event.ctrl:
             if not isEventValue.PRESS:
                 return OpsReturn.PASS
             if EVENT_TYPE == 'WHEELUPMOUSE':
@@ -527,12 +527,6 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
         if isEventType.S and event.ctrl:
             if isEventValue.RELEASE:
                 OPS.wm.save_mainfile(False)
-            return OpsReturn.FINISH
-
-        if isEvent(EventType.A, EventValue.PRESS, shift=False):
-            if self.picker_mode == 'EDIT':
-                for widget in self.widgets_interactable:
-                    widget.select = True
             return OpsReturn.FINISH
 
         global G_on_hover_tabs_area
@@ -612,26 +606,57 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
             context.region.tag_redraw()
             return OpsReturn.FINISH
 
-        # TRANSFORM HOTKEYS.
-        if EVENT_TYPE in {'G', 'R', 'S'} and isEventValue.RELEASE:
-            selected_pose_bones_from_active: list[PoseBone] = context.selected_pose_bones_from_active_object
-            if len(selected_pose_bones_from_active) != 0:
-                if isEventType.G:
-                    if event.alt:
-                        OPS.pose.loc_clear()
-                    else:
-                        OPS.transform.translate()
-                elif isEventType.R:
-                    if event.alt:
-                        OPS.pose.rot_clear()
-                    else:
-                        OPS.transform.rotate()
-                elif isEventType.S:
-                    if event.alt:
-                        OPS.pose.scale_clear()
-                    else:
-                        OPS.transform.resize()
-            return OpsReturn.FINISH
+        if isEventValue.RELEASE:
+            # TRANSFORM HOTKEYS.
+            if EVENT_TYPE in {'G', 'R', 'S'}:
+                selected_pose_bones_from_active: list[PoseBone] = context.selected_pose_bones_from_active_object
+                if len(selected_pose_bones_from_active) != 0:
+                    if isEventType.G:
+                        if event.alt:
+                            OPS.pose.loc_clear()
+                        else:
+                            OPS.transform.translate()
+                    elif isEventType.R:
+                        if event.alt:
+                            OPS.pose.rot_clear()
+                        else:
+                            OPS.transform.rotate()
+                    elif isEventType.S:
+                        if event.alt:
+                            OPS.pose.scale_clear()
+                        else:
+                            OPS.transform.resize()
+                return OpsReturn.FINISH
+
+            # ANIMATION HOTKEYS.
+            if isEventType.SPACE:
+                if event.alt: # context.screen.is_animation_playing:
+                    OPS.screen.animation_cancel()
+                else:
+                    OPS.screen.animation_play()
+                return OpsReturn.FINISH
+
+            if event.shift:
+                if isEventType.RIGHT_ARROW:
+                    OPS.screen.frame_jump(end=True)
+                    return OpsReturn.FINISH
+                if isEventType.LEFT_ARROW:
+                    OPS.screen.frame_jump(end=False)
+                    return OpsReturn.FINISH
+
+            if (isEventType.WHEELUPMOUSE and event.alt) or isEventType.RIGHT_ARROW:
+                context.scene.frame_current += 1
+                return OpsReturn.FINISH
+            if (isEventType.WHEELDOWNMOUSE and event.alt) or isEventType.LEFT_ARROW:
+                context.scene.frame_current -= 1
+                return OpsReturn.FINISH
+
+            if isEventType.UP_ARROW:
+                OPS.screen.keyframe_jump(next=True)
+                return OpsReturn.FINISH
+            if isEventType.DOWN_ARROW:
+                OPS.screen.keyframe_jump(next=False)
+                return OpsReturn.FINISH
 
         global G_hovered_node
         if G_hovered_node is None and isEventType.LEFTMOUSE:
@@ -646,6 +671,11 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
 
     def invoke__edit(self, context: Context, event: Event) -> set[str] | None:
         EVENT_TYPE, _EVENT_VALUE = event.type, event.value
+
+        if isEvent(EventType.A, EventValue.PRESS, shift=False):
+            for widget in self.widgets_interactable:
+                widget.select = True
+            return OpsReturn.FINISH
 
         if EVENT_TYPE in {'X', 'DEL'}:
             if isEventValue.PRESS:
