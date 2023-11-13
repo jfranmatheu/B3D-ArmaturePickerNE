@@ -20,8 +20,10 @@ def get_subclasses_recursive(base_cls, only_outermost: bool = False):
     return all_subclasses
 
 
-def pack_classes_by_modules(classes: list) -> Dict[str, List[Type]]:
+def pack_classes_by_modules(classes: list, one_per_module: bool = False) -> Dict[str, List[Type]]:
+    if one_per_module:
+        return {cls.__module__.split('.')[-2]: cls for cls in classes}
     d = defaultdict(list)
     for cls in classes:
-        d[cls.__module__].append(cls)
+        d[cls.__module__.split('.')[-2]].append(cls)
     return d
