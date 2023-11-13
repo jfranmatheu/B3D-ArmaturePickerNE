@@ -2,8 +2,8 @@ from bpy.types import AddonPreferences, Context, UILayout
 from bpy.props import CollectionProperty, IntProperty, PointerProperty, EnumProperty
 
 from ..ackit._globals import __main_package__
-from .themes import PG_ArmaturePickerTheme
-from .settings import PG_ArmaturePicker_WidgetSettings
+from .prefs_wg_styles import PG_ArmaturePickerTheme
+from .prefs_wg_settings import PG_ArmaturePicker_WidgetSettings
 from ..utils.ui_layout import draw_section_h, draw_section
 from ..utils.node_editor import get_armature_picker_editor
 

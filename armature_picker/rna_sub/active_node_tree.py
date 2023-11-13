@@ -1,6 +1,6 @@
 from armature_picker.ackit import Register
 from armature_picker.utils.node_editor import get_armature_picker_editor
-from armature_picker.node_editor.node_tree import ensure_nodes_cache
+from armature_picker.pk_editor.node_tree import ensure_nodes_cache
 
 from bpy.types import Context, SpaceNodeEditor, NodeTree
 

@@ -1,5 +1,4 @@
 from pathlib import Path as _Path
-from enum import Enum
 import bpy
 from os.path import join, dirname
 import pathlib

@@ -14,7 +14,7 @@ def on_load_post(context: Context, *any_dummy_args):
         node_group.reset()
         node_group.prepare_if_linked()
 
-    from ..node_editor.node_tree import reset_globals
+    from ..pk_editor.node_tree import reset_globals
     reset_globals()
 
     from ..gpu import clear_graphic_caches
