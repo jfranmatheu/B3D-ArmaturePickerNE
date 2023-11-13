@@ -62,9 +62,9 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Com
 
     # ----- DRAWING --------------------------------
     def draw_sel_cage(self, color: tuple, cage_thickness: float = 2) -> None:
-        pass
-        # return super().draw_sel_cage(color, cage_thickness)
-    
+        geo: AP_PG_Geometry = self.geometry
+        geo.draw_outline(self, color=color, line_thickness=cage_thickness)
+
     def draw_redimension_handles(self, context: Context, view_loc: Vector, scale: float) -> None:
         pass
 
@@ -85,7 +85,7 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Com
                     color = (.5, .5, .5, .5)
                 else:
                     color = (1.0, 1.0, .1, 1.0) if active else (1.0, .6, .1, 1.0)
-                geo.draw_outline(self, color=color, line_thickness=2.0 * scale)
+                self.draw_sel_cage(color, 2.0 * scale)
 
         if self.use_ik_fk:
             ikfk_size = Vector((self.ik_fk_size, self.ik_fk_size))
