@@ -130,7 +130,7 @@ class AP_Node(NodeTransformProps):
         return getattr(theme, self.wg_type)
 
     def get_settings(self, prefs_wg_settings):
-        return getattr(prefs_wg_settings, self.wg_type)
+        return getattr(prefs_wg_settings, self.wg_type, None)
 
     def update_graphics(self, context: Context) -> None:
         # Set Dirty.

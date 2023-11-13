@@ -14,7 +14,7 @@ def new_node(context: Context, type: str, event: Event | Vector | None = None) -
     ''' Pass Event type if the addition should be interactive (performed inside an invoke to run modal).
         Pass a Vector in the event place to indicate the node element final-location manually. '''
 
-    from ...node_tree import ensure_nodes_cache, AP_NodeTree
+    from ..node_tree import ensure_nodes_cache, AP_NodeTree
 
     bpy.ops.node.select_all(action='DESELECT')
 
