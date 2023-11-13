@@ -590,6 +590,8 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
         return OpsReturn.FINISH
 
     def invoke__pose(self, context: Context, event: Event) -> set[str] | None:
+        EVENT_TYPE, EVENT_VALUE = event.type, event.value
+
         if isEvent(EventType.RIGHTMOUSE, EventValue.PRESS):
             if context.active_bone is None:
                 return OpsReturn.FINISH
@@ -598,7 +600,8 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
                 OPS.wm.call_menu_pie('INVOKE_DEFAULT', name=MT_insert_keyframe.bl_idname)
             self.dirty = True
             return OpsReturn.FINISH
-    
+
+        # SELECTION HOTKEYS.
         if isEvent(EventType.A, EventValue.RELEASE):
             if event.alt:
                 # Deselect all bones.
@@ -607,6 +610,27 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
                 # Select all bones.
                 select_all_bones_from_active(context)
             context.region.tag_redraw()
+            return OpsReturn.FINISH
+
+        # TRANSFORM HOTKEYS.
+        if EVENT_TYPE in {'G', 'R', 'S'} and isEventValue.RELEASE:
+            selected_pose_bones_from_active: list[PoseBone] = context.selected_pose_bones_from_active_object
+            if len(selected_pose_bones_from_active) != 0:
+                if isEventType.G:
+                    if event.alt:
+                        OPS.pose.loc_clear()
+                    else:
+                        OPS.transform.translate()
+                elif isEventType.R:
+                    if event.alt:
+                        OPS.pose.rot_clear()
+                    else:
+                        OPS.transform.rotate()
+                elif isEventType.S:
+                    if event.alt:
+                        OPS.pose.scale_clear()
+                    else:
+                        OPS.transform.resize()
             return OpsReturn.FINISH
 
         global G_hovered_node
