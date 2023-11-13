@@ -585,6 +585,7 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
 
     def invoke__pose(self, context: Context, event: Event) -> set[str] | None:
         EVENT_TYPE, EVENT_VALUE = event.type, event.value
+        # print(EVENT_TYPE, EVENT_VALUE)
 
         if isEvent(EventType.RIGHTMOUSE, EventValue.PRESS):
             if context.active_bone is None:
@@ -606,31 +607,34 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
             context.region.tag_redraw()
             return OpsReturn.FINISH
 
-        if isEventValue.RELEASE:
+        if isEventValue.CLICK:
             # TRANSFORM HOTKEYS.
             if EVENT_TYPE in {'G', 'R', 'S'}:
                 selected_pose_bones_from_active: list[PoseBone] = context.selected_pose_bones_from_active_object
-                if len(selected_pose_bones_from_active) != 0:
+                if len(selected_pose_bones_from_active) == 0:
+                    return OpsReturn.CANCEL
+                if event.alt:
                     if isEventType.G:
-                        if event.alt:
-                            OPS.pose.loc_clear()
-                        else:
-                            OPS.transform.translate()
+                        OPS.pose.loc_clear()
                     elif isEventType.R:
-                        if event.alt:
-                            OPS.pose.rot_clear()
-                        else:
-                            OPS.transform.rotate()
+                        OPS.pose.rot_clear()
                     elif isEventType.S:
-                        if event.alt:
-                            OPS.pose.scale_clear()
-                        else:
-                            OPS.transform.resize()
+                        OPS.pose.scale_clear()
+                else:
+                    view3d_context = get_view3d_context(context)
+                    with context.temp_override(**view3d_context, object=context.active_object, active_object=context.active_object, armature=context.active_object.data):
+                        if isEventType.G:
+                            OPS.transform.translate('INVOKE_DEFAULT')
+                        elif isEventType.R:
+                            OPS.transform.rotate('INVOKE_DEFAULT')
+                        elif isEventType.S:
+                            OPS.transform.resize('INVOKE_DEFAULT')
                 return OpsReturn.FINISH
 
+        if isEventValue.PRESS:
             # ANIMATION HOTKEYS.
             if isEventType.SPACE:
-                if event.alt: # context.screen.is_animation_playing:
+                if event.alt and context.screen.is_animation_playing:
                     OPS.screen.animation_cancel()
                 else:
                     OPS.screen.animation_play()
