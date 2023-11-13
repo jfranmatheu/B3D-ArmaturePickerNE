@@ -22,10 +22,12 @@ from .widgets._base import AP_Node
 from ..utils.node_editor import get_node_editor_view_size, set_node_editor_visible_view_box, get_node_editor_zoom, \
     get_node_editor_view_point, get_node_editor_offset, \
     get_node_editor_visible_view_box
-from ..utils.armature import deselect_all_bones_from_active
+from ..utils.armature import deselect_all_bones_from_active, select_all_bones_from_active
 from ..utils.geometry import rect_overlap, point_inside_rect
 from armature_picker.prefs import get_active_theme_style, get_prefs_wg_settings
 from .transform_interactive import PickerTransformModals, PickerModal
+from armature_picker.utils.context import CM_ContextSpaceOverride
+from armature_picker.utils.view3d import get_view3d_context
 
 # ----------------------------------------------------------------
 
@@ -595,6 +597,16 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
             with context.temp_override(window=context.window, area=context.area, bone=context.active_bone):
                 OPS.wm.call_menu_pie('INVOKE_DEFAULT', name=MT_insert_keyframe.bl_idname)
             self.dirty = True
+            return OpsReturn.FINISH
+    
+        if isEvent(EventType.A, EventValue.RELEASE):
+            if event.alt:
+                # Deselect all bones.
+                deselect_all_bones_from_active(context)
+            else:
+                # Select all bones.
+                select_all_bones_from_active(context)
+            context.region.tag_redraw()
             return OpsReturn.FINISH
 
         global G_hovered_node
