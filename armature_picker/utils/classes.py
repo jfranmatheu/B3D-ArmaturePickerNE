@@ -1,5 +1,6 @@
 from typing import Type, List, Dict
 from collections import defaultdict
+import inspect
 
 
 def get_subclasses_recursive(base_cls, only_outermost: bool = False):
@@ -27,3 +28,13 @@ def pack_classes_by_modules(classes: list, one_per_module: bool = False) -> Dict
     for cls in classes:
         d[cls.__module__.split('.')[-2]].append(cls)
     return d
+
+
+def get_inner_classes_of_type(cls, inner_class_type):
+    return [cls_attribute for cls_attribute in cls.__dict__.values()
+            if inspect.isclass(cls_attribute)
+            and issubclass(cls_attribute, inner_class_type)]
+
+def get_inner_classes(cls):
+    return [cls_attribute for cls_attribute in cls.__dict__.values()
+            if inspect.isclass(cls_attribute)]
