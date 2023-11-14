@@ -412,8 +412,10 @@ def find_boundary_vertices_sorted__convex(vertices: list[tuple[float, float]], i
     return boundary_vertices
 
 
-def find_boundary_vertices_sorted__nonconvex(vertices: list[tuple[float, float]], indices: list[tuple[int, int, int]]):
+def find_boundary_vertices_sorted__nonconvex(indices: list[tuple[int, int, int]], vertices: list[tuple[float, float]] | None = None):
     '''
+        If no vertices are given, it will return a list of indices.
+
         # Example: indices of triangles in CCW order
         indices = [(0, 1, 4), (0, 4, 2), (4, 1, 3)]
 
@@ -456,12 +458,18 @@ def find_boundary_vertices_sorted__nonconvex(vertices: list[tuple[float, float]]
     # Turn the edge path into a vertices path.
     unique_vertices = set()
     result_vertices = []
+    as_indices = vertices is None
 
     for edge in walked_path:
         for vertex_index in edge.verts:
-            vertex_coords = vertices[vertex_index]
-            if vertex_coords not in unique_vertices:
-                result_vertices.append(vertex_coords)
-                unique_vertices.add(vertex_coords)
+            if as_indices:
+                if vertex_index not in unique_vertices:
+                    result_vertices.append(vertex_index)
+                    unique_vertices.add(vertex_index)
+            else:
+                vertex_coords = vertices[vertex_index]
+                if vertex_coords not in unique_vertices:
+                    result_vertices.append(vertex_coords)
+                    unique_vertices.add(vertex_coords)
 
     return result_vertices
