@@ -23,7 +23,7 @@ class PG__SliderRadial__Style(StyleBase, PropertyGroup):
     color: FloatVectorProperty(
         name="Color",
         description="Slider base color",
-        default=(.281, .281, .281, .9),
+        default=(.21, .21, .21, 1.0),
         size=4,
         min=0.0,
         max=1.0,
@@ -33,7 +33,7 @@ class PG__SliderRadial__Style(StyleBase, PropertyGroup):
     fill_color: FloatVectorProperty(
         name="Fill Color",
         description="Slider fill color",
-        default=(.212, .63, 1.0, 1.0),
+        default=(.18, .5, 1.0, 1.0),
         size=4,
         min=0.0,
         max=1.0,

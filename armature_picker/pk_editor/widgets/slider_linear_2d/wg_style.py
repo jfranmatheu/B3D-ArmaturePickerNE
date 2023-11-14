@@ -12,7 +12,7 @@ class PG__Slider2D__Style(StyleBase, PropertyGroup):
     color: FloatVectorProperty(
         name="Color",
         description="Slider base color",
-        default=(0.212, 0.63, 1.0, 0.9),
+        default=(.18, .5, 1.0, 1.0),
         size=4,
         min=0.0,
         max=1.0,
