@@ -249,22 +249,22 @@ def draw_cage(owner: object, graphic_id: str, pos: Vector, size: Vector, pad: fl
 
 # ----------------------------------------------------------------
 
-def rectangle_ui(node: object, graphic_id: str, color: RGBA, _shader=SHADER_UNIFORM_COLOR) -> None:
+def rectangle_ui(node: object, graphic_id: str, color: RGBA, _shader=SHADERS.COLOR_UNIFORM) -> None:
     if color[-1] != 1.0:
         state.blend_set('ALPHA')
-    draw_node(node, graphic_id, _shader, color=color)
+    draw_node(node, graphic_id, _shader, u_color=color)
 
 
-def rectangle(node: object, graphic_id: str, pos: Vector, size: Vector, rotation: float, color: RGBA, origin: Vector | None = None, _shader=SHADER_UNIFORM_COLOR) -> None:
+def rectangle(node: object, graphic_id: str, pos: Vector, size: Vector, rotation: float, color: RGBA, origin: Vector | None = None, _shader=SHADERS.COLOR_UNIFORM) -> None:
     if color[-1] != 1.0:
         state.blend_set('ALPHA')
-    draw(node, graphic_id, pos, size, rotation, _shader, origin=origin, color=color)
+    draw(node, graphic_id, pos, size, rotation, _shader, origin=origin, u_color=color)
 
 
-def rectangle_bbox(node: object, graphic_id: str, bbox, color: RGBA, _shader=SHADER_UNIFORM_COLOR) -> None:
+def rectangle_bbox(node: object, graphic_id: str, bbox, color: RGBA, _shader=SHADERS.COLOR_UNIFORM) -> None:
     if color[-1] != 1.0:
         state.blend_set('ALPHA')
-    draw_bb(node, graphic_id, bbox, _shader, color=color)
+    draw_bb(node, graphic_id, bbox, _shader, u_color=color)
 
 
 def text(pos: Vector,
@@ -393,8 +393,8 @@ def text_cached(data_id: str,
         text(_text_pos, _text, _text_size, pivot, angle, color, alpha, width)
 
 
-def _box(node: object, graphic_id: str, margin: float, line_thickness: float, color: RGBA, _shader=SHADER_UNIFORM_COLOR):
-    draw_node_cage(node, graphic_id, _shader, thickness=line_thickness, color=color)
+def _box(node: object, graphic_id: str, margin: float, line_thickness: float, color: RGBA, _shader=SHADERS.COLOR_UNIFORM):
+    draw_node_cage(node, graphic_id, _shader, thickness=line_thickness, u_color=color)
 
 def box_ui(node: object, graphic_id: str, margin: float, line_thickness: float, color: RGBA, dirty: bool | None = None, _shader=SHADER_POLYLINE_UNIFORM_COLOR):
     state.blend_set('ALPHA')
@@ -460,12 +460,12 @@ def offscreen(node: object, graphic_id: str, off: GPUOffScreen, origin: Vector |
     image_ui(node, graphic_id, off.texture_color, origin=origin)
 
 
-def just_a_line(A: Vector, B: Vector, line_thickness: float, color: RGBA = None, shader=SHADER_UNIFORM_COLOR, **uniforms) -> None:
+def just_a_line(A: Vector, B: Vector, line_thickness: float, color: RGBA = None, shader=SHADERS.COLOR_UNIFORM, **uniforms) -> None:
     batch: GPUBatch = batch_for_shader(shader, 'LINES', {'pos': [A, B]})
     if color is not None:
         if color[-1] != 1:
             state.blend_set('ALPHA')
-        shader.uniform_float('color', color)
+        shader.uniform_float('u_color', color)
     for key, value in uniforms.items():
             shader.uniform_float(key, value)
     state.line_width_set(line_thickness)
@@ -475,7 +475,7 @@ def just_a_line(A: Vector, B: Vector, line_thickness: float, color: RGBA = None,
         if color[-1] != 1:state.blend_set('NONE')
 
 
-def just_a_point(pos: Vector, radius: int, color: RGBA = None, rotation: float = 0, shader=SHADER_UNIFORM_COLOR, **uniforms) -> None:
+def just_a_point(pos: Vector, radius: int, color: RGBA = None, rotation: float = 0, shader=SHADERS.COLOR_UNIFORM, **uniforms) -> None:
     with gpu.matrix.push_pop():
         # gpu.matrix.translate(Vector(pos) * -1)
         # gpu.matrix.multiply_matrix(Matrix.Rotation(rotation, 4, 'Z'))
@@ -489,7 +489,7 @@ def just_a_point(pos: Vector, radius: int, color: RGBA = None, rotation: float =
         batch = GPUBatch(type='POINTS', buf=vbo)
         batch.program_set(shader)
         if color is not None:
-            shader.uniform_float("color", color)
+            shader.uniform_float("u_color", color)
         for key, value in uniforms.items():
             shader.uniform_float(key, value)
         batch.draw()
