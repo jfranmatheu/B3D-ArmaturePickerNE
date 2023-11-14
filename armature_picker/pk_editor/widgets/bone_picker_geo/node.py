@@ -27,6 +27,7 @@ class APNODE_BonePickerGeo(APNODE_BonePickerGeo_NodeProps, APNODE_BonePicker_Com
         self.dirty = True
         self.use_override_theme = True
         self.geometry.init()
+        self.geo_scale = self.geo_scale
 
     @property
     def dirty_geo(self) -> bool:
