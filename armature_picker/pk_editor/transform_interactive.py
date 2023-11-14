@@ -261,7 +261,7 @@ class PickerTransformModals:
             rect: RectTransform = _node.rect_transform
             pos = (mouse_pos - offset + _node_loc_offset) * inv_zoom
 
-            # Apply Axis and Mirror Constraints to BonePicker Widgets.
+            # Apply Mirror Constraints to BonePicker Widgets.
             if isinstance(_node, APNODE_BonePicker_Common):
                 if _node.bone_loc_constraint == 'CENTER':
                     pos.x = 0 # Lock to Y axis at X=0.
@@ -276,16 +276,18 @@ class PickerTransformModals:
                     if left < 0:
                         pos.x = dim_left_to_origin
 
-                # Move mirror node accordingly if existing.
-                if _mirror_node := self.mirror_nodes.get(_node, None):
-                    _mirror_node.rect_transform.move_to((-pos.x, pos.y))
-
+            # Apply Snap-To-Axis Constraint.
             if len(self.modal_move_axis) in {0, 2}:
                 pass
             elif 'X' in self.modal_move_axis:
                 pos.y = _prev_node_origin[1]
             elif 'Y' in self.modal_move_axis:
                 pos.x = _prev_node_origin[0]
+
+            if isinstance(_node, APNODE_BonePicker_Common):
+                # Move mirror node accordingly if existing.
+                if _mirror_node := self.mirror_nodes.get(_node, None):
+                    _mirror_node.rect_transform.move_to((-pos.x, pos.y))
 
             # MOVE!
             rect.move_to(pos)
