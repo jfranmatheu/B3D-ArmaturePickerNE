@@ -495,7 +495,7 @@ class PickerTransformModals:
                         if mirror_node is not None:
                             mirror_node.geo_scale = node['prev_geo_scale']
                         del node['prev_geo_scale']
-                    else:
+                    elif mirror_node is not None:
                         mirror_node.rect_transform.dimensions = prev_node_dim
 
         del self.prev_node_dimensions
