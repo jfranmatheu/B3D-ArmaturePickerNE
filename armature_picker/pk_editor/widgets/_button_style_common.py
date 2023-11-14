@@ -20,7 +20,7 @@ class CommonTheme__Button(StyleBase):
         description="Ouline thickness of the button",
         min=0,
         max=20,
-        default=1,
+        default=1.25,
         precision=1
     )
 
