@@ -10,7 +10,7 @@ from gpu.types import GPUShader, GPUBatch, GPUFrameBuffer
 from gpu_extras.batch import batch_for_shader
 from mathutils import Vector, geometry
 
-from armature_picker.utils.geometry import check_point_in_convex_hull, is_point_inside_triangle
+from armature_picker.utils.geometry import check_point_in_convex_hull, is_point_inside_triangle, find_boundary_vertices_sorted__nonconvex
 from armature_picker.gpu.draw import RGBA, SHADERS, SHADER_POLYLINE_UNIFORM_COLOR
 
 # ----------------------------------------------------------------
@@ -48,6 +48,7 @@ class RuntimeGeometryData:
     indices: tuple[tuple[int, int, int]] = None
 
     convex_hull_indices: list[int] = None
+    boundary_indices: list[int] = None
 
     _batch: GPUBatch
     _batch_outline: GPUBatch
@@ -56,7 +57,7 @@ class RuntimeGeometryData:
     def get(cls, geo: 'AP_PG_Geometry') -> 'RuntimeGeometryData':
         uuid = str(hash(geo))
         if uuid not in _instances:
-            _instances[uuid] = cls()
+            _instances[uuid] = cls(geo)
         return _instances[uuid]
 
 
@@ -64,6 +65,11 @@ class RuntimeGeometryData:
     def convex_hull_coords(self):
         coords = self.coords
         return tuple(coords[idx] for idx in self.convex_hull_indices)
+
+    @property
+    def boundary_coords(self):
+        coords = self.coords
+        return tuple(coords[idx] for idx in self.boundary_indices)
 
     @property
     def batch(self) -> GPUBatch:
@@ -81,9 +87,10 @@ class RuntimeGeometryData:
     def batch_outline(self, batch_outline: GPUBatch) -> None:
         _batch_cache[id(self)]['OUTLINE'] = batch_outline
 
-    def __init__(self) -> None:
+    def __init__(self, geo: 'AP_PG_Geometry') -> None:
         ## print("Create Runtime Geometry Data")
         self.available = False
+        self.boundary_indices = find_boundary_vertices_sorted__nonconvex(geo.indices, None)
 
     def update_coords(self, node: BonePickerGeo, geo: 'AP_PG_Geometry') -> None:
         if self.convex_hull_indices is None:
@@ -114,7 +121,7 @@ class RuntimeGeometryData:
         batch.program_set(SHADERS.POLY_COLOR_UNIFORM)
         batch_outline: GPUBatch = batch_for_shader(
             SHADERS.COLOR_UNIFORM, 'LINE_LOOP',
-            {"pos": self.convex_hull_coords}
+            {"pos": self.boundary_coords}
         )
         batch_outline.program_set(SHADER_POLYLINE_UNIFORM_COLOR)
 
@@ -157,7 +164,7 @@ class AP_PG_Geometry(PropertyGroup):
 
     @property
     def indices(self):
-        return tuple([tuple(tri.vert_indices) for tri in self.tris_coll])
+        return tuple(tuple(tri.vert_indices) for tri in self.tris_coll)
         if self.runtime.indices is None:
             self.runtime.indices = tuple([tuple(tri.vert_indices) for tri in self.tris_coll])
         return self.runtime.indices
@@ -170,6 +177,7 @@ class AP_PG_Geometry(PropertyGroup):
         for vert_indices in indices_list:
             add_tri().vert_indices = vert_indices
         # self.runtime.indices = indices_list
+        self.runtime.boundary_indices = find_boundary_vertices_sorted__nonconvex(indices_list, None)
 
     @coords_rel.setter
     def coords_rel(self, vertices_list: list) -> None:
@@ -292,6 +300,9 @@ class AP_PG_Geometry(PropertyGroup):
         state.blend_set('ALPHA')
         SHADERS.POLY_COLOR_UNIFORM.uniform_float('u_color', Vector(color) * 1.2 if hovered else color)
         self.runtime.batch.draw()
+
+        # Fix sharp edges.
+        self.draw_outline(node, color, 1.0)
 
     def draw_outline(self, _node: BonePickerGeo, color: RGBA, line_thickness: float = 2.0) -> None:
         if not self.runtime.available:
