@@ -438,7 +438,7 @@ def find_boundary_vertices_sorted__nonconvex(indices: list[tuple[int, int, int]]
                 if linked_edge.is_boundary:
                     recursive_walk(linked_edge)
                     if edge == start_edge:
-                        return
+                        break
 
         recursive_walk(start_edge)
 
@@ -471,5 +471,10 @@ def find_boundary_vertices_sorted__nonconvex(indices: list[tuple[int, int, int]]
                 if vertex_coords not in unique_vertices:
                     result_vertices.append(vertex_coords)
                     unique_vertices.add(vertex_coords)
+
+    # Fix BAD sign.
+    last_edge = walked_path[-1]
+    if result_vertices[0] not in last_edge.verts and result_vertices[1] in last_edge.verts:
+        result_vertices[0], result_vertices[1] = result_vertices[1], result_vertices[0]
 
     return result_vertices
