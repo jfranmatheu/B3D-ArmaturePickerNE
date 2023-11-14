@@ -1,5 +1,6 @@
 from bpy.types import Context, UILayout
 
+from armature_picker.pk_editor.ui.header_menus import ViewMenu, UtilsMenu
 from armature_picker.pk_editor.pk_view.popover import AP_PT_widget_type_visibility
 
 
@@ -21,10 +22,10 @@ def draw_picker_editor_header(self, context: Context) -> None:
 
         layout.prop(node_tree, 'picker_mode', text='')
 
-        layout.menu('AP_MT_view', text='View')
+        ViewMenu.draw_in_layout(layout)
 
         if node_tree.picker_mode == 'EDIT':
-            layout.menu('AP_MT_utils', text='Utils')
+            UtilsMenu.draw_in_layout(layout)
     else:
         is_linked = False
 

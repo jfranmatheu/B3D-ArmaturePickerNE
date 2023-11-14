@@ -1,13 +1,12 @@
-from bpy.types import Context, Menu
+from bpy.types import Context, UILayout
+
+from armature_picker.ackit import ACK
 
 
-class AP_MT_utils(Menu):
-    bl_idname = 'AP_MT_utils'
-    bl_label = "Utils"
+class UtilsMenu(ACK.Type.UI.MENU):
+    label = "Utils"
 
-    def draw(self, context: Context):
-        layout = self.layout
-
+    def draw_ui(self, _context: Context, layout: UILayout):
         layout.operator('armature_picker.import_selected_bones')
         layout.operator('armature_picker.import_geo_collection')
 
