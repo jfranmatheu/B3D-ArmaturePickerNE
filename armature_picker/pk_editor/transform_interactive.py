@@ -129,7 +129,7 @@ class PickerTransformModals:
         # ----------------------------------------------------------------
         # Process bone picker widgets with mirror node. (L/R) support.
         view_pos = get_node_editor_view_point(context, get_mouse_pos(event))
-        preferred_side: str = 'LEFT' if view_pos.x < 0 else 'RIGHT'
+        preferred_side: str = 'RIGHT' if view_pos.x < 0 else 'LEFT' # INVERTED!
         to_remove_nodes = set()
         self.mirror_nodes: dict[BonePickerNodeType, BonePickerNodeType] = {}
         for node in self.modal_nodes:
@@ -182,12 +182,12 @@ class PickerTransformModals:
             if isinstance(node, APNODE_BonePicker_Common):
                 if node.bone_loc_constraint == 'CENTER':
                     pos.x = 0 # Lock to Y axis at X=0.
-                elif node.bone_loc_constraint == 'LEFT':
+                elif node.bone_loc_constraint == 'RIGHT':
                     dim_right_to_origin = rect.dimensions[0] * (1 - rect.pivot[0])
                     right = pos.x + dim_right_to_origin
                     if right > 0:
                         pos.x = - dim_right_to_origin
-                elif node.bone_loc_constraint == 'RIGHT':
+                elif node.bone_loc_constraint == 'LEFT':
                     dim_left_to_origin = rect.dimensions[0] * rect.pivot[0]
                     left = pos.x - dim_left_to_origin
                     if left < 0:
@@ -265,12 +265,12 @@ class PickerTransformModals:
             if isinstance(_node, APNODE_BonePicker_Common):
                 if _node.bone_loc_constraint == 'CENTER':
                     pos.x = 0 # Lock to Y axis at X=0.
-                elif _node.bone_loc_constraint == 'LEFT':
+                elif _node.bone_loc_constraint == 'RIGHT':
                     dim_right_to_origin = rect.dimensions[0] * (1 - rect.pivot[0])
                     right = pos.x + dim_right_to_origin
                     if right > 0:
                         pos.x = - dim_right_to_origin
-                elif _node.bone_loc_constraint == 'RIGHT':
+                elif _node.bone_loc_constraint == 'LEFT':
                     dim_left_to_origin = rect.dimensions[0] * rect.pivot[0]
                     left = pos.x - dim_left_to_origin
                     if left < 0:
@@ -658,11 +658,11 @@ class PickerTransformModals:
             if is_hor_border:
                 if node.bone_loc_constraint == 'CENTER':
                     setattr(node.rect_transform, mirror_border_attr, mirror_value)
-                elif node.bone_loc_constraint == 'LEFT' and is_max_border:
+                elif node.bone_loc_constraint == 'RIGHT' and is_max_border:
                     if value > 0:
                         value = 0
                         mirror_value = 0
-                elif node.bone_loc_constraint == 'RIGHT' and is_min_border:
+                elif node.bone_loc_constraint == 'LEFT' and is_min_border:
                     if value < 0:
                         value = 0
                         mirror_value = 0

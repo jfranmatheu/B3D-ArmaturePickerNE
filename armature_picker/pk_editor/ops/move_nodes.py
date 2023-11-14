@@ -97,12 +97,12 @@ class MoveNodesModal:
         if isinstance(node, APNODE_BonePicker_Common):
             if node.bone_loc_constraint == 'CENTER':
                 pos.x = 0 # Lock to Y axis at X=0.
-            elif node.bone_loc_constraint == 'LEFT':
+            elif node.bone_loc_constraint == 'RIGHT':
                 dim_right_to_origin = rect.dimensions[0] * (1 - rect.pivot[0])
                 right = pos.x + dim_right_to_origin
                 if right > 0:
                     pos.x = - dim_right_to_origin
-            elif node.bone_loc_constraint == 'RIGHT':
+            elif node.bone_loc_constraint == 'LEFT':
                 dim_left_to_origin = rect.dimensions[0] * rect.pivot[0]
                 left = pos.x - dim_left_to_origin
                 if left < 0:
