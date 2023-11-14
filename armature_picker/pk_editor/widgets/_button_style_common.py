@@ -5,26 +5,6 @@ from ._base_wg_style import StyleBase, call_active_node_func, use_active_node
 
 
 class CommonTheme__Button(StyleBase):
-    color: FloatVectorProperty(
-        name="Background Color",
-        description="Background Color of the button",
-        default=(.9, .62, .14, 1.0),
-        size=4,
-        min=0.0,
-        max=1.0,
-        subtype='COLOR'
-    )
-
-    text_color: FloatVectorProperty(
-        name='Text Color',
-        description="Label text color",
-        default=(.0, .0, .0, 1.0),
-        size=4,
-        min=0.0,
-        max=1.0,
-        subtype='COLOR',
-        update=call_active_node_func('update_label')
-    )
 
     roundness: FloatProperty(
         name="Roundness",
