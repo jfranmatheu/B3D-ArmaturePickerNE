@@ -1,11 +1,12 @@
 from math import hypot, dist, cos, sin, acos, sqrt
-from mathutils import Vector, Matrix, geometry
+from collections import defaultdict
 from dataclasses import dataclass
+import numpy as np
+
+from mathutils import Vector, Matrix, geometry
 from bpy.types import Object
 import bmesh
 from bmesh.types import BMesh, BMFace
-
-import numpy as np
 
 from .math import dotproduct, length, cross
 
@@ -344,3 +345,123 @@ def object_to_face(face_ob: Object, ob_to_align: Object):
 
     ob_to_align.matrix_world = mat @ ob_to_align.matrix_world
     bm.free()
+
+
+class Edge:
+    def __init__(self, verts: tuple[int, int]):
+        self.verts: tuple[int, int] = verts
+        self.faces: list[int] = []
+        self.linked_edges: set[Edge] = set()
+
+    @property
+    def is_boundary(self) -> bool:
+        return len(self.faces) == 1
+
+
+def find_edges(tri_indices: list[tuple[int, int, int]]) -> list[Edge]:
+    edge_dict: dict[tuple, Edge] = {}
+
+    # Function to add an edge to the dictionary
+    def add_edge(vert_indices: tuple[int, int], tri_idx: int):
+        edge_key = tuple(sorted(vert_indices))
+        if edge_key not in edge_dict:
+            edge_dict[edge_key] = Edge(vert_indices)
+        edge_dict[edge_key].faces.append(tri_idx)
+
+    # Iterate through faces (triangles) to find and store edges
+    for tri_idx, tri in enumerate(tri_indices):
+        for i in range(3):
+            add_edge((tri[i], tri[(i + 1) % 3]), tri_idx)
+
+    # Convert the dictionary values to a list
+    edges: list[Edge] = list(edge_dict.values())
+
+    # Second pass to establish linked_edges
+    for edge in edges:
+        for other_edge in edges:
+            if other_edge != edge and any(v in other_edge.verts for v in edge.verts):
+                edge.linked_edges.add(other_edge)
+
+    return edges
+
+
+def find_boundary_vertices_sorted__convex(vertices: list[tuple[float, float]], indices: list[tuple[int, int, int]]):
+    '''
+        # Example: indices of triangles in CCW order
+        indices = [(0, 1, 2), (2, 1, 3)]
+
+        # Example: vertices as a list of 2D vectors
+        vertices = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0), (1.0, 1.0)]
+    '''
+    vertex_count: dict[int, int] = defaultdict(int)
+
+    # Count occurrences of each vertex
+    for tri in indices:
+        for vert_index in tri:
+            vertex_count[vert_index] += 1
+
+    # Collect the boundary vertices
+    boundary_vertices = [vertices[vert_index] for vert_index, count in vertex_count.items() if count < 3] # 1-2 faces per vertex to be a boundary.
+
+    # Find the centroid of the vertices
+    centroid = np.mean(vertices, axis=0)
+
+    # Sort the boundary vertices based on the angle with respect to the centroid (CW)
+    boundary_vertices.sort(key=lambda v_co: np.arctan2(v_co[1] - centroid[1], v_co[0] - centroid[0]))
+
+    return boundary_vertices
+
+
+def find_boundary_vertices_sorted__nonconvex(vertices: list[tuple[float, float]], indices: list[tuple[int, int, int]]):
+    '''
+        # Example: indices of triangles in CCW order
+        indices = [(0, 1, 4), (0, 4, 2), (4, 1, 3)]
+
+        # Example: vertices as a list of 2D vectors
+        vertices = [(0.0, 0.0), (1.0, 0.0), (0.0, 1.0), (1.0, 1.0), (0.5, 0.5)]
+    '''
+    def walk_border(start_edge: Edge) -> list[Edge]:
+        walked: set[Edge] = set()
+        boundary_path: list[Edge] = []
+
+        def recursive_walk(edge: Edge):
+            if edge in walked:
+                return
+            walked.add(edge)
+
+            # Add the current edge to the boundary_path
+            boundary_path.append(edge)
+
+            for linked_edge in edge.linked_edges:
+                if linked_edge.is_boundary:
+                    recursive_walk(linked_edge)
+                    if edge == start_edge:
+                        return
+
+        recursive_walk(start_edge)
+
+        return boundary_path
+
+    edges = find_edges(indices)
+
+    # Get boundary edges
+    boundary_edges = [e for e in edges if e.is_boundary]
+
+    # Set a starting edge for walking
+    start_edge = boundary_edges[0]
+
+    # Walk the border and get the boundary path
+    walked_path = walk_border(start_edge)
+
+    # Turn the edge path into a vertices path.
+    unique_vertices = set()
+    result_vertices = []
+
+    for edge in walked_path:
+        for vertex_index in edge.verts:
+            vertex_coords = vertices[vertex_index]
+            if vertex_coords not in unique_vertices:
+                result_vertices.append(vertex_coords)
+                unique_vertices.add(vertex_coords)
+
+    return result_vertices
