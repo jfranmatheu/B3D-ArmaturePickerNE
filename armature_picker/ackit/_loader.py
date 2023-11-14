@@ -184,6 +184,16 @@ def iter_submodule_names(path, root=""):
 # Find classes to register
 #################################################
 
+def get_ordered_pg_classes_to_register(classes) -> list:
+    my_classes = set(classes)
+    my_classes_by_idname = {cls.bl_idname : cls for cls in classes if hasattr(cls, "bl_idname")}
+
+    deps_dict = {}
+    for cls in my_classes:
+        deps_dict[cls] = set(iter_my_register_deps(cls, my_classes, my_classes_by_idname))
+
+    return toposort(deps_dict)
+
 def get_ordered_classes_to_register(modules):
     return toposort(get_register_deps_dict(modules))
 

@@ -3,9 +3,7 @@ import functools
 from time import time
 
 
-# BUG #33
 to_register_timers = []
-
 registered_timers = []
 
 
@@ -84,22 +82,21 @@ def new_timer_as_decorator(
     persistent: bool = False,
     args: tuple = (),
     kwargs: dict = {}) -> TimerHandler or None:
-    
+
     # def _decorator(callback: callable):
     #     return new_timer(callback, first_interval, step_interval, timeout, one_time_only, persistent, args, kwargs)
-    
+
     def _decorator(callback: callable):
-        # BUG #33
+        # NOTE: Delay rna subscription due to a registration bug.
         to_register_timers.append((
             callback, first_interval, step_interval, timeout, one_time_only, persistent, args, kwargs
         ))
         return callback
-    
+
     return _decorator
 
 
 def register():
-    # BUG #33
     for timer_data in to_register_timers:
         new_timer(*timer_data)
 

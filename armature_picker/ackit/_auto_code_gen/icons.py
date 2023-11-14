@@ -4,20 +4,27 @@ import os
 import platform
 import shelve
 from string import Template
+
+from bpy.utils import previews
+
+from .._globals import GLOBALS
+
+
+
+# ----------------------------------------------------------------
+# IMPORT CODE.
+
+''' Previews Manager. '''
 from enum import Enum
-from collections import defaultdict
-from os import path
 import numpy as np
 import inspect
 
 import bpy
-from bpy.types import Image as BlImage
+from bpy.types import Image as BlImage, UILayout
 from bpy.utils import previews
 from gpu.types import GPUTexture, Buffer as GPUBuffer
 
-from ._globals import GLOBALS
-from .utils import imagesize
-
+from ..utils import imagesize
 
 
 icon_previews = {}
@@ -27,24 +34,9 @@ icon_sizes = {}
 GPUTEX_ICON_SIZE = 100, 100
 
 
-template_icons_py = Template("""
-from ${module_name}.ackit._icons import IconsEnum, IconsViewer
-
-
-class Icons(IconsViewer):
-${icon_enums}
-""")
-
-template_icons_enum = Template("""
-\tclass ${cat_name}(IconsEnum):
-${icons}
-""")
-
-
-
 class IconsViewer:
     @classmethod
-    def draw_icons_in_layout(cls, layout):
+    def draw_icons_in_layout(cls, layout: UILayout):
         box = layout.box()
         box.label(text="I c o n s   P r e v i e w s :")
         for icons_enum in cls.__dict__.values():
@@ -147,6 +139,31 @@ class IconsEnum(Enum):
             layout.template_icon(icon_id, scale=scale)
 
 
+def unregister():
+    for collection in icon_previews.values():
+        previews.remove(collection)
+    icon_previews.clear()
+    icon_gputex.clear()
+
+
+
+# ----------------------------------------------------------------
+
+template_icons_py = Template("""# /icons.py
+# Code automatically generated! 
+from ${package}.icons import IconsEnum, IconsViewer
+
+
+class Icons(IconsViewer):
+${icon_enums}
+""")
+
+template_icons_enum = Template("""
+\tclass ${cat_name}(IconsEnum):
+${icons}
+""")
+
+
 class IconData:
     def __init__(self, icon_path: Path):
         idname = icon_path.stem
@@ -188,7 +205,7 @@ def creation_date(path_to_file):
 
 
 
-def generate_icons():
+def codegen__icons_py():
     ''' Generates the icons.py file in the root directory of your addon,
         also an Icon class inside from where you can get icons to draw in Blender interface
         as well as custom interfaces.
@@ -253,7 +270,7 @@ def generate_icons():
     icons_output_py = root_path / 'icons.py'
 
     icons_py_code = template_icons_py.substitute(
-        module_name=GLOBALS.ADDON_MODULE,
+        package=__package__,
         icon_enums=''.join(
             [
                 template_icons_enum.substitute(
@@ -266,15 +283,3 @@ def generate_icons():
     )
     with icons_output_py.open('w') as f:
         f.write(icons_py_code)
-
-
-def init():
-    if GLOBALS.IN_DEVELOPMENT:
-        generate_icons()
-
-
-def unregister():
-    for collection in icon_previews.values():
-        previews.remove(collection)
-    icon_previews.clear()
-    icon_gputex.clear()

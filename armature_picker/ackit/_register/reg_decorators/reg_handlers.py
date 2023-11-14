@@ -5,7 +5,6 @@ import bpy
 from bpy.app import handlers
 
 
-
 to_register_handlers: dict[str, list] = defaultdict(list)
 registered_handlers: dict[str, list] = defaultdict(list)
 
@@ -61,6 +60,8 @@ class Handlers(Enum):
             if persistent:
                 deco_fun = handlers.persistent(deco_fun)
             # getattr(handlers, self.name.lower()).append(deco_fun)
+            
+            # NOTE: Delay rna subscription due to a registration bug.
             to_register_handlers[self.name].append(deco_fun)
             return deco_fun
         return decorator

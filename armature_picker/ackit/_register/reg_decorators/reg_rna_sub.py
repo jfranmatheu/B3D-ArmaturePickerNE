@@ -1,8 +1,6 @@
 import bpy
 from .reg_timer import new_timer_as_decorator
 
-from collections import defaultdict
-
 
 owners = []
 
@@ -52,6 +50,8 @@ def subscribe_to_rna_change_based_on_context(data_path: str, attr_name: str, per
         if persistent:
             options.add('PERSISTENT')
         # ctx = bpy.context
+
+        # NOTE: Delay rna subscription due to a registration bug.
         ctx_rna_listeners[owner] = {
             'key': data_path + '.' + attr_name,
             'owner': owner,
