@@ -1,5 +1,5 @@
 
-from armature_picker.ackit._icons import IconsEnum, IconsViewer
+from armature_picker.ackit._auto_code_gen.icons import IconsEnum, IconsViewer
 
 
 class Icons(IconsViewer):
