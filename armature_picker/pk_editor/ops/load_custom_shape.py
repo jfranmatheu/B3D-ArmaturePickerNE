@@ -16,7 +16,7 @@ class AP_OT_load_custom_shape_from_geometry(Operator):
 
     def get_objects(self, context):
         global items
-        new_items = tuple((ob.name, ob.name, '') for ob in bpy.data.objects if ob.type == 'MESH' and ob.dimensions[-1] == 0 and len(ob.data.polygons) != 0)
+        new_items = tuple((ob.name, ob.name, '') for ob in bpy.data.objects if ob.type == 'MESH' and ob.dimensions[-1] == 0 and len(ob.data.polygons) != 0 and len(ob.data.polygons) <= 100)
         items = new_items if len(new_items) != 0 else [('NONE', 'None', ""),]
         return items
 
