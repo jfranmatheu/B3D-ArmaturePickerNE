@@ -8,7 +8,7 @@ class CommonTheme__Button(StyleBase):
     color: FloatVectorProperty(
         name="Background Color",
         description="Background Color of the button",
-        default=(.9, .52, .41, 1.0),
+        default=(.9, .62, .14, 1.0),
         size=4,
         min=0.0,
         max=1.0,
