@@ -449,6 +449,9 @@ def find_boundary_vertices_sorted__nonconvex(indices: list[tuple[int, int, int]]
     # Get boundary edges
     boundary_edges = [e for e in edges if e.is_boundary]
 
+    if len(boundary_edges) == 0:
+        return []
+
     # Set a starting edge for walking
     start_edge = boundary_edges[0]
 
