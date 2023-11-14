@@ -1,4 +1,4 @@
-from armature_picker.ackit import Register
+from armature_picker.ackit import ACK
 from armature_picker.utils.node_editor import get_armature_picker_editor
 from armature_picker.pk_editor.node_tree import ensure_nodes_cache
 
@@ -20,7 +20,7 @@ class HACK_OT_get_mouse_pos(Operator):
         return {'FINISHED'}
 
 
-@Register.RNA_SUB(LayerObjects, 'active', persistent=True, data_path='view_layer.objects')
+@ACK.Deco.RNA_SUB(LayerObjects, 'active', persistent=True, data_path='view_layer.objects')
 def on_active_object_change(context: Context, view_layer_objects: LayerObjects, active_object: Object):
     if active_object is None or active_object.type != 'ARMATURE':
         return

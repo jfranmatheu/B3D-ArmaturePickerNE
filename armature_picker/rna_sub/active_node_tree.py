@@ -1,4 +1,4 @@
-from armature_picker.ackit import Register
+from armature_picker.ackit import ACK
 from armature_picker.utils.node_editor import get_armature_picker_editor
 from armature_picker.pk_editor.node_tree import ensure_nodes_cache
 
@@ -7,7 +7,7 @@ from bpy.types import Context, SpaceNodeEditor, NodeTree
 from uuid import uuid4
 
 
-@Register.RNA_SUB(SpaceNodeEditor, 'node_tree', data_path='space_data', persistent=True)
+@ACK.Deco.RNA_SUB(SpaceNodeEditor, 'node_tree', data_path='space_data', persistent=True)
 def on_node_tree_change(context: Context, space_data: SpaceNodeEditor, node_tree: NodeTree):
     if space_data is None:
         space_data = get_armature_picker_editor(context)
