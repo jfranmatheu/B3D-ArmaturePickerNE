@@ -21,6 +21,9 @@ class GLOBALS:
     IN_DEVELOPMENT = hasattr(sys, 'gettrace') and sys.gettrace() is not None # Just a nice HACK! ;-)
     IN_PRODUCTION  = not IN_DEVELOPMENT
 
+    check_in_development = lambda : hasattr(sys, 'gettrace') and sys.gettrace() is not None
+    check_in_production = lambda : not GLOBALS.check_in_development()
+
 
     class CodeGen:
         TYPES = 'types.py'

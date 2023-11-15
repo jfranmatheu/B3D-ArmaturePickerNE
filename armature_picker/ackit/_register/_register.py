@@ -89,13 +89,13 @@ def register():
 
 
 def init():
-    if GLOBALS.IN_DEVELOPMENT:
+    if GLOBALS.check_in_development():
         # Generate code automatically, but only if in development environment.
         from .._auto_code_gen import AddonCodeGen
         AddonCodeGen.ICONS() # Default to /icons.py
 
 def late_register():
-    if GLOBALS.IN_DEVELOPMENT:
+    if GLOBALS.check_in_development():
         # Generate code automatically, but only if in development environment.
         from .._auto_code_gen import AddonCodeGen
         AddonCodeGen.TYPES() # Default to /types.py
@@ -107,5 +107,6 @@ def unregister():
         btype.unregister_classes()
 
     # Well, we can't do this in development env or BUG-s... BUG-s everywhere.
-    if GLOBALS.IN_PRODUCTION:
+    if GLOBALS.check_in_production():
+        # FUCKING BLENDER EXTENSION MESSING UP ALL... SO WE CAN'T CLEANUP CACHE BECAUSE FIRST TIME IS NOT DETECTED AS IN_DEVELOPMENT :/
         clear_cache()
