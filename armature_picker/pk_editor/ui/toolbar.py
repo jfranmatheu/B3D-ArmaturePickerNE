@@ -3,11 +3,11 @@ from bpy.types import Context, UILayout
 
 from armature_picker.pk_editor.poll import poll_check
 from armature_picker.ackit import ACK
-from armature_picker.pk_editor.poll import poll_tree_type
+from armature_picker.pk_editor.poll import poll_picker_editor
 
 
 
-@ACK.Deco.UI_OVERRIDE(ToolSelectPanelHelper, 'draw', poll=poll_tree_type)
+@ACK.Deco.UI_OVERRIDE(ToolSelectPanelHelper, 'draw', poll=poll_picker_editor)
 def draw_picker_editor_toolbar(self, context: Context) -> None:
     if poll_check(context, 'POSE', use_active_object=True, use_picker_editor=True, use_view3d=True):
         layout = self.layout

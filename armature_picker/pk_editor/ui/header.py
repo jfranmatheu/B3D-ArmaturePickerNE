@@ -2,12 +2,12 @@ from bpy.types import Context, UILayout
 from bl_ui.space_node import NODE_HT_header
 
 from armature_picker.ackit import ACK
-from armature_picker.pk_editor.poll import poll_tree_type
+from armature_picker.pk_editor.poll import poll_picker_editor
 from armature_picker.pk_editor.ui.header_menus import ViewMenu, UtilsMenu
 from armature_picker.pk_editor.pk_view.popover import AP_PT_widget_type_visibility
 
 
-@ACK.Deco.UI_OVERRIDE(NODE_HT_header, 'draw', poll=poll_tree_type)
+@ACK.Deco.UI_OVERRIDE(NODE_HT_header, 'draw', poll=poll_picker_editor)
 def draw_picker_editor_header(self, context: Context) -> None:
     node_tree = context.space_data.node_tree
 
