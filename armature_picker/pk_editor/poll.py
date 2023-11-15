@@ -25,12 +25,16 @@ def poll_check(context: Context,
                use_active_object: bool = True,
                use_picker_editor: bool = True,
                use_active_node: bool = False,
+               use_active_bone: bool = False,
                use_view3d: bool = False) -> bool:
     if use_active_object:
         if not poll_pose(context):
             return False
         if not poll_active_object(context):
             return False
+        if use_active_bone:
+            if context.active_object.data.bones.active is None:
+                return False
     if use_picker_editor:
         if not poll_node_editor(context):
             return False
