@@ -3,6 +3,7 @@ from bpy.types import Context, UILayout, Menu
 
 from dataclasses import dataclass
 
+from armature_picker.ackit import ACK
 from armature_picker.ops import Ops as AP_OPS
 
 
@@ -132,18 +133,15 @@ align_widgets_props = (
 )
 
 
-class AP_MT_context_menu(Menu):
-    bl_idname = 'AP_MT_context_menu'
-    bl_label = "Context Menu"
+class ContextMenu(ACK.Type.UI.MENU):
+    label = "Context Menu"
 
-    def draw(self, context: Context):
+    def draw_ui(self, context: Context, layout: UILayout):
         node_tree = context.space_data.node_tree
         if node_tree is None:
             return
 
         node_count = len(context.selected_nodes)
-
-        layout: UILayout = self.layout
 
         layout.enabled == node_tree.nodes.active is not None or node_count != 0
 
@@ -157,7 +155,3 @@ class AP_MT_context_menu(Menu):
         layout.separator()
 
         layout.operator('node.delete', icon='X')
-
-
-# def register():
-#     set_cls_attribute(NODE_MT_context_menu, 'draw', draw)

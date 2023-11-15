@@ -15,7 +15,7 @@ from armature_picker.pk_editor.pk_view.pg import AP_PG_PickerView
 from armature_picker.pk_editor.pk_view.popover import attr_widget_types
 from armature_picker.utils.event import isEventType, isEventValue, EventType, EventValue, isEvent
 from armature_picker.utils.operator import OpsReturn
-from armature_picker.pk_editor.ui.context_menu import AP_MT_context_menu
+from armature_picker.pk_editor.ui.context_menu import ContextMenu
 from armature_picker.pk_editor.ui.pie_menus.insert_keyframe import MT_insert_keyframe
 from ..gpu import draw
 from .widgets._base import AP_Node
@@ -696,7 +696,7 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
             if isEventValue.PRESS:
                 if len(context.selected_nodes) == 0 and context.active_node is None:
                     return OpsReturn.FINISH
-                OPS.wm.call_menu('INVOKE_DEFAULT', name=AP_MT_context_menu.bl_idname)
+                ContextMenu.popup()
             return OpsReturn.FINISH
 
         if EVENT_TYPE in {'C', 'V'} and event.ctrl and isEventValue.CLICK:
