@@ -15,11 +15,9 @@ def ui_override(bl_ui_class: Union[Panel, Menu],
         def wrapper(_self, _context): # *args, **kwargs):
             print(_self, _context)
             if not fun.poll(_context):
-                print("drawing", fun.old)
                 if fun.old is not None:
                     fun.old(_self, _context)
             else:
-                print("drawing", fun)
                 fun(_self, _context)
         setattr(fun, 'old', set_cls_attribute(bl_ui_class, attr_name, wrapper))
         return wrapper
