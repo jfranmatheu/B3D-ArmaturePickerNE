@@ -20,7 +20,7 @@ def cache_cls_attributes(cls) -> dict:
     return _cache_reset[cls]
 
 
-def set_cls_attribute(cls, attr: str, new_value):
+def set_cls_attribute(cls, attr: str, new_value) -> callable:
     ## print("CLS ATTR:", cls, attr, getattr(cls, attr))
 
     if cache := _cache_reset.get(cls, None):
@@ -32,11 +32,12 @@ def set_cls_attribute(cls, attr: str, new_value):
 
     if attr not in cache:
         print("Attribute %s not in cls" % attr, cls)
-        return
+        return None
 
     _mod_cls_attributes[cls].add(attr)
 
     setattr(cls, 'old_' + attr, cache[attr])
+    return cache[attr]
 
 
 def unregister():

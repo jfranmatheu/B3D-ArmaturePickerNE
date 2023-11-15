@@ -2,7 +2,7 @@ from bl_ui.space_node import NODE_PT_active_node_generic, NODE_PT_active_node_co
 # from bl_ui.properties_grease_pencil_common import AnnotationDataPanel
 from bpy.types import Context, NODE_PT_annotation, NODE_PT_active_node_properties
 
-from .override_cache import set_cls_attribute
+from armature_picker.ackit._register.override_cache import set_cls_attribute
 
 
 @classmethod

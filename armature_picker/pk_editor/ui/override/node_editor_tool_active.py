@@ -3,7 +3,7 @@ from bl_ui.space_toolsystem_toolbar import NODE_PT_tools_active
 from bl_ui.space_toolsystem_common import ToolActivePanelHelper, ToolSelectPanelHelper
 from bpy.types import Context
 
-from .override_cache import set_cls_attribute
+from armature_picker.ackit._register.override_cache import set_cls_attribute
 
 
 @classmethod

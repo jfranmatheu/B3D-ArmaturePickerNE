@@ -7,8 +7,11 @@ def poll_pose(context: Context) -> bool:
 def poll_active_object(context: Context) -> bool:
     return context.active_object is not None and context.active_object.type in {'ARMATURE'} and context.active_object.mode in {'POSE'}
 
+def poll_tree_type(context: Context) -> bool:
+    return context.space_data.tree_type == 'AP_NODETREE'
+
 def poll_node_editor(context: Context) -> bool:
-    return context.area.type == 'NODE_EDITOR' and context.space_data.tree_type == 'AP_NODETREE' and context.space_data.node_tree is not None
+    return context.area.type == 'NODE_EDITOR' and poll_tree_type(context) and context.space_data.node_tree is not None
 
 def poll_node_editor__edit(context: Context) -> bool:
     return poll_node_editor(context) and context.space_data.node_tree.picker_mode == 'EDIT'

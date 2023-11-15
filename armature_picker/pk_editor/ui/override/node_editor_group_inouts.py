@@ -1,5 +1,5 @@
 from bpy.types import Context
-from .override_cache import set_cls_attribute
+from armature_picker.ackit._register.override_cache import set_cls_attribute
 
 @classmethod
 def poll(cls, context: Context):

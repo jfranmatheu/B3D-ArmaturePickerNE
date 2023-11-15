@@ -1,7 +1,7 @@
 from bl_ui.space_toolsystem_common import ToolSelectPanelHelper
 from bpy.types import Context, UILayout
 
-from .override_cache import set_cls_attribute, get_attr_from_cache
+from armature_picker.ackit._register.override_cache import set_cls_attribute, get_attr_from_cache
 from armature_picker.pk_editor.poll import poll_check
 
 
