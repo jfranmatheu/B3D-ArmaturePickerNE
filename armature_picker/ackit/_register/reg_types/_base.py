@@ -1,7 +1,7 @@
 import bpy
 
 from ..._globals import GLOBALS
-from ....utils.classes import get_subclasses_recursive
+# from ....utils.classes import get_subclasses_recursive
 
 import re
 
@@ -11,7 +11,7 @@ class BaseType(object):
 
     @classmethod
     def __subclasses_recursive__(cls):
-        return get_subclasses_recursive(cls, only_outermost=True)
+        # return get_subclasses_recursive(cls, only_outermost=True)
         direct = cls.__subclasses__()
         indirect = []
         for subclass in direct:
