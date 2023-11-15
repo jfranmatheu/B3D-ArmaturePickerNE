@@ -11,6 +11,7 @@ __all__ = ["Ops",]
 
 class Ops(OpTypeEnum, Enum):
 	CenterView = auto()
+	LoadImageForActiveNode = auto()
 
 
 ''' Usage example:
