@@ -2,6 +2,7 @@ from bpy.types import Context, UILayout, Image
 from bpy.props import PointerProperty, BoolProperty, FloatProperty
 from mathutils import Vector
 
+from armature_picker.ops import Ops as AP_OPS
 from .wg_style import PG__Image__Style
 
 
@@ -141,4 +142,4 @@ class APNODE_Image_NodeProps:
     def draw_wg_props(self, context: Context, layout: UILayout) -> None:
         row = layout.row(align=True)
         row.prop(self, 'image')
-        row.operator('armature_picker.load_image_for_active_node', text='', icon='IMPORT')
+        AP_OPS.LoadImageForActiveNode.draw_in_layout(row, label='', icon='IMPORT')

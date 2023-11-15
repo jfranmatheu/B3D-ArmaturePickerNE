@@ -9,6 +9,7 @@ from blf import size as set_text_size, dimensions as get_text_dimensions
 
 from math import ceil
 
+from armature_picker.ops import Ops as AP_OPS
 from ...utils.math import clamp
 from ...utils.ui_layout import draw_section
 from armature_picker.pk_editor.widgets._button_style_common import CommonTheme__Button
@@ -254,7 +255,8 @@ class APNODE_Button_CommonProps:
         _row.enabled = self.use_image
         _row = _row.row(align=True)
         _row.prop(self, 'image', text='')
-        _row.operator('armature_picker.load_image_for_active_node', text='', icon='IMPORT')
+
+        AP_OPS.LoadImageForActiveNode.draw_in_layout(_row, label='', icon='IMPORT')
 
 
     def draw_styles(self, panel_layout: UILayout, section_layout: UILayout) -> None:
