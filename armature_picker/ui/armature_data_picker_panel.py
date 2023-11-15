@@ -14,3 +14,21 @@ class DATA_PT_armature_picker(ArmatureButtonsPanel, Panel):
             layout.template_ID(arm, "picker")
         else:
             layout.prop(arm, "picker", text='')
+
+'''
+from bl_ui.properties_data_armature import ArmatureButtonsPanel
+
+from armature_picker.ackit import ACK
+
+
+class ArmaturePickerData(ArmatureButtonsPanel, ACK.Type.UI.PANEL):
+    label = "Picker"
+
+    def draw_ui(self, context, layout):
+        arm = context.armature
+        if arm.picker is not None:
+            layout.template_ID(arm, "picker")
+        else:
+            layout.prop(arm, "picker", text='')
+
+'''
