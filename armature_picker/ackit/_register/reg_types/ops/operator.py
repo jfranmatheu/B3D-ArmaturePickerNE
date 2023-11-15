@@ -16,7 +16,7 @@ class Operator(BaseType):
         Class Properties:
             - 'label': aka bl_label.
         Class Methods:
-            - 'create_operator': creates an Operator type class.
+            - 'tag_register': creates an Operator type class and tags it for registration.
             - 'run': to run this operator. (classmethod)
             - 'run_invoke': to run this operator but with invoke execution context. (classmethod)
             - 'draw_in_layout': to draw a button in the UI for this operator. (classmethod)
@@ -27,6 +27,8 @@ class Operator(BaseType):
     bl_idname: str
     bl_label: str
     bl_description: str
+    bl_options: set[str]
+    bl_property: str
 
     label: str
     tooltip: str
@@ -45,9 +47,36 @@ class Operator(BaseType):
 
     def execute(self, context: bpy_types.Context) -> OpsReturn:
         # print("BaseOperator::execute() -> ", self.bl_idname)
-        self.action(context)
+        if res := self.action(context):
+            if isinstance(res, set):
+                return res
+            if isinstance(res, int):
+                if res == -1:
+                    return OpsReturn.CANCEL
+                elif res == 0:
+                    return OpsReturn.FINISH
         return OpsReturn.FINISH
 
+    def report_debug(self, message: str) -> None:
+        self.report({'DEBUG'}, message)
+
+    def report_info(self, message: str) -> None:
+        self.report({'INFO'}, message)
+
+    def report_warning(self, message: str) -> None:
+        self.report({'WARNING'}, message)
+
+    def error(self, message: str) -> None:
+        self.report({'ERROR'}, message)
+        return OpsReturn.CANCEL
+
+    def error_invalid_context(self, message: str = 'Invalid Context') -> None:
+        self.report({'ERROR_INVALID_CONTEXT'}, message)
+        return OpsReturn.CANCEL
+
+    def error_invalid_input(self, message: str = 'Invalid Input') -> None:
+        self.report({'ERROR_INVALID_INPUT'}, message)
+        return OpsReturn.CANCEL
 
     ###################################
 

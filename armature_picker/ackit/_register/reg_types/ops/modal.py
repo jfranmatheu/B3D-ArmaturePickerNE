@@ -22,6 +22,10 @@ class ModalFlags(Enum):
 
 
 class ModalOperator(Operator):
+    # Blender props.
+    bl_cursor_pending: str
+
+    # --------------------------------
     # Properties you should set in your subclasses.
     modal_flags: set[ModalFlags]
 

@@ -3,6 +3,7 @@ from .reg_ui_append import UIAppend
 from .reg_rna_sub import subscribe_to_rna_change # RNASubscription
 from .reg_timer import new_timer_as_decorator
 from .reg_handlers import Handlers
+from .reg_ops import OpsDecorators
 
 
 class RegDeco:
@@ -11,3 +12,4 @@ class RegDeco:
     HANDLER = Handlers
     TIMER = new_timer_as_decorator
     UI_APPEND = UIAppend
+    OPS = OpsDecorators
