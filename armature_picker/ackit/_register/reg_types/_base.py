@@ -1,7 +1,8 @@
 import bpy
+from bpy.types import bpy_struct
 
 from ..._globals import GLOBALS
-# from ....utils.classes import get_subclasses_recursive
+from ....utils.classes import get_subclasses_recursive
 
 import re
 
@@ -11,7 +12,7 @@ class BaseType(object):
 
     @classmethod
     def __subclasses_recursive__(cls):
-        # return get_subclasses_recursive(cls, only_outermost=True)
+        return get_subclasses_recursive(cls, only_outermost=True)
         direct = cls.__subclasses__()
         indirect = []
         for subclass in direct:
@@ -22,7 +23,7 @@ class BaseType(object):
     def tag_register(cls, bpy_type: type | str, type_key: str | None, *subtypes, **kwargs):
         if isinstance(bpy_type, str):
             bpy_type = getattr(bpy.types, bpy_type)
-        print(f"[{GLOBALS.ADDON_MODULE}] --> Tag-Register class '{cls.__name__}' of type '{bpy_type.__name__}'")
+        print(f"[{GLOBALS.ADDON_MODULE}] --> Tag-Register class '{cls.__name__}' of type '{bpy_type.__name__} --> Package: {cls.__module__}'")
 
         keywords = re.findall('[A-Z][^A-Z]*', cls.__name__)
         idname: str = '_'.join([word.lower() for word in keywords])
@@ -59,7 +60,7 @@ class BaseType(object):
 
 def init():
     for subcls in BaseType.__subclasses_recursive__():
-        if 'ackit' in subcls.__module__ or 'types' in subcls.__module__:
-            # SKIP: IF THE SUBCLASS IS INSIDE THE addon_utils module or inside any folder called 'types'.
-            continue
+        if 'types' in subcls.__module__:
+           # SKIP: IF THE SUBCLASS IS INSIDE THE addon_utils module or inside any folder called 'types'.
+           continue
         subcls.tag_register()
