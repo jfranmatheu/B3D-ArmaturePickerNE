@@ -10,8 +10,11 @@ def poll_active_object(context: Context) -> bool:
 def poll_tree_type(context: Context) -> bool:
     return context.space_data.tree_type == 'AP_NODETREE'
 
+def poll_picker_editor(context: Context) -> bool:
+    return context.area.type == 'NODE_EDITOR' and poll_tree_type(context)
+
 def poll_node_editor(context: Context) -> bool:
-    return context.area.type == 'NODE_EDITOR' and poll_tree_type(context) and context.space_data.node_tree is not None
+    return poll_picker_editor(context) and context.space_data.node_tree is not None
 
 def poll_node_editor__edit(context: Context) -> bool:
     return poll_node_editor(context) and context.space_data.node_tree.picker_mode == 'EDIT'
