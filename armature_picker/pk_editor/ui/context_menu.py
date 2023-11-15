@@ -3,21 +3,28 @@ from bpy.types import Context, UILayout, Menu
 
 from dataclasses import dataclass
 
+from armature_picker.ops import Ops as AP_OPS
+
 
 @dataclass
 class AlignWidgetOperatorProps:
     name: str
     op_id: str
     axis: str = 'X'
-    align_method: str | None = None
+    align_method: str | None = 'MEDIAN'
 
     def draw(self, layout: UILayout, name: str | None = None, icon: str = 'NONE', icon_value: int = 0) -> None:
-        op = layout.operator('armature_picker.align_widgets', text=name if name is not None else self.name, icon=icon, icon_value=icon_value)
-        op.op = self.op_id
-        op.axis = self.axis
-        if self.align_method:
-            op.align_method = self.align_method
-
+        AP_OPS.AlignWidgets.draw_in_layout(
+            layout,
+            label=name if name is not None else self.name,
+            icon=icon,
+            icon_value=icon_value,
+            op_props={
+                'op': self.op_id,
+                'axis': self.axis,
+                'align_method': self.align_method,
+            }
+        )
 
 
 EVEN_DISTRIBUTION_HOR = AlignWidgetOperatorProps(

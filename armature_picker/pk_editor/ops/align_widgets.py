@@ -1,6 +1,7 @@
 from bpy.types import Context, Operator
 from bpy.props import EnumProperty
 
+from armature_picker.ackit import ACK
 from armature_picker.pk_editor.poll import poll_check
 from armature_picker.utils.operator import OpsReturn
 from armature_picker.pk_editor.widgets._base import AP_Node
@@ -19,10 +20,9 @@ def set_size_component(_node: AP_Node, axis: int, value: int) -> int:
     _node.rect_transform.dimensions[axis] = int(value)
 
 
-class AP_OT_align_widgets(Operator):
-    bl_idname = 'armature_picker.align_widgets'
-    bl_label = 'Align/Distribute Widgets'
-    bl_description = "Align or Distribute Widgets horizontally or vertically"
+class AlignWidgets(ACK.Type.OPS.ACTION):
+    label = 'Align/Distribute Widgets'
+    tooltip = "Align or Distribute Widgets horizontally or vertically"
     bl_options = {'REGISTER', 'UNDO'}
 
     op: EnumProperty(
@@ -151,17 +151,17 @@ class AP_OT_align_widgets(Operator):
                 continue
             node.rect_transform.rotation = active_node_rotation
 
-    def execute(self, context: Context) -> OpsReturn:
+    def action(self, context: Context) -> None:
         node_tree = context.space_data.node_tree
         nodes: list[AP_Node] = list(node_tree.get_selected_nodes(context, include_active=True))
         if len(nodes) < 2:
-            return OpsReturn.CANCEL
+            return self.error("You need to select at least 2 Widgets")
 
         axis_int = 0 if self.axis == 'X' else 1
 
         if self.op == 'EVEN_DISTRIBUTION':
             if len(nodes) < 3:
-                return OpsReturn.CANCEL
+                return self.error("You need to select at least 3 Widgets")
             self.even_distribute(nodes, axis_int)
 
         elif self.op == 'ALIGN':
@@ -181,5 +181,3 @@ class AP_OT_align_widgets(Operator):
 
         elif self.op == 'MATCH_ACTIVE_ROTATION':
             self.match_active_rotation(node_tree.nodes.active, nodes)
-
-        return OpsReturn.FINISH

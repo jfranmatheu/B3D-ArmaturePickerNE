@@ -11,6 +11,7 @@ __all__ = ["Ops",]
 
 class Ops(OpTypeEnum, Enum):
 	LoadCustomShapeFromGeometry = auto()
+	AlignWidgets = auto()
 	AsignActiveBoneToBonePicker = auto()
 	CenterView = auto()
 	LoadImageForActiveNode = auto()
