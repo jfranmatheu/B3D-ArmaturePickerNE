@@ -11,6 +11,8 @@ from uuid import uuid4
 def on_node_tree_change(context: Context, space_data: SpaceNodeEditor, node_tree: NodeTree):
     if space_data is None:
         space_data = get_armature_picker_editor(context)
+        if space_data is None:
+            return
         node_tree = space_data.node_tree
     if space_data.tree_type != 'AP_NODETREE':
         return
