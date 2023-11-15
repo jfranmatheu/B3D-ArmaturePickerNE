@@ -1,9 +1,9 @@
 from bpy.types import Context, Panel
 
+from armature_picker.ops import Ops as AP_OPS
 from armature_picker.utils.ui_layout import draw_section
 from armature_picker.pk_editor.poll import poll_check
 from armature_picker.pk_editor.widgets.bone_picker_geo.node import APNODE_BonePickerGeo
-from armature_picker.pk_editor.ops.load_custom_shape import AP_OT_load_custom_shape_from_geometry
 
 
 class APNODE_PT_custom_shape(Panel):
@@ -25,7 +25,7 @@ class APNODE_PT_custom_shape(Panel):
 
         section = draw_section(layout, 'Load Shape', icon='MONKEY')
         section.scale_y = 1.4
-        section.operator(AP_OT_load_custom_shape_from_geometry.bl_idname, text='From Geometry', icon='MESH_DATA')
+        AP_OPS.LoadCustomShapeFromGeometry.draw_in_layout(section, label='From Geometry', icon='MESH_DATA')
 
         section = draw_section(layout, 'Hitbox Settings', icon='STYLUS_PRESSURE')
         section.use_property_split = True

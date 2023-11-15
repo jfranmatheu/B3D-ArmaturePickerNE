@@ -10,12 +10,13 @@ __all__ = ["Ops",]
 
 
 class Ops(OpTypeEnum, Enum):
+	LoadCustomShapeFromGeometry = auto()
 	CenterView = auto()
 	LoadImageForActiveNode = auto()
 
 
 ''' Usage example:
 from addon_module.ops import Ops
-Ops.CenterView() # directly run execute the operator.
-Ops.CenterView.operator.run_invoke() # access to the operator class and run invoke the operator.
+Ops.LoadCustomShapeFromGeometry() # directly run execute the operator.
+Ops.LoadCustomShapeFromGeometry.operator.run_invoke() # access to the operator class and run invoke the operator.
 '''
