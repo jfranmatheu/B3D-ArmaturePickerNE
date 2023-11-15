@@ -3,6 +3,7 @@ from mathutils import Vector
 from bpy.props import StringProperty, IntProperty, FloatProperty, BoolProperty, FloatVectorProperty, EnumProperty, PointerProperty
 from bpy import ops as OPS
 
+from armature_picker.ops import Ops as AP_OPS
 from ._transform_props import RectTransform
 from ...gpu import draw
 from ...utils.armature import deselect_all_bones_from_active
@@ -141,7 +142,7 @@ class APNODE_BonePicker_CommonProps:
         layout.use_property_decorate = False
 
         row = layout.row(align=True)
-        row.operator('armature_picker.asign_active_bone', text='', icon='RESTRICT_SELECT_OFF')
+        AP_OPS.AsignActiveBoneToBonePicker.draw_in_layout(row, label='', icon='RESTRICT_SELECT_OFF')
         row.prop_search(self, 'bone_name', context.active_object.pose, 'bones', text='', icon='BONE_DATA')
 
         row = layout.row(align=True, heading='IK/FK')
