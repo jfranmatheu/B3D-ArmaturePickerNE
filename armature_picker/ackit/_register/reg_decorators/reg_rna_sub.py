@@ -1,5 +1,6 @@
 import bpy
 from .reg_timer import new_timer_as_decorator
+from ...debug import CM_PrintDebug
 
 
 owners = []
@@ -66,13 +67,15 @@ def register():
     if not rna_listeners:
         return
     
-    print("\n-----------------------\nRNA Subscriptions:")
-    for owner, data in rna_listeners.items():
-        bpy_data, data_attr = data['key']
-        print(f"\t> {bpy_data.__name__} . {data_attr}")
-        bpy.msgbus.subscribe_rna(**data)
-        owners.append(owner)
-    print("-----------------------")
+    # print("\n-----------------------\nRNA Subscriptions:")
+    with CM_PrintDebug('RNA Subscriptions') as print_debug:
+        for owner, data in rna_listeners.items():
+            bpy_data, data_attr = data['key']
+            # print(f"\t> {bpy_data.__name__} . {data_attr}")
+            print_debug(f"{bpy_data.__name__} . {data_attr}")
+            bpy.msgbus.subscribe_rna(**data)
+            owners.append(owner)
+    # print("-----------------------")
 
 
 def unregister():
@@ -83,11 +86,16 @@ def unregister():
 
 @new_timer_as_decorator(first_interval=0.1, one_time_only=True, persistent=True)
 def register_rna_sub_powered_by_context(*args):
-    print("\n-----------------------\nRNA Subscriptions (context-based):")
-    context = bpy.context
-    for owner, data in ctx_rna_listeners.items():
-        print(f"\t> {'Context'} . {data['key']}")
-        data['key'] = context.path_resolve(data['key'], False)
-        bpy.msgbus.subscribe_rna(**data)
-        owners.append(owner)
-    print("-----------------------")
+    if not ctx_rna_listeners:
+        return
+
+    # print("\n-----------------------\nRNA Subscriptions (context-based):")
+    with CM_PrintDebug('RNA Subscriptions (context-based)') as print_debug:
+        context = bpy.context
+        for owner, data in ctx_rna_listeners.items():
+            # print(f"\t> {'Context'} . {data['key']}")
+            print_debug((f"\t> {'Context'} . {data['key']}"))
+            data['key'] = context.path_resolve(data['key'], False)
+            bpy.msgbus.subscribe_rna(**data)
+            owners.append(owner)
+        # print("-----------------------")

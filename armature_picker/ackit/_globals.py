@@ -13,6 +13,7 @@ class GLOBALS:
 
     ADDON_MODULE = __main_package__
     ADDON_SOURCE_PATH = Path(__file__).parent.parent
+    ADDON_MODULE_NAME = ADDON_MODULE.replace('_', ' ').title().replace(' ', '')
     #ADDON_NAME = bl_info['name']
     #ADDON_VERSION = bl_info['version']
     #SUPPORTED_BLENDER_VERSION = bl_info['blender']

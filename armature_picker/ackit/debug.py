@@ -4,7 +4,7 @@ import pprint
 
 def print_debug(*args) -> None:
     if GLOBALS.IN_DEVELOPMENT:
-        print(f'[{GLOBALS.ADDON_MODULE.upper()}]', *args)
+        print(f'[{GLOBALS.ADDON_MODULE_NAME}]', *args)
 
 
 def pprint_debug(title: str, d: dict, sort: bool = False) -> None:
@@ -18,7 +18,8 @@ class CM_PrintDebug:
     def __init__(self, title: str) -> None:
         self.use_debug = GLOBALS.IN_DEVELOPMENT
         if self.use_debug:
-            print_debug('\n---', title, '----------------------------')
+            print(f"<{GLOBALS.ADDON_MODULE_NAME}>")
+            print('---', title, '----------------------------')
 
     def __enter__(self):
         def print_indent(msg: str, indent: int = 1, prefix: str = '>'):
@@ -28,4 +29,7 @@ class CM_PrintDebug:
         return print_indent
 
     def __exit__(self, exc_type, exc_value, trace):
-        print_debug('----------------------------------------------------------------------------\n')
+        if self.use_debug:
+            # print('-----------------------------------------')
+            print(f"</{GLOBALS.ADDON_MODULE_NAME}>")
+            # print_debug('----------------------------------------------------------------------------\n')

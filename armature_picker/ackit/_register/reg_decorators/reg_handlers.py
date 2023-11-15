@@ -4,6 +4,8 @@ from collections import defaultdict
 import bpy
 from bpy.app import handlers
 
+from ...debug import CM_PrintDebug
+
 
 to_register_handlers: dict[str, list] = defaultdict(list)
 registered_handlers: dict[str, list] = defaultdict(list)
@@ -45,7 +47,7 @@ class Handlers(Enum):
 
     def __call__(self, persistent: bool = False):
         ''' Use as a decorator. Only 1 parameter is required in target function, which is context. '''
-        print(f"[ArmaturePicker] Registering {self.name} Handler...")
+        # print_debug(f"[ArmaturePicker] Registering {self.name} Handler...")
         def decorator(deco_fun):
 
             def callback_deco(_deco_fun):
@@ -77,11 +79,14 @@ class Handlers(Enum):
 
 
 def register():
-    for handler_type, handler_funcs in to_register_handlers.items():
-        handler_list = getattr(handlers, handler_type.lower())
-        for handler_fun in handler_funcs:
-            handler_list.append(handler_fun)
-            registered_handlers[handler_type].append(handler_fun)
+    with CM_PrintDebug('Handlers') as print_debug:
+        for handler_type, handler_funcs in to_register_handlers.items():
+            handler_list = getattr(handlers, handler_type.lower())
+            print_debug(handler_type, indent=1, prefix='o')
+            for handler_fun in handler_funcs:
+                handler_list.append(handler_fun)
+                registered_handlers[handler_type].append(handler_fun)
+                print_debug(f"'{handler_fun.__name__}' from module '{handler_fun.__module__}'", indent=2, prefix='>')
 
 def unregister():
     for handler_type in Handlers:

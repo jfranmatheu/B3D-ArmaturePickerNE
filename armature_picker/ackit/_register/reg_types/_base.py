@@ -2,6 +2,7 @@ import bpy
 from bpy.types import bpy_struct
 
 from ..._globals import GLOBALS
+from ...debug import print_debug
 from ....utils.classes import get_subclasses_recursive
 
 import re
@@ -23,7 +24,7 @@ class BaseType(object):
     def tag_register(cls, bpy_type: type | str, type_key: str | None, *subtypes, **kwargs):
         if isinstance(bpy_type, str):
             bpy_type = getattr(bpy.types, bpy_type)
-        print(f"[{GLOBALS.ADDON_MODULE}] --> Tag-Register class '{cls.__name__}' of type '{bpy_type.__name__} --> Package: {cls.__module__}'")
+        print_debug(f"--> Tag-Register class '{cls.__name__}' of type '{bpy_type.__name__} --> Package: {cls.__module__}'")
 
         keywords = re.findall('[A-Z][^A-Z]*', cls.__name__)
         idname: str = '_'.join([word.lower() for word in keywords])

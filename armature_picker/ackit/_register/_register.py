@@ -6,6 +6,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 
 from .._globals import GLOBALS
+from ..debug import print_debug
 from .reg_types.ops import Operator
 from .reg_types import BaseType
 
@@ -35,19 +36,19 @@ class BlenderTypes(Enum):
         classes_per_type[self] = filter(self.get_classes())
 
     def add_class(self, cls: BaseType) -> None:
-        print(f"[{GLOBALS.ADDON_MODULE}] --> Add-Class '{cls.__name__}' of type '{self.name}', {id(cls)}")
+        print_debug(f"--> Add-Class '{cls.__name__}' of type '{self.name}', {id(cls)}")
         classes_per_type[self].append(cls)
 
     def register_classes(self) -> None:
         if reg_factory := register_factory.get(self, None):
-            print(f"[{GLOBALS.ADDON_MODULE}] + Register {self.name} classes")
+            print_debug(f"+ Register {self.name} classes")
             reg_factory.register()
         else:
             for cls in classes_per_type[self]:
                 if "bl_rna" in cls.__dict__:
-                    print(f"[{GLOBALS.ADDON_MODULE}] WARN! Tryng to register an already registered class: {cls.__name__}")
+                    print_debug(f"WARN! Tryng to register an already registered class: {cls.__name__}")
                     continue
-                print(f"[{GLOBALS.ADDON_MODULE}] + Register {self.name} class: {cls.__name__}, {id(cls)}")
+                print_debug(f"+ Register {self.name} class: {cls.__name__}, {id(cls)}")
                 register_class(cls)
 
     def unregister_classes(self) -> None:
@@ -56,9 +57,9 @@ class BlenderTypes(Enum):
         else:
             for cls in classes_per_type[self]:
                 if "bl_rna" not in cls.__dict__:
-                    print(f"[{GLOBALS.ADDON_MODULE}] WARN! Tryng to register a class that is not registered: {cls.__name__}")
+                    print_debug(f"WARN! Tryng to register a class that is not registered: {cls.__name__}")
                     continue
-                print(f"[{GLOBALS.ADDON_MODULE}] - UnRegister {self.name} class: {cls.__name__}, {id(cls)}")
+                print_debug(f"- UnRegister {self.name} class: {cls.__name__}, {id(cls)}")
                 unregister_class(cls)
 
     def create_classes_factory(self):
