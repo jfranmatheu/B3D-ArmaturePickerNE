@@ -6,8 +6,8 @@ from bpy.props import StringProperty
 def ops_io(helper_cls, file_formats: tuple[str]):
     def decorator(deco_cls):
         derivated_helper_cls = type(
-            deco_cls.__name__ + '_IOHelper',
-            (deco_cls, helper_cls),
+            deco_cls.__name__,
+            (helper_cls, deco_cls),
             {
                 '__annotations__': {
                     'filter_glob': StringProperty(
