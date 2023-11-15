@@ -17,7 +17,6 @@ def ui_override(bl_ui_class: Union[Panel, Menu],
         setattr(fun, 'poll', poll)
         # setattr(fun, 'old', get_attr_from_cache(bl_ui_class, attr_name, None))
         def wrapper(_self, _context): # *args, **kwargs):
-            print(_self, _context)
             if not fun.poll(_context):
                 if fun.old is not None:
                     fun.old(_self, _context)
