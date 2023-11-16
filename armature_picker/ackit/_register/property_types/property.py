@@ -15,7 +15,8 @@ class PropertyTypes:
     STRING = StringProperty
     POINTER_CUSTOM = PointerProperty
 
-    FACTOR = lambda name, default_value = 0, **kwargs: FloatProperty(name=name, default_value=default_value, min=0, max=1, **kwargs) 
+    ANGLE_DEGREE = lambda name, default = 0, **kwargs: FloatProperty(name=name, default=default, **kwargs)
+    FACTOR = lambda name, default_value = 0, **kwargs: FloatProperty(name=name, default=default_value, min=0, max=1, **kwargs) 
     IVECTOR_2 = lambda default_vector, **kwargs: IntVectorProperty(default=default_vector, size=2, **kwargs)
     IVECTOR_3 = lambda default_vector, **kwargs: IntVectorProperty(default=default_vector, size=3, **kwargs)
     IVECTOR_N = lambda default_vector, **kwargs: IntVectorProperty(default=default_vector, size=len(default_vector), **kwargs)
