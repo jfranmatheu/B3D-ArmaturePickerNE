@@ -62,6 +62,8 @@ def _register_property_group(deco_cls) -> PropertyGroup:
         }
     )
     BlenderTypes.PropertyGroup.add_class(pg_cls)
+    pg_cls.__module__ = deco_cls.__module__
+    deco_cls = pg_cls
     return pg_cls
 
 
