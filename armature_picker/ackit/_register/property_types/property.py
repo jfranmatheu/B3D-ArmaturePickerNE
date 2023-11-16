@@ -15,7 +15,7 @@ class PropertyTypes:
     STRING = StringProperty
     POINTER_CUSTOM = PointerProperty
 
-    ANGLE_DEGREE = lambda name, default = 0, **kwargs: FloatProperty(name=name, default=default, **kwargs)
+    ANGLE_DEGREE = lambda name, default = 0, **kwargs: FloatProperty(name=name, default=default, min=0, max=360, subtype='ANGLE', **kwargs)
     FACTOR = lambda name, default_value = 0, **kwargs: FloatProperty(name=name, default=default_value, min=0, max=1, **kwargs) 
     IVECTOR_2 = lambda default_vector, **kwargs: IntVectorProperty(default=default_vector, size=2, **kwargs)
     IVECTOR_3 = lambda default_vector, **kwargs: IntVectorProperty(default=default_vector, size=3, **kwargs)
@@ -23,8 +23,8 @@ class PropertyTypes:
     VECTOR_2 = lambda default_vector, **kwargs: FloatVectorProperty(default=default_vector, size=2, **kwargs)
     VECTOR_3 = lambda default_vector, **kwargs: FloatVectorProperty(default=default_vector, size=3, **kwargs)
     VECTOR_N = lambda default_vector, **kwargs: FloatVectorProperty(default=default_vector, size=len(default_vector), **kwargs)
-    COLOR_RGB = lambda name, default_color, **kwargs: FloatVectorProperty(name=name, default=default_color, min=0.0, max=1.0, size=3, **kwargs)
-    COLOR_RGBA = lambda name, default_color, **kwargs: FloatVectorProperty(name=name, default=default_color, min=0.0, max=1.0, size=4, **kwargs)
+    COLOR_RGB = lambda name, default_color, **kwargs: FloatVectorProperty(name=name, default=default_color, min=0.0, max=1.0, size=3, subtype='COLOR', **kwargs)
+    COLOR_RGBA = lambda name, default_color, **kwargs: FloatVectorProperty(name=name, default=default_color, min=0.0, max=1.0, size=4, subtype='COLOR', **kwargs)
     DIRPATH = lambda **kwargs: StringProperty(subtype='DIR_PATH', **kwargs)
     FILEPATH = lambda **kwargs: StringProperty(subtype='FILE_PATH', **kwargs)
 
