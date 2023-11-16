@@ -17,9 +17,13 @@ class PointerPropertyTypes(Enum):
     BRUSH = btypes.Brush
     IMAGE = btypes.Image
     TEXTURE = btypes.Texture
-    CUSTOM = None
+    # CUSTOM = None
 
-    def __call__(self, name: str, **kwargs: dict) -> btypes.PointerProperty:
+    @classmethod
+    def CUSTOM(cls, name: str = '', type = None, **kwargs) -> btypes.PointerProperty:
+        return PointerProperty(name=name, type=type, **kwargs)
+
+    def __call__(self, name: str = '', **kwargs: dict) -> btypes.PointerProperty:
         if self.value is None:
             if 'type' not in kwargs:
                 raise AttributeError("'type' kwarg must be specified to create a - CUSTOM - PointerProperty")
