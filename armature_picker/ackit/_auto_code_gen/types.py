@@ -66,7 +66,7 @@ def codegen__types_py(types_filepath: str | None = None) -> None:
         # SAD. No PropertyGroup classes to process... :-(
         return
 
-    from .._auto_load import get_ordered_pg_classes_to_register
+    from .._loader import get_ordered_pg_classes_to_register
     pg_sorted_classes = get_ordered_pg_classes_to_register(pg_classes)
 
 
@@ -144,9 +144,12 @@ def codegen__types_py(types_filepath: str | None = None) -> None:
         # Write the Data enumerator.
         f.write("\n\n# ++++++++++++++++++++++++++++++++++++++++++++++++++\n\n")
         f.write('\nclass Data:')
-        for root_pg_cls_name in root_pg_classes:
-            f.write(f'\n\t{root_pg_cls_name} = {root_pg_cls_name}.get_data')
-        
+        if len(root_pg_classes) == 0:
+            f.write(f'\n\tpass')
+        else:
+            for root_pg_cls_name in root_pg_classes:
+                f.write(f'\n\t{root_pg_cls_name} = {root_pg_cls_name}.get_data')
+
         f.write('\n\nPG = Data # Alias.')
 
         # Write example code.
