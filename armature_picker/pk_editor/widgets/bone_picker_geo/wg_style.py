@@ -1,6 +1,6 @@
-from bpy.types import AnyType, PropertyGroup, UILayout, Context, UIList
-from bpy.props import FloatVectorProperty, BoolProperty, CollectionProperty, StringProperty, EnumProperty, IntProperty, PointerProperty
+from bpy.types import UILayout, Context
 
+from armature_picker.ackit import ACK
 from .._base_wg_style import StyleBase
 from armature_picker.ackit._globals import __main_package__
 
@@ -30,38 +30,31 @@ color_tags = []
 
 
 
-class PG_ArmaturePicker_ColorTag(PropertyGroup):
-    name: StringProperty(
+@ACK.Deco.PROP_GROUP.CHILD
+class PG_ArmaturePicker_ColorTag:
+    name: ACK.Prop.STRING(
         name="Tag Name",
         default='Tag Name',
         update=lambda self, ctx: color_tags.clear()
     )
-    color: FloatVectorProperty(
-        name="Color",
-        description="Color of the button",
-        default=(.05, .51, .95, 1.0),
-        size=4,
-        min=0.0,
-        max=1.0,
-        subtype='COLOR',
-        # update=lambda self, ctx: color_tags.clear()
-    )
+    color: ACK.Prop.COLOR_RGBA("Color", (.05, .51, .95, 1.0))
 
 
-class PG__BonePickerGeo__Style(StyleBase, PropertyGroup):
-    color_tag_0: PointerProperty(type=PG_ArmaturePicker_ColorTag)
-    color_tag_1: PointerProperty(type=PG_ArmaturePicker_ColorTag)
-    color_tag_2: PointerProperty(type=PG_ArmaturePicker_ColorTag)
-    color_tag_3: PointerProperty(type=PG_ArmaturePicker_ColorTag)
-    color_tag_4: PointerProperty(type=PG_ArmaturePicker_ColorTag)
-    color_tag_5: PointerProperty(type=PG_ArmaturePicker_ColorTag)
-    color_tag_6: PointerProperty(type=PG_ArmaturePicker_ColorTag)
-    color_tag_7: PointerProperty(type=PG_ArmaturePicker_ColorTag)
-    color_tag_8: PointerProperty(type=PG_ArmaturePicker_ColorTag)
-    color_tag_9: PointerProperty(type=PG_ArmaturePicker_ColorTag)
-    
-    initialized: BoolProperty()
-    
+@ACK.Deco.PROP_GROUP.CHILD
+class PG__BonePickerGeo__Style(StyleBase):
+    color_tag_0: ACK.Prop.POINTER.CUSTOM('Color Tag 1', PG_ArmaturePicker_ColorTag)
+    color_tag_1: ACK.Prop.POINTER.CUSTOM('Color Tag 2', PG_ArmaturePicker_ColorTag)
+    color_tag_2: ACK.Prop.POINTER.CUSTOM('Color Tag 3', PG_ArmaturePicker_ColorTag)
+    color_tag_3: ACK.Prop.POINTER.CUSTOM('Color Tag 4', PG_ArmaturePicker_ColorTag)
+    color_tag_4: ACK.Prop.POINTER.CUSTOM('Color Tag 5', PG_ArmaturePicker_ColorTag)
+    color_tag_5: ACK.Prop.POINTER.CUSTOM('Color Tag 6', PG_ArmaturePicker_ColorTag)
+    color_tag_6: ACK.Prop.POINTER.CUSTOM('Color Tag 7', PG_ArmaturePicker_ColorTag)
+    color_tag_7: ACK.Prop.POINTER.CUSTOM('Color Tag 8', PG_ArmaturePicker_ColorTag)
+    color_tag_8: ACK.Prop.POINTER.CUSTOM('Color Tag 9', PG_ArmaturePicker_ColorTag)
+    color_tag_9: ACK.Prop.POINTER.CUSTOM('Color Tag 10', PG_ArmaturePicker_ColorTag)
+
+    initialized: ACK.Prop.BOOL()
+
     def ensure_color_tags(self):
         if not self.initialized:
             for idx, (tag_name, tag_color) in enumerate(default_color_tags):
@@ -84,7 +77,8 @@ class PG__BonePickerGeo__Style(StyleBase, PropertyGroup):
             row.prop(color_tag, 'color', text='')
 
 
-class PG__BonePickerGeo__LocalStyle(PropertyGroup):
+@ACK.Deco.PROP_GROUP.CHILD
+class PG__BonePickerGeo__LocalStyle:
     def get_color_tags(self, context: Context) -> tuple:
         if len(color_tags) == 0:
             prefs = context.preferences.addons[__main_package__].preferences
@@ -94,12 +88,12 @@ class PG__BonePickerGeo__LocalStyle(PropertyGroup):
                 color_tag = getattr(th__bone_picker_geo, color_tag_prop_name)
                 color_tags.append((color_tag_prop_name, color_tag.name, ''))
         return color_tags
-    
+
     def update_color(self, context: Context) -> None:
         context.area.tag_redraw()
 
-    use_object_color: BoolProperty(default=False, name="Color from Mesh", description="Use color from source mesh", update=update_color)
-    color_tag: EnumProperty(
+    use_object_color: ACK.Prop.BOOL(name="Color from Mesh", description="Use color from source mesh", default=False, update=update_color)
+    color_tag: ACK.Prop.ENUM(
         name="Color Tag",
         items=get_color_tags,
         update=update_color

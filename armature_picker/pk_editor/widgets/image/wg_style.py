@@ -1,11 +1,12 @@
-from bpy.types import PropertyGroup, UILayout, Context
-from bpy.props import FloatProperty, FloatVectorProperty
+from bpy.types import UILayout
 
+from armature_picker.ackit import ACK
 from .._base_wg_style import StyleBase
 
 
-class PG__Image__Style(StyleBase, PropertyGroup):
-    opacity: FloatProperty(
+@ACK.Deco.PROP_GROUP.CHILD
+class PG__Image__Style(StyleBase):
+    opacity: ACK.Prop.FLOAT(
         name="Opacity",
         default=1.0,
         min=0.1,

@@ -1,18 +1,19 @@
-from bpy.types import PropertyGroup, UILayout
-from bpy.props import FloatProperty, FloatVectorProperty, BoolProperty, EnumProperty
+from bpy.types import UILayout
 
+from armature_picker.ackit import ACK
 from .._base_wg_style import StyleBase, call_active_node_func
 
 
-class PG__SliderLinear__Style(StyleBase, PropertyGroup):
-    show_handle: BoolProperty(
+@ACK.Deco.PROP_GROUP.CHILD
+class PG__SliderLinear__Style(StyleBase):
+    show_handle: ACK.Prop.BOOL(
         name="Show Handle",
         description="Show slider handle",
         default=True,
         update=call_active_node_func('update_handle_pos')
     )
 
-    handle_type: EnumProperty(
+    handle_type: ACK.Prop.ENUM(
         name="Handle Type",
         items=(
             ('CIRCLE', "Circle", "Circular shape", 'RADIOBUT_ON', 0),
@@ -22,7 +23,7 @@ class PG__SliderLinear__Style(StyleBase, PropertyGroup):
         update=call_active_node_func('update_handle_pos')
     )
 
-    bar_line_thickness: FloatProperty(
+    bar_line_thickness: ACK.Prop.FLOAT(
         name="Bar Thickness",
         description="Bar Line type thickness",
         default=1.5,
@@ -31,7 +32,7 @@ class PG__SliderLinear__Style(StyleBase, PropertyGroup):
         update=call_active_node_func('update_graphics')
     )
 
-    bar_type: EnumProperty(
+    bar_type: ACK.Prop.ENUM(
         name="Bar Type",
         items=(
             ('FILL', "Fill", "Fill shape"),
@@ -41,37 +42,12 @@ class PG__SliderLinear__Style(StyleBase, PropertyGroup):
         update=call_active_node_func('update_graphics')
     )
 
-    color: FloatVectorProperty(
-        name="Color",
-        description="Slider base color",
-        default=(.21, .21, .21, 1.0),
-        size=4,
-        min=0.0,
-        max=1.0,
-        subtype='COLOR'
-    )
+    color: ACK.Prop.COLOR_RGBA("Slider base color", (.21, .21, .21, 1.0))
+    fill_color: ACK.Prop.COLOR_RGBA("Slider fill color", (.18, .5, 1.0, 1.0))
+    handle_color: ACK.Prop.COLOR_RGBA("Slider handle color", (.8, .8, .8, 1.0))
+    outline_color: ACK.Prop.COLOR_RGBA("Outline Color", (.8, .6, .2, .9))
 
-    fill_color: FloatVectorProperty(
-        name="Fill Color",
-        description="Slider fill color",
-        default=(.18, .5, 1.0, 1.0),
-        size=4,
-        min=0.0,
-        max=1.0,
-        subtype='COLOR'
-    )
-
-    handle_color: FloatVectorProperty(
-        name="Handle Color",
-        description="Slider handle color",
-        default=(.8, .8, .8, 1.0),
-        size=4,
-        min=0.0,
-        max=1.0,
-        subtype='COLOR'
-    )
-
-    roundness: FloatProperty(
+    roundness: ACK.Prop.FLOAT(
         name="Roundness",
         description="Roundness of the button",
         min=0.2,
@@ -80,23 +56,13 @@ class PG__SliderLinear__Style(StyleBase, PropertyGroup):
         precision=2
     )
 
-    outline_thickness: FloatProperty(
+    outline_thickness: ACK.Prop.FLOAT(
         name="Outline Thickness",
         description="Ouline thickness of the button",
         min=0,
         max=20,
         default=1.5,
         precision=1
-    )
-
-    outline_color: FloatVectorProperty(
-        name="Outline Color",
-        description="Outline Color of the button",
-        default=(.8, .6, .2, .9),
-        size=4,
-        min=0.0,
-        max=1.0,
-        subtype='COLOR'
     )
 
 
