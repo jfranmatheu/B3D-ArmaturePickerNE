@@ -38,20 +38,34 @@ class ModalOperator(Operator):
         if not context.window_manager.modal_handler_add(self):
             return OpsReturn.CANCEL
         self.mouse = Mouse.init(event)
+        self.event_start_type = event.type
+        self.modal_start(context, event)
         return OpsReturn.RUN
 
     def modal(self, context: bpy_types.Context, event: bpy_types.Event) -> OpsReturn:
         if event.type in {EventType.MOUSEMOVE, EventType.INBETWEEN_MOUSEMOVE}:
             self.mouse.update(event)
-            self.mouse_move(context, self.mouse)
+            self.modal__mouse_move(context, self.mouse)
             return OpsReturn.RUN
-        return self.modal_update(context, event)
+        if res := self.modal_update(context, event):
+            return res
+        return OpsReturn.RUN
 
-    def mouse_move(self, context: bpy_types.Context, mouse: Mouse) -> None:
+    def modal_start(self, context: bpy_types.Context, event: bpy_types.Event) -> None:
         pass
 
     def modal_update(self, context: bpy_types.Context, event: bpy_types.Event) -> OpsReturn:
+        if event.type in {EventType.ESC, EventType.RIGHTMOUSE}:
+            return OpsReturn.CANCEL
+        if event.type == self.event_start_type and event.value == EventValue.RELEASE:
+            return OpsReturn.FINISH
         return OpsReturn.RUN
+
+    def modal__mouse_move(self, context: bpy_types.Context, mouse: Mouse) -> None:
+        pass
+
+    def modal_end(self, context: bpy_types.Context, event: bpy_types.Event, cancel: bool) -> None:
+        pass
 
     def execute(self, context: bpy_types.Context) -> OpsReturn:
         return OpsReturn.CANCEL
