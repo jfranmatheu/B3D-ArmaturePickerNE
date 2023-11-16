@@ -11,7 +11,7 @@ class PropertyTypes:
     FLOAT_VECTOR = FloatVectorProperty
     INT_VECTOR = IntVectorProperty
     BOOL_VECTOR = BoolVectorProperty
-    ENUM_NATIVE = EnumProperty
+    ENUM = EnumProperty
     STRING = StringProperty
     POINTER_CUSTOM = PointerProperty
 
@@ -29,5 +29,5 @@ class PropertyTypes:
     POINTER = PointerPropertyTypes
     COLLECTION = lambda type, **kwargs: CollectionProperty(type=type, **kwargs)
 
-    ENUM = EnumPropertyHelper
+    ENUM_HELPER = EnumPropertyHelper
     ENUM_DYNAMIC = DynamicEnumPropertyHelper
