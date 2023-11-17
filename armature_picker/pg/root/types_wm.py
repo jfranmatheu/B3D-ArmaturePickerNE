@@ -1,9 +1,9 @@
-from bpy.types import WindowManager, PropertyGroup
-from bpy.props import PointerProperty, EnumProperty
+from armature_picker.ackit import ACK
 
 
-class WM_PG_armature_picker(PropertyGroup):
-    active_tool: EnumProperty(
+@ACK.Deco.PROP_GROUP.ROOT.WINDOW_MANAGER('armature_picker')
+class WM_PG_armature_picker:
+    active_tool: ACK.Prop.ENUM(
         name="Active Tool",
         items=(
             ('SELECT', "Select & Control", "Pick bones and control sliders", 'RESTRICT_SELECT_OFF', 0),
@@ -15,10 +15,3 @@ class WM_PG_armature_picker(PropertyGroup):
         ),
         default='SELECT',
     )
-
-
-def register():
-    WindowManager.armature_picker = PointerProperty(name="Armature Picker", type=WM_PG_armature_picker)
-
-def unregister():
-    del WindowManager.armature_picker

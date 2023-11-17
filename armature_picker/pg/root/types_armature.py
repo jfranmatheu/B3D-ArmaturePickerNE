@@ -1,9 +1,6 @@
 from bpy.types import Armature, NodeTree
-from bpy.props import PointerProperty
+
+from armature_picker.ackit import ACK
 
 
-def register():
-    Armature.picker = PointerProperty(name="Armature Picker", type=NodeTree, poll=lambda arm, node_tree: node_tree.bl_idname == 'AP_NODETREE')
-
-def unregister():
-    del Armature.picker
+ACK.Helper.PROP(Armature, 'picker', ACK.Prop.POINTER.CUSTOM('Armature Picker', NodeTree, poll=lambda arm, node_tree: node_tree.bl_idname == 'AP_NODETREE'))
