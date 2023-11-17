@@ -40,6 +40,8 @@ class PGRootTypes(Enum):
     def __call__(self, prop_name: str = None) -> PropertyGroup:
         def decorator(decorated_cls):
             decorated_cls.is_root = True
+            decorated_cls.bpy_type = self.value
+            decorated_cls.prop_name = prop_name
             decorated_cls.data_path = self.name.lower() + '.' + prop_name
             pg_cls = _register_property_group(decorated_cls)
             PropertyRegister(self.value, prop_name if prop_name else GLOBALS.ADDON_MODULE, PropertyTypes.POINTER_CUSTOM(type=pg_cls))

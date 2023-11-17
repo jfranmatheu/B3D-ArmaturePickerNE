@@ -1,5 +1,16 @@
 from string import Template
+from collections import defaultdict
 
+from bpy.types import AnyType, PropertyGroup, BlenderRNA
+from bpy.props import _PropertyDeferred
+
+
+class RootPropertyGroup:
+    bpy_type: AnyType
+    prop_name: str
+    original_idname: str
+    data_path: str
+    bl_rna: BlenderRNA
 
 
 coll_class_wrapper_template = Template("""
@@ -33,14 +44,20 @@ print(property)
 
 
 def prop_type_to_py_type(prop) -> str:
-    # print(dir(prop))
-    bpy_prop_name = type(prop).__name__
+    if isinstance(prop, _PropertyDeferred):
+        bpy_prop_name = prop.function.__name__
+        is_array = 'Vector' in bpy_prop_name
+    else:
+        # print(dir(prop))
+        bpy_prop_name = type(prop).__name__
+        is_array = hasattr(prop, 'is_array') and prop.is_array
+
     if 'Float' in bpy_prop_name:
-        return 'tuple[float]' if prop.is_array else 'float'
+        return 'tuple[float]' if is_array else 'float'
     if 'Int' in bpy_prop_name:
-        return 'tuple[int]' if prop.is_array else 'int'
+        return 'tuple[int]' if is_array else 'int'
     if 'Bool' in bpy_prop_name:
-        return 'tuple[bool]' if prop.is_array else 'bool'
+        return 'tuple[bool]' if is_array else 'bool'
     if 'String' in bpy_prop_name:
         return 'str'
     if 'Pointer' in bpy_prop_name:
@@ -68,7 +85,7 @@ def codegen__types_py(types_filepath: str | None = None) -> None:
         return
 
     from .._loader import get_ordered_pg_classes_to_register
-    pg_sorted_classes = get_ordered_pg_classes_to_register(pg_classes)
+    pg_sorted_classes: list[PropertyGroup] = get_ordered_pg_classes_to_register(pg_classes)
 
 
     # Search for PropertyGroup used as CollectionProperty inside other PropertyGroup class.
@@ -105,7 +122,7 @@ def codegen__types_py(types_filepath: str | None = None) -> None:
         example_pg_prop = None
 
         # For the Data Enumerator utility.
-        root_pg_classes = []
+        root_pg_classes: list[RootPropertyGroup] = []
 
         # Write to file the property groups.
         for pg in pg_sorted_classes:
@@ -128,6 +145,7 @@ def codegen__types_py(types_filepath: str | None = None) -> None:
             # If it's a root PropertyGroup, we need to add a get_path() class method
             # to it to get the corresponding data with typing!.
             if is_root:
+                pg: RootPropertyGroup
                 f.write(
                     pg_class_get_data_template.substitute(
                         class_name=pg.original_idname,
@@ -140,7 +158,25 @@ def codegen__types_py(types_filepath: str | None = None) -> None:
                             example_pg_prop = (pg, prop_idname)
                             break
 
-                root_pg_classes.append(pg.original_idname)
+                root_pg_classes.append(pg)
+
+        # Write the extended bpy type classes.
+        f.write("\n\n# ++++++++++++++++++++++++++++++++++++++++++++++++++\n\n")
+        # pack root PG types by its root bpy_type.
+        # pg_types_per_bpy_type: dict[AnyType, list[RootPropertyGroup]] = defaultdict(list)
+        # for root_pg_cls in root_pg_classes:
+        #     pg_types_per_bpy_type[root_pg_cls.bpy_type].append(root_pg_cls)
+        # for bpy_type, pg_types in pg_types_per_bpy_type.items():
+        #     f.write(f'\n\nclass {bpy_type.__name__}:')
+        #     for pg_type in pg_types:
+        #         f.write(f'\n\t{pg_type.prop_name}: {pg_type.original_idname}')
+
+        from .._register.reg_helpers.help_property import to_register_properties
+        for bpy_type, props_wrappers in to_register_properties.items():
+            f.write(f'\n\nclass {bpy_type.__name__}:')
+            for prop_wrapper in props_wrappers:
+                print(prop_wrapper.property, prop_type_to_py_type(prop_wrapper.property))
+                f.write(f'\n\t{prop_wrapper.prop_name}: {prop_type_to_py_type(prop_wrapper.property)}')
 
         # Write the Data enumerator.
         f.write("\n\n# ++++++++++++++++++++++++++++++++++++++++++++++++++\n\n")
@@ -148,8 +184,8 @@ def codegen__types_py(types_filepath: str | None = None) -> None:
         if len(root_pg_classes) == 0:
             f.write(f'\n\tpass')
         else:
-            for root_pg_cls_name in root_pg_classes:
-                f.write(f'\n\t{root_pg_cls_name} = {root_pg_cls_name}.get_data')
+            for root_pg_cls in root_pg_classes:
+                f.write(f'\n\t{root_pg_cls.original_idname} = {root_pg_cls.original_idname}.get_data')
 
         f.write('\n\nPG = Data # Alias.')
 
