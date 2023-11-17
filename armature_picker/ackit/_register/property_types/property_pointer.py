@@ -19,8 +19,8 @@ class PointerPropertyTypes(Enum):
     TEXTURE = btypes.Texture
     # CUSTOM = None
 
-    @classmethod
-    def CUSTOM(cls, name: str = '', type = None, **kwargs) -> btypes.PointerProperty:
+    @staticmethod
+    def CUSTOM(name: str, type, **kwargs) -> btypes.PointerProperty:
         return PointerProperty(name=name, type=type, **kwargs)
 
     def __call__(self, name: str = '', **kwargs: dict) -> btypes.PointerProperty:
