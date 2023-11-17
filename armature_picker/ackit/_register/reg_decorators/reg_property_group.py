@@ -48,10 +48,11 @@ class PGRootTypes(Enum):
 
 
 def _register_property_group(deco_cls) -> PropertyGroup:
+    # from ..reg_types.property_group import PropertyGroup as ACK_PropertyGroup
     idname = GLOBALS.ADDON_MODULE.upper() + '_PG_' + deco_cls.__name__.lower()
 
     pg_cls = type(
-        idname,
+        deco_cls.__name__,
         (PropertyGroup, deco_cls),
         {
             '__annotations__': deco_cls.__annotations__,
