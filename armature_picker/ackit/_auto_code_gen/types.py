@@ -35,16 +35,17 @@ print(property)
 def prop_type_to_py_type(prop) -> str:
     # print(dir(prop))
     bpy_prop_name = type(prop).__name__
-    is_vector = 'Vector' in bpy_prop_name
     if 'Float' in bpy_prop_name:
-        return 'tuple[float]' if is_vector else 'float'
+        return 'tuple[float]' if prop.is_array else 'float'
     if 'Int' in bpy_prop_name:
-        return 'tuple[int]' if is_vector else 'int'
+        return 'tuple[int]' if prop.is_array else 'int'
     if 'Bool' in bpy_prop_name:
-        return 'tuple[bool]' if is_vector else 'bool'
+        return 'tuple[bool]' if prop.is_array else 'bool'
     if 'String' in bpy_prop_name:
         return 'str'
     if 'Pointer' in bpy_prop_name:
+        if hasattr(prop.fixed_type, 'original_idname'):
+            return prop.fixed_type.original_idname
         # print(prop.type, prop.fixed_type.name)
         return 'bpy.types.' + prop.fixed_type.name
     if 'Collection' in bpy_prop_name:
