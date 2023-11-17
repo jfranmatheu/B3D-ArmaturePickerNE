@@ -7,19 +7,44 @@ from ...._globals import GLOBALS
 from .node import Node
 
 
-DEFAULT_NODETREE_IDENTIFIER = f'{GLOBALS.ADDON_MODULE.lower()}_NodeTree'
-
-
 node_tree_classes = {}
+# node_base_classes = {}
 
 
 class NodeTree(BaseType):
     ''' Base Class for NodeTree types. '''
-    label: str
-    icon: str = 'NONE'
-    idname: str = DEFAULT_NODETREE_IDENTIFIER
+    label: str = 'Custom NodeTree'
+    icon: str = 'MONKEY'
+    tree_type: str = f'{GLOBALS.ADDON_MODULE.upper()}_NodeTree_default'
 
-    # NodeType: Node
+    NodeType: Node
+
+    nodes: list[Node]
+
+    ###################################
+
+    @classmethod
+    def node(cls, deco_node_cls: Node):
+        deco_node_cls.tree_type = cls.tree_type
+        return deco_node_cls
+
+    @classmethod
+    def tag_register(deco_cls) -> 'NodeTree':
+        node_tree = super().tag_register(
+            bpy_types.NodeTree, None,
+            bl_idname=deco_cls.tree_type,
+            bl_label=deco_cls.label,
+            bl_icon=deco_cls.icon,
+            original_class=deco_cls
+        )
+
+        from .node_cats import new_node_category
+        new_node_category(node_tree)
+
+        node_tree_classes[deco_cls.tree_type] = node_tree
+        return node_tree
+
+    ########################################
 
 
     def update(self) -> None:
@@ -31,22 +56,6 @@ class NodeTree(BaseType):
             print("WTF? NodeTree has 0 nodes")
             return
 
-    ###################################
 
-    @classmethod
-    def tag_register(deco_cls) -> 'NodeTree':
-        node_tree_idname = f'{GLOBALS.ADDON_MODULE.upper()}_NodeTree_{deco_cls.idname}'
+    #########################################
 
-        node_tree = super().tag_register(
-            bpy_types.NodeTree, None,
-            bl_idname=node_tree_idname,
-            bl_label=deco_cls.label,
-            bl_icon=deco_cls.icon,
-            original_class=deco_cls,
-        )
-
-        from .node_cats import new_node_category
-        new_node_category(node_tree)
-
-        node_tree_classes[node_tree_idname] = node_tree
-        return node_tree

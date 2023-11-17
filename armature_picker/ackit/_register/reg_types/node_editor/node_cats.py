@@ -18,7 +18,7 @@ def get_node_category_class(node_tree_idname: str):
 
 def new_node_category(node_tree_cls) -> NodeCategory:
     node_cat_class = type(
-        f'{GLOBALS.ADDON_MODULE.upper()}_NodeCategory_{node_tree_cls.original_class.idname}',
+        f'{GLOBALS.ADDON_MODULE.upper()}_NodeCategory_{node_tree_cls.original_class.tree_type}',
         (NodeCategory,),
         {
             'poll': classmethod(lambda cls, ctx: ctx.space_data.tree_type == node_tree_cls.bl_idname),
@@ -75,10 +75,10 @@ def register():
     node_classes = BlenderTypes.Node.get_classes()
     if node_classes == []:
         return
-    
+
     for node_tree_cls in BlenderTypes.NodeTree.get_classes():
 
-        _node_classes = filter(lambda node: node.node_tree_idname == node_tree_cls.bl_idname, node_classes)
+        _node_classes = filter(lambda node: node.tree_type == node_tree_cls.bl_idname, node_classes)
 
         node_cat_class = get_node_category_class(node_tree_cls.bl_idname)
         cat_node_relationship: dict[str, list] = defaultdict(list)
