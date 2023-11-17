@@ -3,23 +3,23 @@ import bpy
 from bpy.types import Context
 
 
-class PG__Label__Style:
+class PG__BonePickerGeo__LocalStyle:
 	name: str
-	text_color: tuple[float]
-
-class PG__Image__Style:
-	name: str
-	opacity: float
+	use_object_color: bool
+	color_tag: None
 
 class PG_ArmaturePicker_ColorTag:
 	name: str
 	name: str
 	color: tuple[float]
 
-class PG__BonePickerGeo__LocalStyle:
+class WM_PG_armature_picker:
 	name: str
-	use_object_color: bool
-	color_tag: None
+	active_tool: None
+
+	@classmethod
+	def get_data(cls: 'WM_PG_armature_picker', context: Context) -> 'WM_PG_armature_picker':
+		return context.window_manager.armature_picker
 
 class PG__BonePicker__Style:
 	name: str
@@ -27,6 +27,14 @@ class PG__BonePicker__Style:
 	outline_thickness: float
 	outline_color: tuple[float]
 	color: tuple[float]
+	text_color: tuple[float]
+
+class PG__Image__Style:
+	name: str
+	opacity: float
+
+class PG__Label__Style:
+	name: str
 	text_color: tuple[float]
 
 class PG__SliderLinear__Style:
@@ -84,7 +92,28 @@ class PG__BonePickerGeo__Style:
 # ++++++++++++++++++++++++++++++++++++++++++++++++++
 
 
+
+class Armature:
+	picker: None
+
+class WindowManager:
+	armature_picker: None
+
+# ++++++++++++++++++++++++++++++++++++++++++++++++++
+
+
 class Data:
-	pass
+	WM_PG_armature_picker = WM_PG_armature_picker.get_data
 
 PG = Data # Alias.
+
+
+# EXAMPLE ++++++++++++++++++++++++++++++++++++++++++++++++++
+'''
+from armature_picker import types as armature_picker_types
+
+# Your property_group variable will have the correct typing. :-)
+property_group = armature_picker_types.WM_PG_armature_picker.get_data(context)
+property = property_group.active_tool
+print(property)
+'''
