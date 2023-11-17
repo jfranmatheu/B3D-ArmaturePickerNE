@@ -46,7 +46,7 @@ class BaseType(object):
             if bpy_type == bpy.types.AddonPreferences:
                 cls_name = f'{GLOBALS.ADDON_MODULE.upper()}_AddonPreferences'
             else:
-                cls_name = f'{GLOBALS.ADDON_MODULE.upper()}_{idname}'
+                cls_name = cls.__name__ # f'{GLOBALS.ADDON_MODULE.upper()}_{idname}'
 
         # Create new Blender type to be registered.
         new_cls = type(
