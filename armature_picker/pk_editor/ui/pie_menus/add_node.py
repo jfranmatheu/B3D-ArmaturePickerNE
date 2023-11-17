@@ -34,6 +34,8 @@ class MT_add_node(Menu):
                 _node, label, icon = _node
                 if isinstance(_node, str):
                     node_idname = _node
+                elif isinstance(_node, tuple):
+                    node_idname = _node[0].bl_idname + '@' + _node[1] # Attached a preset function at pos 1 for node in pos 0.
                 else:
                     node_idname = _node.bl_idname
             else:
