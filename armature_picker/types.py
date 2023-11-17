@@ -1,25 +1,24 @@
-""" File generated automatically by addon_utils submodule. """
-import bpy
-from bpy.types import Context
+""" File generated automatically by ackit (Addon Creator Kit). """
+from bpy.types import Context, WindowManager, NodeTree, Armature
 
 
-class PG__BonePickerGeo__LocalStyle:
-	name: str
-	use_object_color: bool
-	color_tag: None
-
-class PG_ArmaturePicker_ColorTag:
-	name: str
-	name: str
-	color: tuple[float]
-
+""" Addon-Defined PropertyGroup: """
 class WM_PG_armature_picker:
+	# Root PG, attached to bpy.types.WindowManager
 	name: str
-	active_tool: None
+	active_tool: str
 
 	@classmethod
 	def get_data(cls: 'WM_PG_armature_picker', context: Context) -> 'WM_PG_armature_picker':
 		return context.window_manager.armature_picker
+
+class PG__ButtonScript__Style:
+	name: str
+	roundness: float
+	outline_thickness: float
+	outline_color: tuple[float]
+	color: tuple[float]
+	text_color: tuple[float]
 
 class PG__BonePicker__Style:
 	name: str
@@ -28,6 +27,16 @@ class PG__BonePicker__Style:
 	outline_color: tuple[float]
 	color: tuple[float]
 	text_color: tuple[float]
+
+class PG_ArmaturePicker_ColorTag:
+	name: str
+	name: str
+	color: tuple[float]
+
+class PG__BonePickerGeo__LocalStyle:
+	name: str
+	use_object_color: bool
+	color_tag: str
 
 class PG__Image__Style:
 	name: str
@@ -40,9 +49,9 @@ class PG__Label__Style:
 class PG__SliderLinear__Style:
 	name: str
 	show_handle: bool
-	handle_type: None
+	handle_type: str
 	bar_line_thickness: float
-	bar_type: None
+	bar_type: str
 	color: tuple[float]
 	fill_color: tuple[float]
 	handle_color: tuple[float]
@@ -66,14 +75,6 @@ class PG__Slider2D__Style:
 	roundness: float
 	outline_thickness: float
 
-class PG__ButtonScript__Style:
-	name: str
-	roundness: float
-	outline_thickness: float
-	outline_color: tuple[float]
-	color: tuple[float]
-	text_color: tuple[float]
-
 class PG__BonePickerGeo__Style:
 	name: str
 	color_tag_0: PG_ArmaturePicker_ColorTag
@@ -90,22 +91,25 @@ class PG__BonePickerGeo__Style:
 
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++
+""" Extended bpy.types classes by the addon: """
 
+class ExtArmature(Armature):
+	picker: NodeTree
 
+class ExtWindowManager(WindowManager):
+	armature_picker: WM_PG_armature_picker
 
-class Armature:
-	picker: None
+class ExtTypes:
+	Armature = ExtArmature
+	WindowManager = ExtWindowManager
 
-class WindowManager:
-	armature_picker: None
+# ++++++++++++++++++++++++++++++++++++++++++++++++++
+""" Root PropertyGroups (linked directly to any bpy.types): """
+class RootPG:
+	WM_PG_armature_picker = WM_PG_armature_picker.get_data
 
 # ++++++++++++++++++++++++++++++++++++++++++++++++++
 
-
-class Data:
-	WM_PG_armature_picker = WM_PG_armature_picker.get_data
-
-PG = Data # Alias.
 
 
 # EXAMPLE ++++++++++++++++++++++++++++++++++++++++++++++++++

@@ -1,6 +1,7 @@
 from string import Template
 from collections import defaultdict
 
+import bpy
 from bpy.types import AnyType, PropertyGroup, BlenderRNA
 from bpy.props import _PropertyDeferred
 
@@ -22,7 +23,7 @@ class ${class_name}_Collection:
 """)
 
 pg_class_wrapper_template = Template("""
-class ${class_name}:
+class ${class_name}:${comment}
 ${property_defs}
 """)
 
@@ -58,16 +59,22 @@ def prop_type_to_py_type(prop) -> str:
         return 'tuple[int]' if is_array else 'int'
     if 'Bool' in bpy_prop_name:
         return 'tuple[bool]' if is_array else 'bool'
-    if 'String' in bpy_prop_name:
+    if 'String' in bpy_prop_name or 'Enum' in bpy_prop_name:
         return 'str'
     if 'Pointer' in bpy_prop_name:
-        if hasattr(prop.fixed_type, 'original_idname'):
-            return prop.fixed_type.original_idname
-        # print(prop.type, prop.fixed_type.name)
-        return 'bpy.types.' + prop.fixed_type.name
+        if isinstance(prop, _PropertyDeferred):
+            return f'{prop.keywords["type"].__name__}'
+        else:
+            if hasattr(prop.fixed_type, 'original_idname'):
+                return prop.fixed_type.original_idname
+            # print(prop.type, prop.fixed_type.name)
+            return 'bpy.types.' + prop.fixed_type.name
     if 'Collection' in bpy_prop_name:
-        #print(prop, prop.fixed_type, dir(prop.fixed_type), prop.fixed_type.original_idname)
-        return f'{prop.fixed_type.original_idname}_Collection' # f'list[{prop.fixed_type.original_idname}]'
+        if isinstance(prop, _PropertyDeferred):
+            return f'{prop.keywords["type"].__name__}_Collection'
+        else:
+            #print(prop, prop.fixed_type, dir(prop.fixed_type), prop.fixed_type.original_idname)
+            return f'{prop.fixed_type.original_idname}_Collection' # f'list[{prop.fixed_type.original_idname}]'
     return 'None'
 
 
@@ -107,16 +114,31 @@ def codegen__types_py(types_filepath: str | None = None) -> None:
     addon_module_name = GLOBALS.ADDON_MODULE
 
     with output_path.open('w') as f:
-        f.write('""" File generated automatically by addon_utils submodule. """')
-        f.write('\nimport bpy\nfrom bpy.types import Context\n\n')#from {addon_module_name}.addon_utils.prop import PGType\n\n')
+        f.write('""" File generated automatically by ackit (Addon Creator Kit). """\n')
+        # f.write('import bpy\n')#from {addon_module_name}.addon_utils.prop import PGType\n\n')
 
-        # Write the CollectionProperty classes we found with a nice template.
-        for coll_cls_name in classes_used_as_collection:
-            f.write(
-                coll_class_wrapper_template.substitute(
-                    class_name=coll_cls_name,
+        from .._register.reg_helpers.help_property import to_register_properties
+        import_bpy_types = {'Context'}
+        for bpy_type, props_wrappers in to_register_properties.items():
+            import_bpy_types.add(bpy_type.__name__)
+            for prop_wrapper in props_wrappers:
+                if isinstance(prop_wrapper.property, _PropertyDeferred):
+                    prop_type = prop_type_to_py_type(prop_wrapper.property)
+                    # print(prop_type, prop_type.__name__)
+                    if hasattr(bpy.types, prop_type):
+                        import_bpy_types.add(prop_type)
+
+        f.write(f'from bpy.types import {", ".join(import_bpy_types)}\n\n')
+
+        if len(classes_used_as_collection) != 0:
+            f.write('\n""" Util classes to have CollectionProperty types typing: """')
+            # Write the CollectionProperty classes we found with a nice template.
+            for coll_cls_name in classes_used_as_collection:
+                f.write(
+                    coll_class_wrapper_template.substitute(
+                        class_name=coll_cls_name,
+                    )
                 )
-            )
 
         # Just to store some PropertyGroup to use for the example code.
         example_pg_prop = None
@@ -125,6 +147,7 @@ def codegen__types_py(types_filepath: str | None = None) -> None:
         root_pg_classes: list[RootPropertyGroup] = []
 
         # Write to file the property groups.
+        f.write('\n""" Addon-Defined PropertyGroup: """')
         for pg in pg_sorted_classes:
             # print(pg, pg.bl_rna.properties)
             # is_root = pg.is_root
@@ -132,6 +155,7 @@ def codegen__types_py(types_filepath: str | None = None) -> None:
             f.write(
                 pg_class_wrapper_template.substitute(
                     class_name=pg.original_idname,
+                    comment=f'\n\t# Root PG, attached to bpy.types.{pg.bpy_type.__name__}' if is_root else '',
                     property_defs='\n'.join([
                         f'\t{prop_idname}: {prop_type_to_py_type(prop)}'
                             for prop_idname, prop in pg.bl_rna.properties.items() # pg.__annotations__.items()
@@ -161,7 +185,6 @@ def codegen__types_py(types_filepath: str | None = None) -> None:
                 root_pg_classes.append(pg)
 
         # Write the extended bpy type classes.
-        f.write("\n\n# ++++++++++++++++++++++++++++++++++++++++++++++++++\n\n")
         # pack root PG types by its root bpy_type.
         # pg_types_per_bpy_type: dict[AnyType, list[RootPropertyGroup]] = defaultdict(list)
         # for root_pg_cls in root_pg_classes:
@@ -171,25 +194,31 @@ def codegen__types_py(types_filepath: str | None = None) -> None:
         #     for pg_type in pg_types:
         #         f.write(f'\n\t{pg_type.prop_name}: {pg_type.original_idname}')
 
-        from .._register.reg_helpers.help_property import to_register_properties
+        f.write("\n\n# ++++++++++++++++++++++++++++++++++++++++++++++++++\n")
+        f.write('""" Extended bpy.types classes by the addon: """')
         for bpy_type, props_wrappers in to_register_properties.items():
-            f.write(f'\n\nclass {bpy_type.__name__}:')
+            f.write(f'\n\nclass Ext{bpy_type.__name__}({bpy_type.__name__}):')
             for prop_wrapper in props_wrappers:
-                print(prop_wrapper.property, prop_type_to_py_type(prop_wrapper.property))
+                # print(prop_wrapper.property, prop_type_to_py_type(prop_wrapper.property))
                 f.write(f'\n\t{prop_wrapper.prop_name}: {prop_type_to_py_type(prop_wrapper.property)}')
+        
+        if to_register_properties:
+            f.write('\n\nclass ExtTypes:')
+            for bpy_type in to_register_properties.keys():
+                f.write(f'\n\t{bpy_type.__name__} = Ext{bpy_type.__name__}')
 
         # Write the Data enumerator.
-        f.write("\n\n# ++++++++++++++++++++++++++++++++++++++++++++++++++\n\n")
-        f.write('\nclass Data:')
+        f.write("\n\n# ++++++++++++++++++++++++++++++++++++++++++++++++++\n")
+        f.write('""" Root PropertyGroups (linked directly to any bpy.types): """\n')
+        f.write('class RootPG:')
         if len(root_pg_classes) == 0:
             f.write(f'\n\tpass')
         else:
             for root_pg_cls in root_pg_classes:
                 f.write(f'\n\t{root_pg_cls.original_idname} = {root_pg_cls.original_idname}.get_data')
 
-        f.write('\n\nPG = Data # Alias.')
-
         # Write example code.
+        f.write("\n\n# ++++++++++++++++++++++++++++++++++++++++++++++++++\n")
         if example_pg_prop is not None:
             pg, prop_idname = example_pg_prop
             f.write(
