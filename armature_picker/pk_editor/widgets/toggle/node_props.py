@@ -1,9 +1,12 @@
-from bpy.types import Text, Context, UILayout
+from bpy.types import Context, UILayout
 
 from armature_picker.ackit import ACK
 from .wg_style import PG__Toggle__Style
 
+
 data_path_list = []
+
+
 class APNODE_Toggle_NodeProps:
     style: ACK.Prop.POINTER.CUSTOM("Style", PG__Toggle__Style)
 
