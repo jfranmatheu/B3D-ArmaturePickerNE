@@ -1,10 +1,5 @@
-
-class Event:
-    type: str
-    value: str
-    shift: bool
-    ctrl: bool
-    alt: bool
+from mathutils import Vector
+from bpy.types import Event
 
 
 EVENT_TYPE = 'NONE'
@@ -13,7 +8,9 @@ EVENT_MODIFIERS = { # Ctrl, Shift, Alt states.
     'ctrl':     False,
     'shift':    False,
     'alt':      False
-} 
+}
+MOUSE = Vector((0, 0))
+MOUSE_REGION = Vector((0, 0))
 
 def set_global_event(event: Event):
     global EVENT_TYPE
@@ -24,6 +21,10 @@ def set_global_event(event: Event):
     EVENT_MODIFIERS['alt'] = event.alt
     EVENT_MODIFIERS['ctrl'] = event.ctrl
     EVENT_MODIFIERS['shift'] = event.shift
+    global MOUSE
+    global MOUSE_REGION
+    MOUSE = Vector((event.mouse_x, event.mouse_y))
+    MOUSE_REGION = Vector((event.mouse_region_x, event.mouse_region_y))
 
 def get_global_event() -> tuple[str, str]:
     global EVENT_TYPE
@@ -830,6 +831,16 @@ isEventType  = _isEventType()
 class GEvent:
     TYPE = _isEventType
     VALUE = _isEventValue
+
+    @staticmethod
+    def get_mouse_window_pos() -> Vector:
+        global MOUSE
+        return MOUSE.copy()
+
+    @staticmethod
+    def get_mouse_region_pos() -> Vector:
+        global MOUSE_REGION
+        return MOUSE_REGION.copy()
 
     @staticmethod
     def check(event_type: str, event_value: str, shift: bool = None, alt: bool = None, ctrl: bool = None) -> bool:
