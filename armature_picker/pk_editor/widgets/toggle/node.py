@@ -76,9 +76,10 @@ class APNODE_Toggle(APNODE_Toggle_NodeProps, AP_Node, Node):
                 (0.5, 0),
                 alpha=0,
             )
+            pad = Vector((2, 2)) * scale
             draw.rectangle(
                 None, None,
-                text_pos, text_dim, 0, (.05, .05, .05, .92)
+                text_pos - pad, text_dim + pad * 2, 0, (.05, .05, .05, .92)
             )
             draw.text(
                 view_loc.copy(),
