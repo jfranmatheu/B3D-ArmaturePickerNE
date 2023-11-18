@@ -6,6 +6,7 @@ from .slider_linear.node import APNODE_SliderLinear
 from .slider_radial.node import APNODE_SliderRadial
 from .slider_linear_2d.node import APNODE_SliderLinear2D
 from .button_script.node import APNODE_ButtonScript
+from .toggle.node import APNODE_Toggle
 
 
 NODES = (
@@ -27,15 +28,24 @@ NODES = (
             )
         },
     ),
-    {
-        'name': 'Sliders',
-        'icon': 'PROPERTIES',
-        'items': (
-            (APNODE_SliderLinear, 'Lineal', 'OPTIONS'),
-            (APNODE_SliderRadial, 'Radial', 'ANTIALIASED'),
-            (APNODE_SliderLinear2D, 'Lineal 2D', 'PIVOT_BOUNDBOX'),
-        )
-    },
+    (
+        {
+            'name': 'Toggle',
+            'icon': 'CHECKBOX_HLT',
+            'items': (
+                (APNODE_Toggle, 'Radial Toggle', 'RADIOBUT_ON'),
+            )
+        },
+        {
+            'name': 'Sliders',
+            'icon': 'OPTIONS',
+            'items': (
+                (APNODE_SliderLinear, 'Lineal', 'OPTIONS'),
+                (APNODE_SliderRadial, 'Radial', 'ANTIALIASED'),
+                (APNODE_SliderLinear2D, 'Lineal 2D', 'PIVOT_BOUNDBOX'),
+            )
+        },
+    ),
     APNODE_Image,
     APNODE_Label,
     # None,

@@ -14,6 +14,8 @@ class AP_PG_PickerView(PropertyGroup):
     show_widget_bone_picker: BoolProperty(name="Show BonePicker Widget Types", default=True)
     show_widget_bone_picker_geo: BoolProperty(name="Show BonePickerGeo Widget Types", default=True)
 
+    show_widget_toggle: BoolProperty(name="Show Toggle Widget Types", default=True)
+
     show_widget_slider_linear: BoolProperty(name="Show SliderLineal Widget Types", default=True)
     show_widget_slider_linear_2d: BoolProperty(name="Show SliderLineal2D Widget Types", default=True)
     show_widget_slider_radial: BoolProperty(name="Show SliderRadial Widget Types", default=True)
@@ -26,6 +28,8 @@ class AP_PG_PickerView(PropertyGroup):
 
     show_widget_select_bone_picker: BoolProperty(name="Can Select BonePicker Widget Types", default=True)
     show_widget_select_bone_picker_geo: BoolProperty(name="Can Select BonePickerGeo Widget Types", default=True)
+
+    show_widget_select_toggle: BoolProperty(name="Can Select Toggle Widget Types", default=True)
 
     show_widget_select_slider_linear: BoolProperty(name="Can Select SliderLineal Widget Types", default=True)
     show_widget_select_slider_linear_2d: BoolProperty(name="Can Select SliderLineal2D Widget Types", default=True)

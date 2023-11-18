@@ -15,6 +15,8 @@ class PG_ArmaturePickerTheme(PropertyGroup):
     bone_picker: PointerProperty(type=WG_STYLE_CLASSES['bone_picker'])
     bone_picker_geo: PointerProperty(type=WG_STYLE_CLASSES['bone_picker_geo'])
 
+    toggle: PointerProperty(type=WG_STYLE_CLASSES['toggle'])
+
     slider_linear: PointerProperty(type=WG_STYLE_CLASSES['slider_linear'])
     slider_radial: PointerProperty(type=WG_STYLE_CLASSES['slider_radial'])
     slider_linear_2d: PointerProperty(type=WG_STYLE_CLASSES['slider_linear_2d'])
@@ -31,6 +33,7 @@ class PG_ArmaturePickerTheme(PropertyGroup):
             ('label', 'Label', ""),
             ('bone_picker', 'Bone Picker', ""),
             ('bone_picker_geo', 'Bone Picker Geo', ""),
+            ('toggle', 'Toggle', ""),
             ('slider_linear', 'Slider Lineal', ""),
             ('slider_radial', 'Slider Radial', ""),
             ('slider_linear_2d', 'Slider Lineal 2D', ""),

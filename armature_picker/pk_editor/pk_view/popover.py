@@ -7,6 +7,9 @@ attr_widget_types = (
     # Widgets.
     ("bone_picker", "Bone Picker"),
     ("bone_picker_geo", "Bone Picker Geo"),
+    (None, None),
+    ('toggle', "Toggle"),
+    (None, None),
     ("slider_linear", "Slider Lineal"),
     ("slider_linear_2d", "Slider Lineal 2D"),
     ("slider_radial", "Slider Radial"),
