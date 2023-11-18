@@ -2,7 +2,8 @@ from enum import Enum, auto
 
 from bpy import types as bpy_types
 
-from .....utils.event import Mouse, EventType, EventValue, set_global_event
+from .....utils.event import Mouse, EventType, EventValue, set_global_event, GEvent
+from .....utils.operator import ModalEventTrigger
 from .operator import Operator, OpsReturn
 
 
@@ -31,7 +32,11 @@ class ModalOperator(Operator):
 
     # --------------------------------
 
-    modal_cancel_events: set[EventType] = {EventType.ESC, EventType.RIGHTMOUSE}
+    modal_cancel_events: tuple[ModalEventTrigger] = (
+        ModalEventTrigger(EventType.ESC, EventValue.ANY),
+        ModalEventTrigger(EventType.RIGHTMOUSE, EventValue.ANY),
+    )
+    modal_finish_events: tuple[ModalEventTrigger] = ()
 
     mouse: Mouse
 
@@ -46,17 +51,24 @@ class ModalOperator(Operator):
         return OpsReturn.RUN
 
     def modal(self, context: bpy_types.Context, event: bpy_types.Event) -> OpsReturn:
-        if event.type in self.modal_cancel_events:
-            self.modal_end(context, cancel=True)
-            return OpsReturn.CANCEL
+        set_global_event(event)
+        for event_trigger in self.modal_cancel_events:
+            if event_trigger.test_event():
+                self.modal_end(context, cancel=True)
+                return OpsReturn.CANCEL
+        for event_trigger in self.modal_finish_events:
+            if event_trigger.test_event():
+                self.modal_end(context, cancel=False)
+                return OpsReturn.FINISH
         if event.type in {EventType.MOUSEMOVE, EventType.INBETWEEN_MOUSEMOVE}:
             self.mouse.update(event)
             self.modal__mouse_move(context, self.mouse)
             return OpsReturn.RUN
-        set_global_event(event)
         if res := self.modal_update(context, event):
-            if res in {OpsReturn.CANCEL, OpsReturn.FINISH}:
-                self.modal_end(context, cancel=res==OpsReturn.CANCEL)
+            if res in {OpsReturn.CANCEL, OpsReturn.FINISH, 0, -1}:
+                self.modal_end(context, cancel=res in {OpsReturn.CANCEL, -1})
+            if res is None or isinstance(res, int):
+                return OpsReturn.RUN
             return res
         return OpsReturn.RUN
 
