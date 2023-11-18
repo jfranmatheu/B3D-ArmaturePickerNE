@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from collections import defaultdict
 
 from ..property_types import PropertyTypes
+from ..._globals import GLOBALS
 
 
 @dataclass
@@ -36,4 +37,5 @@ def unregister():
         for prop_wrap in props:
             delattr(data, prop_wrap.prop_name)
     
-    to_register_properties.clear() # Probably should filter if in prod env...
+    if GLOBALS.check_in_production():
+        to_register_properties.clear()
