@@ -32,7 +32,7 @@ class ModalOperator(Operator):
     modal_flags: set[ModalFlags]
 
     # --------------------------------
-    
+
     modal_use_timer: bool = False
 
     modal_cursor: CursorIcon | None = None
@@ -44,7 +44,22 @@ class ModalOperator(Operator):
     modal_finish_events: tuple[ModalEventTrigger] = ()
 
     mouse: Mouse
+
+    # --------------------------------
+    # Props and methods useful to access and manipulate active modal operator externally.
+    instance: 'ModalOperator' = None
     is_modal_running: bool = False
+    signals: set[str]
+
+    @classmethod
+    def stop_instance(cls, cancel: bool = True):
+        cls.instance.add_signal(signal_id='CANCEL' if cancel else 'FINISH')
+
+    @classmethod
+    def add_signal(self, signal_id: str) -> None:
+        self.signals.add(signal_id)
+
+    # --------------------------------
 
     def invoke(self, context: bpy_types.Context, event: bpy_types.Event) -> OpsReturn:
         # print("BaseOperator::invoke() -> ", self.bl_idname)
@@ -58,11 +73,27 @@ class ModalOperator(Operator):
         if self.modal_cursor is not None:
             context.window.cursor_modal_set(self.modal_cursor.name)
         self.__class__.is_modal_running = True
+        self.__class__.instance = self
+        self.signals = set()
         self.modal_start(context)
         return OpsReturn.RUN
 
     def modal(self, context: bpy_types.Context, event: bpy_types.Event) -> OpsReturn:
+        # Signals.
+        while len(self.signals) != 0:
+            signal = self.signals.pop()
+            if 'CANCEL' in signal:
+                self._modal_end(context, cancel=True)
+                return OpsReturn.CANCEL
+            if 'FINISH' in signal:
+                self._modal_end(context, cancel=False)
+                return OpsReturn.FINISH
+            self.process_signal(context, signal)
+
+        # Update GEvent.
         set_global_event(event)
+
+        # Modal Triggers.
         for event_trigger in self.modal_cancel_events:
             if event_trigger.test_event():
                 self._modal_end(context, cancel=True)
@@ -71,13 +102,18 @@ class ModalOperator(Operator):
             if event_trigger.test_event():
                 self._modal_end(context, cancel=False)
                 return OpsReturn.FINISH
+
+        # Special Event callbacks (mouse motion, timer...)
         if event.type in {EventType.MOUSEMOVE, EventType.INBETWEEN_MOUSEMOVE}:
             self.mouse.update(event)
             res = self.modal__mouse_move(context, self.mouse)
         elif self.modal_use_timer and event.type in {EventType.TIMER}:
             res = self.modal_timer(context)
         else:
+            # Generic modal event handling.
             res = self.modal_update(context)
+
+        # Handle modal callbacks result.
         if isinstance(res, set):
             if 'CANCELLED' in res:
                 self._modal_end(context, cancel=True)
@@ -93,6 +129,9 @@ class ModalOperator(Operator):
                 return OpsReturn.FINISH
         return OpsReturn.RUN
 
+    def process_signal(self, context: bpy_types.Context, signal: str) -> None:
+        pass
+
     def modal_start(self, context: bpy_types.Context) -> None:
         pass
 
@@ -106,12 +145,16 @@ class ModalOperator(Operator):
         pass
 
     def _modal_end(self, context: bpy_types.Context, cancel: bool) -> None:
-        self.__class__.is_modal_running = False
         if self.modal_cursor is not None:
             context.window.cursor_modal_restore()
         if self.modal_use_timer:
             context.window_manager.event_timer_remove(self._timer)
         self.modal_end(context, cancel=cancel)
+
+        self.__class__.is_modal_running = False
+        self.__class__.instance = None
+        del self.signals
+        del self.mouse
 
     def modal_end(self, context: bpy_types.Context, cancel: bool) -> None:
         pass
