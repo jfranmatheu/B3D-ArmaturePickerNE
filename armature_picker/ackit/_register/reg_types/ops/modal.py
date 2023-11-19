@@ -31,6 +31,8 @@ class ModalOperator(Operator):
     modal_flags: set[ModalFlags]
 
     # --------------------------------
+    
+    modal_use_timer: bool = False
 
     modal_cancel_events: tuple[ModalEventTrigger] = (
         ModalEventTrigger(EventType.ESC, EventValue.ANY),
@@ -47,32 +49,47 @@ class ModalOperator(Operator):
         self.mouse = Mouse.init(event)
         self.event_start_type = event.type
         set_global_event(event)
-        self.modal_start(context, event)
+        if self.modal_use_timer:
+            self._timer = context.window_manager.event_timer_add(0.01, window=context.window)
+        self.modal_start(context)
         return OpsReturn.RUN
 
     def modal(self, context: bpy_types.Context, event: bpy_types.Event) -> OpsReturn:
         set_global_event(event)
         for event_trigger in self.modal_cancel_events:
             if event_trigger.test_event():
-                self.modal_end(context, cancel=True)
+                self._modal_end(context, cancel=True)
                 return OpsReturn.CANCEL
         for event_trigger in self.modal_finish_events:
             if event_trigger.test_event():
-                self.modal_end(context, cancel=False)
+                self._modal_end(context, cancel=False)
                 return OpsReturn.FINISH
         if event.type in {EventType.MOUSEMOVE, EventType.INBETWEEN_MOUSEMOVE}:
             self.mouse.update(event)
-            self.modal__mouse_move(context, self.mouse)
-            return OpsReturn.RUN
-        if res := self.modal_update(context, event):
-            if res in {OpsReturn.CANCEL, OpsReturn.FINISH, 0, -1}:
-                self.modal_end(context, cancel=res in {OpsReturn.CANCEL, -1})
-            if res is None or isinstance(res, int):
-                return OpsReturn.RUN
+            res = self.modal__mouse_move(context, self.mouse)
+        elif self.modal_use_timer and event.type in {EventType.TIMER}:
+            res = self.modal_timer(context)
+        else:
+            res = self.modal_update(context)
+        if isinstance(res, set):
+            if OpsReturn.CANCEL in res:
+                self._modal_end(context, cancel=True)
+            if OpsReturn.FINISH in res:
+                self._modal_end(context, cancel=False)
             return res
+        if isinstance(res, int):
+            if res == -1:
+                self._modal_end(context, cancel=True)
+                return OpsReturn.CANCEL
+            if res == 0:
+                self._modal_end(context, cancel=False)
+                return OpsReturn.FINISH
         return OpsReturn.RUN
 
     def modal_start(self, context: bpy_types.Context) -> None:
+        pass
+
+    def modal_timer(self, context: bpy_types.Context) -> None:
         pass
 
     def modal_update(self, context: bpy_types.Context) -> OpsReturn:
@@ -80,6 +97,11 @@ class ModalOperator(Operator):
 
     def modal__mouse_move(self, context: bpy_types.Context, mouse: Mouse) -> None:
         pass
+
+    def _modal_end(self, context: bpy_types.Context, cancel: bool) -> None:
+        if self.modal_use_timer:
+            context.window_manager.event_timer_remove(self._timer)
+        self.modal_end(context, cancel=cancel)
 
     def modal_end(self, context: bpy_types.Context, cancel: bool) -> None:
         pass
