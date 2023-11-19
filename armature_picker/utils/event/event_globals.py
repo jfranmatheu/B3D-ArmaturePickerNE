@@ -853,6 +853,8 @@ class GEvent:
             return False
         if ctrl is not None and EVENT_MODIFIERS['ctrl'] != ctrl:
             return False
+        if event_value == 'ANY':
+            return event_type == EVENT_TYPE
         return event_type == EVENT_TYPE and event_value == EVENT_VALUE
 
 isEvent = GEvent.check
