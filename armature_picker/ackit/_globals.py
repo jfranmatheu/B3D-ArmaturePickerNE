@@ -30,3 +30,14 @@ class GLOBALS:
         TYPES = 'types.py'
         ICONS = 'icons.py'
         OPS = 'ops.py'
+
+    @staticmethod
+    def get_addon_global_value(key: str, default_value = None):
+        return getattr(bpy, GLOBALS.ADDON_MODULE).get(key, default_value)
+
+    @staticmethod
+    def set_addon_global_value(key: str, value) -> None:
+        getattr(bpy, GLOBALS.ADDON_MODULE)[key] = value
+
+def register():
+    setattr(bpy, GLOBALS.ADDON_MODULE, dict())
