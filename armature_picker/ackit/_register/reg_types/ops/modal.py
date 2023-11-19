@@ -44,6 +44,7 @@ class ModalOperator(Operator):
     modal_finish_events: tuple[ModalEventTrigger] = ()
 
     mouse: Mouse
+    is_modal_running: bool = False
 
     def invoke(self, context: bpy_types.Context, event: bpy_types.Event) -> OpsReturn:
         # print("BaseOperator::invoke() -> ", self.bl_idname)
@@ -56,6 +57,7 @@ class ModalOperator(Operator):
             self._timer = context.window_manager.event_timer_add(0.01, window=context.window)
         if self.modal_cursor is not None:
             context.window.cursor_modal_set(self.modal_cursor.name)
+        self.__class__.is_modal_running = True
         self.modal_start(context)
         return OpsReturn.RUN
 
@@ -104,6 +106,7 @@ class ModalOperator(Operator):
         pass
 
     def _modal_end(self, context: bpy_types.Context, cancel: bool) -> None:
+        self.__class__.is_modal_running = False
         if self.modal_cursor is not None:
             context.window.cursor_modal_restore()
         if self.modal_use_timer:
