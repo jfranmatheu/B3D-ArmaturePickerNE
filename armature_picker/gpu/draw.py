@@ -280,8 +280,8 @@ def text(pos: Vector,
          shadow_level: int = 3, # 3, 5, 0
          shadow_color: tuple[float, float, float, float] = (0, 0, 0, .9),
          shadow_offset: tuple = (1, -1)) -> Tuple[Vector, Vector]:
-    if size < 10:
-        return
+    # if size < 10:
+    #     return
 
     blend_state = state.blend_get()
     blf.size(0, size)
@@ -355,8 +355,8 @@ def text_cached(data_id: str,
                 width=0,
                 origin: Vector | None = None,
                 render_scale: float = 3.0) -> Vector:
-    if _text_size < 10:
-        return
+    # if _text_size < 10:
+    #     return
 
     if not dirty_text and (off := get_offscreen(data_id)) is not None:
         # offscreen(data_id, graphic_id, dirty, _pos, _label_dimensions, angle, off, origin=origin)
