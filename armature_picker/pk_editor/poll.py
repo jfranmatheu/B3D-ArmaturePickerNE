@@ -32,7 +32,8 @@ def poll_check(context: Context,
                use_picker_editor: bool = True,
                use_active_node: bool = False,
                use_active_bone: bool = False,
-               use_view3d: bool = False) -> bool:
+               use_view3d: bool = False,
+               allow_foreign_area: bool = False) -> bool:
     if use_active_object:
         if not poll_pose(context):
             return False
@@ -43,12 +44,26 @@ def poll_check(context: Context,
                 return False
     if use_picker_editor:
         if not poll_node_editor(context):
-            return False
-        node_tree = context.space_data.node_tree
+            if allow_foreign_area:
+                for window in context.window_manager.windows:
+                    for area in window.screen.areas:
+                        if area.type == 'NODE_EDITOR':
+                            space_data = area.spaces[0]
+                            if space_data.node_tree is not None and space_data.tree_type == 'AP_NODETREE':
+                                node_tree = space_data.node_tree
+                                break
+                    else:
+                        continue
+                if node_tree is None:
+                    return False
+            else:
+                return False
+        else:
+            node_tree = context.space_data.node_tree
         if picker_mode != 'ANY' and picker_mode != node_tree.picker_mode:
             return False
         if use_active_node != False:
-            if not poll_node(context):
+            if node_tree.nodes.active is None:
                 return False
             if not isinstance(use_active_node, bool) and not isinstance(node_tree.nodes.active, use_active_node):
                 return False
