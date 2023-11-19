@@ -3,6 +3,7 @@ from enum import Enum, auto
 from bpy import types as bpy_types
 
 from .....utils.event import Mouse, EventType, EventValue, set_global_event, GEvent
+from .....utils.cursor import CursorIcon
 from .....utils.operator import ModalEventTrigger
 from .operator import Operator, OpsReturn
 
@@ -34,6 +35,8 @@ class ModalOperator(Operator):
     
     modal_use_timer: bool = False
 
+    modal_cursor: CursorIcon | None = None
+
     modal_cancel_events: tuple[ModalEventTrigger] = (
         ModalEventTrigger(EventType.ESC, EventValue.ANY),
         ModalEventTrigger(EventType.RIGHTMOUSE, EventValue.ANY),
@@ -51,6 +54,8 @@ class ModalOperator(Operator):
         set_global_event(event)
         if self.modal_use_timer:
             self._timer = context.window_manager.event_timer_add(0.01, window=context.window)
+        if self.modal_cursor is not None:
+            context.window.cursor_modal_set(self.modal_cursor.name)
         self.modal_start(context)
         return OpsReturn.RUN
 
@@ -99,6 +104,8 @@ class ModalOperator(Operator):
         pass
 
     def _modal_end(self, context: bpy_types.Context, cancel: bool) -> None:
+        if self.modal_cursor is not None:
+            context.window.cursor_modal_restore()
         if self.modal_use_timer:
             context.window_manager.event_timer_remove(self._timer)
         self.modal_end(context, cancel=cancel)
