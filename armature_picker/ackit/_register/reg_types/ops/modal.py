@@ -23,6 +23,9 @@ class ModalFlags(Enum):
         return deco_cls
 
 
+active_modal_instance: dict['ModalOperator', 'ModalOperator'] = {}
+
+
 class ModalOperator(Operator):
     # Blender props.
     bl_cursor_pending: str
@@ -47,13 +50,13 @@ class ModalOperator(Operator):
 
     # --------------------------------
     # Props and methods useful to access and manipulate active modal operator externally.
-    instance: 'ModalOperator' = None
     is_modal_running: bool = False
     signals: set[str]
 
     @classmethod
     def stop_instance(cls, cancel: bool = True):
-        cls.instance.add_signal(signal_id='CANCEL' if cancel else 'FINISH')
+        if instance := active_modal_instance.get(cls, None):
+            instance.add_signal(signal_id='CANCEL' if cancel else 'FINISH')
 
     @classmethod
     def add_signal(self, signal_id: str) -> None:
@@ -73,7 +76,8 @@ class ModalOperator(Operator):
         if self.modal_cursor is not None:
             context.window.cursor_modal_set(self.modal_cursor.name)
         self.__class__.is_modal_running = True
-        self.__class__.instance = self
+        global active_modal_instance
+        active_modal_instance[self.__class__] = self
         self.signals = set()
         self.modal_start(context)
         return OpsReturn.RUN
@@ -152,7 +156,8 @@ class ModalOperator(Operator):
         self.modal_end(context, cancel=cancel)
 
         self.__class__.is_modal_running = False
-        self.__class__.instance = None
+        global active_modal_instance
+        del active_modal_instance[self.__class__]
         del self.signals
         del self.mouse
 

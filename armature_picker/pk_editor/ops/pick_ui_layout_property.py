@@ -19,6 +19,7 @@ from ..widgets._bone_picker_common import APNODE_BonePicker_Common
 from ..widgets._slider_common import APNODE_Slider_Common
 
 
+active_node = None
 picked_data_path: str | None = None
 
 
@@ -44,22 +45,61 @@ class PickLayoutProperty(ACK.Type.OPS.MODAL):
 
     @classmethod
     def pick_property_from_context(cls, context: Context) -> None:
+        global active_node
         global picked_data_path
-        if context is None:
-            picked_data_path = ''
-            return
-        if context.property is None:
+
+        datablock: ID = None
+        data_path: str = None
+        index: int = -1
+
+        def _poll():
+            if not hasattr(context, 'button_pointer'):
+                return False
+
+            if not poll_check(context, 'EDIT', use_active_node=(APNODE_Toggle, APNODE_Slider_Common, APNODE_BonePicker_Common), allow_foreign_area=True):
+                return False
+
+            is_slider = isinstance(active_node, APNODE_Slider_Common)
+            is_toggle = not is_slider
+
+            prop_type: str = context.button_prop.type
+
+            if context.button_prop.is_array:
+                if is_toggle:
+                    return False
+                # NOTE: There is an issue with some vector float/int which crashes Blender
+                # when accessing context.property...
+                # We can prevent this if the target widget is a toggle, but not for sliders...
+            elif prop_type == 'BOOLEAN' and is_toggle:
+                pass
+            else:
+                return False
+
+            if context.property is None:
+                return False
+
+            nonlocal datablock
+            nonlocal data_path
+            nonlocal index
+            prop: tuple[ID, str, int] = context.property
+            datablock, data_path, index = prop
+
+            if is_toggle and index != -1:
+                return False
+
+            if not isinstance(datablock, (Object, Armature, Pose, NodeTree)):
+                return False
+
+            return True
+
+        if not _poll():
             picked_data_path = ''
             return
 
-        print("Pick Property under cursor:", context.property)
-        datablock, datapath, index = context.property
+        # bpy.ops.ui.copy_data_path_button(full_path=True)
+        # picked_data_path = context.window_manager.clipboard
 
-        if index != -1:
-            # ARRAY.
-            picked_data_path = ''
-            return
-
+        # Resolve datablock prefix data-path.
         if isinstance(datablock, Object):
             pre = 'active_object'
         elif isinstance(datablock, Armature):
@@ -68,34 +108,27 @@ class PickLayoutProperty(ACK.Type.OPS.MODAL):
             pre = 'active_object.pose'
         elif isinstance(datablock, NodeTree):
             pre = 'space_data.node_tree'
+
+        # Resolve full data-path.
+        if data_path.startswith('['):
+            data_path = pre + data_path
         else:
-            picked_data_path = ''
-            return
+            data_path = pre + '.' + data_path
 
-        try:
-            prop = datablock.path_resolve(datapath)
-        except ValueError:
-            print("ERROR! Could not resolve property")
-            picked_data_path = ''
-            return
-        if not isinstance(prop, bool):
-            picked_data_path = ''
-            return
+        # Set widget data-path.
+        # Signal to stop the modal operator.
+        picked_data_path = data_path
+        PickLayoutProperty.stop_instance(cancel=False)
 
-        print('\t>', pre + '.' + datapath)
-        if datapath.startswith('['):
-            data_path = pre + datapath
-        else:
-            data_path = pre + '.' + datapath
-
-        picked_data_path = data_path # context.property[1]
 
     def modal_start(self, context: Context) -> None:
-        self.active_node = context.space_data.node_tree.nodes.active
+        global active_node
+        self.active_node = active_node = context.space_data.node_tree.nodes.active
         self.is_menu_opened = False
         self.is_finished = False
         self.is_wrapped_cursor = False
         self.start_cursor = GEvent.get_mouse_window_pos()
+
         global picked_data_path
         picked_data_path = None
 
@@ -104,7 +137,6 @@ class PickLayoutProperty(ACK.Type.OPS.MODAL):
         # ALLOW USER TO FREELY MOVE CURSOR, PASS EVENTS TO BLENDER.
         Cursor.set_icon(context, CursorIcon.EYEDROPPER)
         if self.is_menu_opened:
-            context.region.tag_redraw()
             return OpsReturn.RUN
         return OpsReturn.PASS
 
@@ -122,7 +154,6 @@ class PickLayoutProperty(ACK.Type.OPS.MODAL):
     def modal_timer(self, context: Context) -> None:
         # print(context.property)
         ## print("> TIMER")
-
         global picked_data_path
         if picked_data_path is not None:
             print("\t> Picked datapath found!", picked_data_path)
@@ -138,20 +169,21 @@ class PickLayoutProperty(ACK.Type.OPS.MODAL):
 
     def modal_end(self, context: Context, cancel: bool) -> None:
         ## print("> MODAL END")
+        context.region.tag_redraw()
         Cursor.wrap(0, 0, context=context)
         Cursor.wrap(*self.start_cursor, context=context)
         # def recover_mouse_pos(mouse_pos: tuple[int, int]):
         #     Cursor.wrap(*mouse_pos, context=bpy.context)
         # bpy.app.timers.register(partial(recover_mouse_pos, self.start_cursor.to_tuple()), first_interval=.2)
 
+        global active_node
+        global picked_data_path
+        active_node = None
+
         if cancel:
+            picked_data_path = None
             return
 
-        global picked_data_path
         if picked_data_path is not None:
-            ## print("\t> Picked data path is...", picked_data_path)
             self.active_node.data_path = picked_data_path
-            picked_data_path = None
-
-        # bpy.ops.ui.copy_data_path_button('INVOKE_DEFAULT', full_path=True)
-        # print(bpy.context.window_manager.clipboard)
+        picked_data_path = None

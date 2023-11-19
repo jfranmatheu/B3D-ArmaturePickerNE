@@ -164,6 +164,7 @@ class ContextMenu(ACK.Type.UI.MENU):
 
 def poll(context: Context) -> bool:
     # print(context.button_pointer, context.button_prop)
+    # print(dir(context.button_prop), type(context.button_prop), context.button_prop.type)
     if context.button_prop.is_array:
         return False
     if context.property is None:
@@ -190,7 +191,7 @@ def poll(context: Context) -> bool:
 def ext_UIButtonsContextMenu(menu, context: Context):
     op = AP_OPS.PickLayoutProperty.operator
     if op.is_modal_running:
-        op.pick_property_from_context(context if poll(context) else None)
+        op.pick_property_from_context(context)
     return
     if not poll(context):
         return
