@@ -15,6 +15,7 @@ class Ops(OpTypeEnum, Enum):
 	AsignActiveBoneToBonePicker = auto()
 	CenterView = auto()
 	LoadImageForActiveNode = auto()
+	PickLayoutProperty = auto()
 
 
 ''' Usage example:

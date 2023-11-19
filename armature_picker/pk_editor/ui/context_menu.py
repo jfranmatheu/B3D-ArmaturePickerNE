@@ -1,10 +1,15 @@
 # from bl_ui.space_node import NODE_MT_context_menu
-from bpy.types import Context, UILayout, Menu
+from bpy.types import Context, UILayout, Menu, UI_MT_button_context_menu, ID
+import bpy
 
 from dataclasses import dataclass
 
+from ..poll import poll_check
 from armature_picker.ackit import ACK
 from armature_picker.ops import Ops as AP_OPS
+from ..widgets import APNODE_Toggle
+from ..widgets._bone_picker_common import APNODE_BonePicker_Common
+from ..widgets._slider_common import APNODE_Slider_Common
 
 
 @dataclass
@@ -155,3 +160,33 @@ class ContextMenu(ACK.Type.UI.MENU):
         layout.separator()
 
         layout.operator('node.delete', icon='X')
+
+
+def poll(context: Context) -> bool:
+    if context.property is None:
+        return False
+    if not poll_check(context, 'EDIT', use_active_node=(APNODE_Toggle, APNODE_Slider_Common, APNODE_BonePicker_Common), allow_foreign_area=True):
+        return False
+    prop: tuple[ID, str, int] = context.property
+    datablock, data_path, index = prop
+    # print(prop)
+    try:
+        value = datablock.path_resolve(data_path) #, coerce=True)
+    except (TypeError, AttributeError):
+        print("ERROR: Could not resolve data path:", datablock, data_path)
+        return False
+    # print(value)
+    if not isinstance(value, bool):
+        return False
+    return True
+
+@ACK.Deco.UI_APPEND(UI_MT_button_context_menu, poll=None, prepend=False)
+def ext_UIButtonsContextMenu(menu, context: Context):
+    if not poll(context):
+        return
+    row = menu.layout.row()
+    row.scale_y = 1.5
+    AP_OPS.PickLayoutProperty.draw_in_layout(row, label="To Armature-Picker's Active Widget", icon='EYEDROPPER')
+    return
+    datablock, data_path, index = context.property
+    datablock.keyframe_insert(data_path=data_path, index=index, frame=1)
