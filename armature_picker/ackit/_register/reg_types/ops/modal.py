@@ -72,9 +72,9 @@ class ModalOperator(Operator):
         else:
             res = self.modal_update(context)
         if isinstance(res, set):
-            if OpsReturn.CANCEL in res:
+            if 'CANCELLED' in res:
                 self._modal_end(context, cancel=True)
-            if OpsReturn.FINISH in res:
+            if 'FINISHED' in res:
                 self._modal_end(context, cancel=False)
             return res
         if isinstance(res, int):
