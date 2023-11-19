@@ -10,16 +10,16 @@ __all__ = ["Ops",]
 
 
 class Ops(OpTypeEnum, Enum):
+	PickLayoutProperty = auto()
 	LoadCustomShapeFromGeometry = auto()
 	AlignWidgets = auto()
 	AsignActiveBoneToBonePicker = auto()
 	CenterView = auto()
 	LoadImageForActiveNode = auto()
-	PickLayoutProperty = auto()
 
 
 ''' Usage example:
 from addon_module.ops import Ops
-Ops.LoadCustomShapeFromGeometry() # directly run execute the operator.
-Ops.LoadCustomShapeFromGeometry.operator.run_invoke() # access to the operator class and run invoke the operator.
+Ops.PickLayoutProperty() # directly run execute the operator.
+Ops.PickLayoutProperty.operator.run_invoke() # access to the operator class and run invoke the operator.
 '''

@@ -1,11 +1,13 @@
 from mathutils import Vector
+import bpy
 
+from armature_picker.ackit import GLOBALS
 from armature_picker.gpu import draw
 from armature_picker.pk_editor.widgets._transform_props import RectTransform
 from armature_picker.utils.event import GEvent
 
 from .._base import AP_Node, Context, Event, Node, UILayout
-from .node_props import APNODE_Toggle_NodeProps, PG__Toggle__Style
+from .node_props import APNODE_Toggle_NodeProps, PG__Toggle__Style, AP_OPS
 
 
 class APNODE_Toggle(APNODE_Toggle_NodeProps, AP_Node, Node):
@@ -22,6 +24,8 @@ class APNODE_Toggle(APNODE_Toggle_NodeProps, AP_Node, Node):
         self.dirty_label = True
 
     def toggle(self, context: Context) -> None:
+        bpy.ops.wm.context_toggle('INVOKE_DEFAULT', data_path=self.data_path)
+        return
         try:
             value = context.path_resolve(self.data_path, coerce=True)
         except ValueError:
@@ -124,15 +128,23 @@ class APNODE_Toggle(APNODE_Toggle_NodeProps, AP_Node, Node):
 
         layout.separator()
 
-        col = layout.column(align=True)
-        col.label(text="Property Data-Path")
-        row = col.row(align=True)
-        row.use_property_split = False
-        row.prop(self, 'data_path', text='')
-        # AP_OPS.PickLayoutProperty.draw_in_layout(row, label='', icon='EYEDROPPER')
-        # flow = layout.column(align=True)
-        # for segment in self.data_path.split('.'):
-        #     row = flow.split(align=True, factor=.9)
-        #     row.box().label(text=segment)
-        #     row.box().label(text='', icon='DOT')
-        # flow.prop(self, 'data_path_enum')
+        if AP_OPS.PickLayoutProperty.operator.is_modal_running: # GLOBALS.get_addon_global_value('IS_PICKING_DATAPATH', False):
+            box = layout.box()
+            col = box.column(align=True)
+            col.label(text='', icon='INFO')
+            col.alert = True
+            col.label(text='Right Click a Boolean Property')
+
+        else:
+            col = layout.column(align=True)
+            col.label(text="Property Data-Path")
+            row = col.row(align=True)
+            row.use_property_split = False
+            row.prop(self, 'data_path', text='')
+            AP_OPS.PickLayoutProperty.draw_in_layout(row, label='', icon='EYEDROPPER')
+            # flow = layout.column(align=True)
+            # for segment in self.data_path.split('.'):
+            #     row = flow.split(align=True, factor=.9)
+            #     row.box().label(text=segment)
+            #     row.box().label(text='', icon='DOT')
+            # flow.prop(self, 'data_path_enum')
