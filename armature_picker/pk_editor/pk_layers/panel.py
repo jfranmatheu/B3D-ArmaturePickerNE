@@ -1,7 +1,7 @@
-from bpy.types import Context, Panel
+from bpy.types import Context, Panel, Armature
 try:
     from bpy.types import BoneCollection
-    from bl_ui.properties_data_armature import DATA_PT_bone_collections
+    from bl_ui.properties_data_armature import DATA_PT_bone_collections, ArmatureButtonsPanel
     from rna_prop_ui import draw as draw_rna_prop_ui
 except ImportError as e:
     DATA_PT_bone_collections = None
@@ -45,13 +45,13 @@ class PickerLayersPanel(Panel):
         actions.prop(node_tree, 'use_preserve_picker_layer_view', text='', icon='LOCKVIEW_ON' if node_tree.use_preserve_picker_layer_view else 'LOCKVIEW_OFF')
 
 
-class BoneCollectionsPanel(Panel):
+class BoneCollectionsPanel(ArmatureButtonsPanel, Panel):
     bl_idname = 'AP_PT_bone_collections'
     bl_label = "Bone Collections"
     bl_space_type = 'NODE_EDITOR'
     bl_region_type = 'UI'
-    bl_category = 'View'
-    bl_context = "child"
+    bl_category = 'Rig'
+    bl_context = "data"
     bl_order = 2
 
     @classmethod
@@ -63,13 +63,14 @@ class BoneCollectionsPanel(Panel):
         DATA_PT_bone_collections.draw(self, self)
 
 
-class BoneCollectionCustomPropertiesPanel(Panel):
+
+class BoneCollectionCustomPropertiesPanel(ArmatureButtonsPanel, Panel):
     bl_idname = 'AP_PT_bone_collection_custom_properties'
     bl_label = "Custom Properties"
     bl_space_type = 'NODE_EDITOR'
     bl_region_type = 'UI'
-    bl_category = 'View'
-    bl_context = "child"
+    bl_category = 'Rig'
+    bl_context = "data"
     bl_order = 1
     bl_parent_id = 'AP_PT_bone_collections'
     bl_options = {'DEFAULT_CLOSED'}
@@ -79,4 +80,22 @@ class BoneCollectionCustomPropertiesPanel(Panel):
         return poll_check(context, use_active_object=True) and DATA_PT_bone_collections is not None
 
     def draw(self, context: Context):
-        draw_rna_prop_ui(self.layout, context, 'active_object.child.collections.active', BoneCollection)
+        draw_rna_prop_ui(self.layout, context, 'active_object.data.collections.active', BoneCollection)
+
+
+class ArmatureCustomPropertiesPanel(ArmatureButtonsPanel, Panel):
+    bl_idname = 'AP_PT_armature_custom_properties'
+    bl_label = "Armature Custom Properties"
+    bl_space_type = 'NODE_EDITOR'
+    bl_region_type = 'UI'
+    bl_category = 'Rig'
+    bl_context = "data"
+    bl_order = 3
+    # bl_options = {'DEFAULT_CLOSED'}
+
+    @classmethod
+    def poll(cls, context: Context):
+        return poll_check(context, use_active_object=True)
+
+    def draw(self, context: Context):
+        draw_rna_prop_ui(self.layout, context, 'active_object.data', Armature)
