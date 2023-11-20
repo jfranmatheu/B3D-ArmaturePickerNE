@@ -52,6 +52,9 @@ class PropertyData:
         except Exception as e:
             print(e)
             return None
+
+        if not isinstance(value, (int, float)):
+            return None
         ## print("> get_value:", value)
         return value
 
@@ -131,7 +134,7 @@ class APNODE_Slider_DataConstraintsProps:
                 else:
                     prop_data.custom_property = self.bone_custom_property
 
-        elif self.data_source == 'DATA_PATH':
+        elif self.data_source == 'DATA_PATH' and self.data_path != '':
             prop_data.id = context
             data_path: str = self.data_path
             if data_path.endswith(']'):
@@ -318,7 +321,7 @@ class APNODE_Slider_DataConstraintsProps:
         # col.prop(self, 'step')
 
 
-    def draw_ui__edit(self, context: Context, layout: UILayout) -> None:
+    def draw_ui__edit(self, context: Context, layout: UILayout, dimension: str = 'NONE') -> None:
         layout.use_property_split = True
         layout.use_property_decorate = False
 
@@ -336,29 +339,32 @@ class APNODE_Slider_DataConstraintsProps:
                     layout.prop(self, 'bone_custom_property', text=" ")
 
         elif self.data_source == 'DATA_PATH':
-            if AP_OPS.PickLayoutProperty.operator.is_modal_running: # GLOBALS.get_addon_global_value('IS_PICKING_DATAPATH', False):
-                box = layout.box()
-                col = box.column(align=True)
-                col.label(text='', icon='INFO')
-                col.alert = True
-                col.label(text='Right Click a Slider-Like Property')
-
-            else:
-                col = layout.column(align=True)
-                col.label(text="Property Data-Path")
-                row = col.row(align=True)
-                row.use_property_split = False
-                try:
-                    if self.data_path != '':
-                        context.path_resolve(self.data_path, True)
-                except Exception as e:
-                    row.alert = True
-                row.prop(self, 'data_path', text='')
-                AP_OPS.PickLayoutProperty.draw_in_layout(row, label='', icon='EYEDROPPER')
+            self.draw_ui_data_path(layout, context, dimension=dimension)
 
         if hasattr(self, 'show_text_value'):
             layout.separator()
             layout.prop(self, 'show_text_value')
+
+    def draw_ui_data_path(self, layout: UILayout, context: Context, dimension: str = 'NONE') -> None:
+        if AP_OPS.PickLayoutProperty.operator.is_modal_running: # GLOBALS.get_addon_global_value('IS_PICKING_DATAPATH', False):
+            box = layout.box()
+            col = box.column(align=True)
+            col.label(text='', icon='INFO')
+            col.alert = True
+            col.label(text='Right Click a Slider-Like Property')
+
+        else:
+            col = layout.column(align=True)
+            col.label(text="Property Data-Path")
+            row = col.row(align=True)
+            row.use_property_split = False
+            try:
+                if self.data_path != '':
+                    context.path_resolve(self.data_path, True)
+            except Exception as e:
+                row.alert = True
+            row.prop(self, 'data_path', text='')
+            AP_OPS.PickLayoutProperty.draw_in_layout(row, label='', icon='EYEDROPPER', op_props={'dimension': dimension})
 
 
 class APNODE_Slider_CommonNode:

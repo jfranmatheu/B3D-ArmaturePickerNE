@@ -16,7 +16,7 @@ from armature_picker.utils.operator import OpsReturn, ModalEventTrigger
 
 from ..widgets import APNODE_Toggle
 from ..widgets._bone_picker_common import APNODE_BonePicker_Common
-from ..widgets._slider_common import APNODE_Slider_Common
+from ..widgets._slider_common import APNODE_Slider_CommonNode
 
 
 active_node = None
@@ -38,10 +38,20 @@ class PickLayoutProperty(ACK.Type.OPS.MODAL):
         ModalEventTrigger(EventType.RIGHTMOUSE, EventValue.CLICK),
     )
 
+    dimension: ACK.Prop.ENUM(
+        items=(
+            ('NONE', 'None', ""),
+            ('x', 'X', ""),
+            ('y', 'Y', ""),
+        ),
+        default='NONE',
+        options={'HIDDEN', 'SKIP_SAVE'}
+    )
+
     @classmethod
     def poll(cls, context: Context):
         # context.property is not None and
-        return poll_check(context, 'EDIT', use_active_node=(APNODE_Toggle, APNODE_Slider_Common, APNODE_BonePicker_Common), allow_foreign_area=True)
+        return poll_check(context, 'EDIT', use_active_node=(APNODE_Toggle, APNODE_Slider_CommonNode, APNODE_BonePicker_Common), allow_foreign_area=True)
 
     @classmethod
     def pick_property_from_context(cls, context: Context) -> None:
@@ -55,14 +65,14 @@ class PickLayoutProperty(ACK.Type.OPS.MODAL):
         data_path: str = None
         index: int = -1
 
-        is_slider = isinstance(active_node, APNODE_Slider_Common)
+        is_slider = isinstance(active_node, APNODE_Slider_CommonNode)
         is_toggle = not is_slider
 
         def _poll():
             if not hasattr(context, 'button_pointer'):
                 return False
 
-            if not poll_check(context, 'EDIT', use_active_node=(APNODE_Toggle, APNODE_Slider_Common, APNODE_BonePicker_Common), allow_foreign_area=True):
+            if not poll_check(context, 'EDIT', use_active_node=(APNODE_Toggle, APNODE_Slider_CommonNode, APNODE_BonePicker_Common), allow_foreign_area=True):
                 return False
 
             prop_type: str = context.button_prop.type
@@ -194,5 +204,8 @@ class PickLayoutProperty(ACK.Type.OPS.MODAL):
             return
 
         if picked_data_path is not None:
-            self.active_node.data_path = picked_data_path
+            if self.dimension == 'NONE':
+                self.active_node.data_path = picked_data_path
+            else:
+                getattr(self.active_node, self.dimension + '_axis').data_path = picked_data_path
         picked_data_path = None

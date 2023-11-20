@@ -39,8 +39,8 @@ class APNODE_Slider2D_NodeProps:
         pass
 
     def draw_ui__edit(self, context: Context, layout: UILayout) -> None:
-        self.x_axis.draw_ui__edit(context, draw_section(layout, "X Axis"))
-        self.y_axis.draw_ui__edit(context, draw_section(layout, "Y Axis"))
+        self.x_axis.draw_ui__edit(context, draw_section(layout, "X Axis"), dimension='x')
+        self.y_axis.draw_ui__edit(context, draw_section(layout, "Y Axis"), dimension='y')
 
         if hasattr(self, 'show_text_value'):
             layout.separator()
@@ -52,4 +52,3 @@ class APNODE_Slider2D_NodeProps:
         layout.prop(rect_transform, 'dimensions')
         layout.prop(rect_transform, 'rotation')
         layout.prop(self, 'draw_depth')
-    
