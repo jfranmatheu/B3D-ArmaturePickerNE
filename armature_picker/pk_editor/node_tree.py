@@ -15,6 +15,7 @@ from armature_picker.pk_editor.pk_view.pg import AP_PG_PickerView
 from armature_picker.pk_editor.pk_view.popover import attr_widget_types
 from armature_picker.utils.event import isEventType, isEventValue, EventType, EventValue, isEvent
 from armature_picker.utils.operator import OpsReturn
+from armature_picker.utils.cursor import Cursor, CursorIcon
 from armature_picker.pk_editor.ui.context_menu import ContextMenu
 from armature_picker.pk_editor.ui.pie_menus.insert_keyframe import MT_insert_keyframe
 from ..gpu import draw
@@ -522,6 +523,7 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
                 self.picker_mode = 'POSE' if self.picker_mode == 'EDIT' else 'EDIT'
                 refresh_nodes_cache(self)
                 context.area.tag_redraw()
+                Cursor.set_icon(context, CursorIcon.DEFAULT)
             return OpsReturn.FINISH
 
         if isEventType.S and event.ctrl:
