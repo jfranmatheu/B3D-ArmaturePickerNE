@@ -516,8 +516,7 @@ def wg(owner: object, graphic_id: str,
         - ``float`` u_radius;
         - ``float`` u_outline;
     '''
-    if bg_color[-1] != 1.0:
-        state.blend_set('ALPHA')
+    state.blend_set('ALPHA')
     rad = min(*size) * 0.5 * roundness
     value = rgb_to_hsv(bg_color[0], bg_color[1], bg_color[2])[-1]
     outline_color_factor = 1 + pow(value, 2)
@@ -533,8 +532,7 @@ def wg_ui(node: object, graphic_id: str, roundness: float, outline_thickness: fl
         - ``float`` u_radius;
         - ``float`` u_outline;
     '''
-    if bg_color[-1] != 1.0:
-        state.blend_set('ALPHA')
+    state.blend_set('ALPHA')
     rad = min(*node.rect_transform.dimensions) * 0.5 * roundness
     value = rgb_to_hsv(bg_color[0], bg_color[1], bg_color[2])[-1]
     outline_color_factor = 1 + pow(value, 2)
@@ -551,8 +549,7 @@ def wg_grid_ui(node: object, graphic_id: str, roundness: float, outline_thicknes
         - ``float`` u_radius;
         - ``float`` u_outline;
     '''
-    if bg_color[-1] != 1.0:
-        state.blend_set('ALPHA')
+    state.blend_set('ALPHA')
     rad = min(*node.rect_transform.dimensions) * 0.5 * roundness
     value = rgb_to_hsv(bg_color[0], bg_color[1], bg_color[2])[-1]
     outline_color_factor = 1 + pow(value, 2)
@@ -572,8 +569,7 @@ def wg_grid(owner: object, graphic_id: str,
         - ``float`` u_radius;
         - ``float`` u_outline;
     '''
-    if bg_color[-1] != 1.0:
-        state.blend_set('ALPHA')
+    state.blend_set('ALPHA')
     rad = min(*size) * 0.5 * roundness
     value = rgb_to_hsv(bg_color[0], bg_color[1], bg_color[2])[-1]
     outline_color_factor = 1 + pow(value, 2)
@@ -591,8 +587,7 @@ def wg_sld_ui(node: object, graphic_id: str, factor: float, roundness: float, bg
         - ``vec4`` u_fill_color;
         - ``float`` u_radius;
     '''
-    if bg_color[-1] != 1.0:
-        state.blend_set('ALPHA')
+    state.blend_set('ALPHA')
     rad = min(*node.rect_transform.dimensions) * 0.5 * roundness
     draw_node(node, graphic_id, _shader, use_uv=True, wg=True,
               u_factor=factor,
@@ -608,8 +603,7 @@ def wg_sld_rng_ui(node: object, graphic_id: str, factor: float, arc_angle: float
         - ``vec4`` u_fill_color;
         - ``float`` u_thickness;
     '''
-    if bg_color[-1] != 1.0:
-        state.blend_set('ALPHA')
+    state.blend_set('ALPHA')
     u_arc_angle = radians(arc_angle)
     u_angle = u_arc_angle * factor
     draw_node(node, graphic_id, _shader, use_uv=True, wg=False,
