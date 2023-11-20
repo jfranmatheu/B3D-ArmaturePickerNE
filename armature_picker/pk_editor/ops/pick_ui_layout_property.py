@@ -21,7 +21,7 @@ from ..widgets._slider_common import APNODE_Slider_Common
 
 active_node = None
 picked_data_path: str | None = None
-
+picked_data_path_index: int = -1
 
 
 class PickLayoutProperty(ACK.Type.OPS.MODAL):
@@ -47,10 +47,16 @@ class PickLayoutProperty(ACK.Type.OPS.MODAL):
     def pick_property_from_context(cls, context: Context) -> None:
         global active_node
         global picked_data_path
+        global picked_data_path_index
+
+        picked_data_path_index = -1
 
         datablock: ID = None
         data_path: str = None
         index: int = -1
+
+        is_slider = isinstance(active_node, APNODE_Slider_Common)
+        is_toggle = not is_slider
 
         def _poll():
             if not hasattr(context, 'button_pointer'):
@@ -58,9 +64,6 @@ class PickLayoutProperty(ACK.Type.OPS.MODAL):
 
             if not poll_check(context, 'EDIT', use_active_node=(APNODE_Toggle, APNODE_Slider_Common, APNODE_BonePicker_Common), allow_foreign_area=True):
                 return False
-
-            is_slider = isinstance(active_node, APNODE_Slider_Common)
-            is_toggle = not is_slider
 
             prop_type: str = context.button_prop.type
 
@@ -71,6 +74,8 @@ class PickLayoutProperty(ACK.Type.OPS.MODAL):
                 # when accessing context.property...
                 # We can prevent this if the target widget is a toggle, but not for sliders...
             elif prop_type == 'BOOLEAN' and is_toggle:
+                pass
+            elif is_slider and prop_type in {'INT', 'INTEGER', 'FLOAT'}:
                 pass
             else:
                 return False
@@ -117,7 +122,11 @@ class PickLayoutProperty(ACK.Type.OPS.MODAL):
 
         # Set widget data-path.
         # Signal to stop the modal operator.
-        picked_data_path = data_path
+        if is_slider and index != -1:
+            picked_data_path = f'{data_path}[{index}]'
+            picked_data_path_index = index
+        else:
+            picked_data_path = data_path
         PickLayoutProperty.stop_instance(cancel=False)
 
 

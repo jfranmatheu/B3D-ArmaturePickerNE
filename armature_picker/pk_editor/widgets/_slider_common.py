@@ -1,14 +1,82 @@
-from bpy.types import Context, Armature, Bone, Event, UILayout, AnyType
+from bpy.types import Context, Armature, Bone, Event, UILayout, AnyType, ID
 from mathutils import Vector
+import bpy
 from bpy.props import StringProperty, IntProperty, FloatProperty, BoolProperty, FloatVectorProperty, EnumProperty, PointerProperty
 
+from armature_picker.ops import Ops as AP_OPS
 from armature_picker.utils.event import Mouse, EventType, EventValue
 from armature_picker.utils.operator import OpsReturn
 from ._transform_props import RectTransform
 from ...gpu import draw
 from ...utils.operator import OpsReturn
 from ...utils.math import clamp, map_value, pi
+
 from math import degrees
+from dataclasses import dataclass
+
+
+@dataclass
+class PropertyData:
+    id: ID
+    data_path: str = ''
+    attr: str | None = None
+    # custom_data_prop: AnyType | Vector | None = None
+    custom_property: str | None = None
+    index: int = -1
+
+    @property
+    def full_data_path(self) -> str:
+        if self.attr is not None:
+            if self.data_path == '':
+                return self.attr
+            return self.data_path + '.' + self.attr
+        return self.data_path
+
+    def get_value(self) -> int | float:
+        ## print("--------------------------\nID:", self.id)
+        ## print("data_path:", self.data_path)
+        ## print("attr:", self.attr)
+        ## print("custom_property:", self.custom_property)
+        ## print("index:", self.index)
+        try:
+            if self.full_data_path == '':
+                data = self.id
+            else:
+                data = self.id.path_resolve(self.full_data_path, True)
+            if self.index != -1:
+                value = data[self.index]
+            elif self.custom_property is not None:
+                value = data[self.custom_property]
+            else:
+                value = data
+        except Exception as e:
+            print(e)
+            return None
+        ## print("> get_value:", value)
+        return value
+
+    def set_value(self, new_value: int | float) -> None:
+        ## print("--------------------------\n> set_value:", new_value)
+        if self.custom_property is not None:
+            curr_value = self.get_value()
+            if isinstance(curr_value, int):
+                # Ensure it is integer value to avoid mutating custom property type.
+                new_value = int(new_value)
+
+        if self.data_path == '':
+            data = self.id
+        else:
+            data = self.id.path_resolve(self.data_path, True)
+
+        if self.index != -1:
+            ## print("\t> DATA:", data, self.index)
+            data[self.index] = new_value
+        elif self.custom_property is not None:
+            ## print("\t> DATA:", data, self.custom_property)
+            data[self.custom_property] = new_value
+        else:
+            ## print("\t> DATA:", data, self.attr)
+            setattr(data, self.attr, new_value)
 
 
 class APNODE_Slider_DataConstraintsProps:
@@ -45,77 +113,59 @@ class APNODE_Slider_DataConstraintsProps:
         ),)
 
 
-    def get_data_and_datapath(self, context: Context) -> tuple[AnyType, str, bool]:
-        is_custom_datapath: bool = False
-        is_custom_prop: bool = False
+    def get_property_data(self, context: Context) -> PropertyData:
+        prop_data = PropertyData(None)
 
         if self.data_source == 'BONE':
-            data = self.get_bone(context, from_pose_data=True)
+            prop_data.id = self.get_bone(context, from_pose_data=True)
             if self.bone_data_source == 'ATTR':
-                data_path = self.bone_attr
-            elif self.bone_data_source == 'CUSTOM_PROPERTY':
-                is_custom_prop = True
-                if self.bone_custom_property == 'NONE':
-                    data = None
-                    data_path = ''
+                if '.' in self.bone_attr:
+                    split = self.bone_attr.split('.')
+                    prop_data.attr = split.pop(-1)
+                    prop_data.data_path = '.'.join(split)
                 else:
-                    data_path = f'["{self.bone_custom_property}"]'
+                    prop_data.attr = self.bone_attr
+            elif self.bone_data_source == 'CUSTOM_PROPERTY':
+                if self.bone_custom_property == 'NONE':
+                    prop_data.id = None # INVALID CUSTOM PROPERTY.
+                else:
+                    prop_data.custom_property = self.bone_custom_property
 
         elif self.data_source == 'DATA_PATH':
-            is_custom_datapath = True
-            data = context.active_object
-            data_path = self.data_path
+            prop_data.id = context
+            data_path: str = self.data_path
+            if data_path.endswith(']'):
+                start_index = data_path.rindex('[')
+                if data_path[-2].isdigit():
+                    prop_data.index = int(data_path[start_index+1:-1])
+                else:
+                    prop_data.custom_property = data_path[start_index+2:-2]
+                prop_data.data_path = data_path[:start_index]
+            else:
+                split = data_path.split('.')
+                prop_data.attr = split.pop(-1)
+                prop_data.data_path = '.'.join(split)
 
-        return (data, data_path, is_custom_datapath, is_custom_prop)
+        return prop_data if prop_data.id is not None else None
 
 
     def get_value(self, context: Context) -> float | int | None:
-        data, data_path, is_custom_datapath, is_custom_prop = self.get_data_and_datapath(context)
-        if data is None or data_path == '':
-            # print("WTF", child, data_path)
-            return None
-
-        try:
-            value = data.path_resolve(data_path, True)
-        except Exception as e:
-            print(e)
-            return None
-
-        ## print(value)
-        return value
-
+        if prop_data := self.get_property_data(context):
+            return prop_data.get_value()
+        return None
 
     def set_value(self, context: Context, new_value: int | float) -> None:
         if not isinstance(new_value, (float, int)):
             return
 
-        data, full_data_path, is_custom_datapath, is_custom_prop = self.get_data_and_datapath(context)
-        if data is None or full_data_path == '':
+        prop_data = self.get_property_data(context)
+        if prop_data is None:
             return
 
         if self.clamp_slider:
             new_value = clamp(new_value, *self.range)
 
-        #if is_custom_datapath:
-        #    if full_data_path.endswith(']'):
-        #        # Custom Property...
-        #        start_custom_prop = full_data_path.rindex('[')
-        #        data_path = full_data_path[:start_custom_prop]
-        #        custom_prop = full_data_path[start_custom_prop:]
-
-        if is_custom_prop:
-            attr = full_data_path
-            value = self.get_value(context)
-            if isinstance(value, int):
-                # Ensure it is integer value to avoid mutating custom property type.
-                new_value = int(new_value)
-        else:
-            split = full_data_path.split('.')
-            data_path = '.'.join(split[:-1])
-            attr = split[-1]
-            data = data.path_resolve(data_path, True)
-
-        setattr(data, attr, new_value)
+        prop_data.set_value(new_value)
 
 
     # ----- UPDATES -----------------------------------
@@ -188,8 +238,10 @@ class APNODE_Slider_DataConstraintsProps:
     data_path: StringProperty(
         name="Data Path",
         description="RMB over any property and select 'copy full child path', then paste it here (only floats or integers are supported)",
-        default='',
+        default=''
     )
+
+    # data_path_index: IntProperty(default=-1)
 
     # -----
 
@@ -284,13 +336,25 @@ class APNODE_Slider_DataConstraintsProps:
                     layout.prop(self, 'bone_custom_property', text=" ")
 
         elif self.data_source == 'DATA_PATH':
-            row = layout.row()
-            try:
-                if self.data_path != '':
-                    context.active_object.path_resolve(self.data_path, True)
-            except Exception as e:
-                row.alert = True
-            row.prop(self, 'data_path')
+            if AP_OPS.PickLayoutProperty.operator.is_modal_running: # GLOBALS.get_addon_global_value('IS_PICKING_DATAPATH', False):
+                box = layout.box()
+                col = box.column(align=True)
+                col.label(text='', icon='INFO')
+                col.alert = True
+                col.label(text='Right Click a Slider-Like Property')
+
+            else:
+                col = layout.column(align=True)
+                col.label(text="Property Data-Path")
+                row = col.row(align=True)
+                row.use_property_split = False
+                try:
+                    if self.data_path != '':
+                        context.path_resolve(self.data_path, True)
+                except Exception as e:
+                    row.alert = True
+                row.prop(self, 'data_path', text='')
+                AP_OPS.PickLayoutProperty.draw_in_layout(row, label='', icon='EYEDROPPER')
 
         if hasattr(self, 'show_text_value'):
             layout.separator()
