@@ -24,7 +24,8 @@ NODES = (
             'name': 'Action Buttons',
             'icon': 'FILE_SCRIPT',
             'items': (
-                (APNODE_ButtonScript, 'Custom Script', 'TEXT'),
+                ((APNODE_ButtonScript, 'init_operator_button'), 'Operator', 'SCRIPTPLUGINS'), # 'FILE_SCRIPT'
+                ((APNODE_ButtonScript, 'init_script_button'), 'Custom Script', 'TEXT'),
             )
         },
     ),

@@ -162,42 +162,10 @@ class ContextMenu(ACK.Type.UI.MENU):
         layout.operator('node.delete', icon='X')
 
 
-def poll(context: Context) -> bool:
-    # print(context.button_pointer, context.button_prop)
-    # print(dir(context.button_prop), type(context.button_prop), context.button_prop.type)
-    if context.button_prop.is_array:
-        return False
-    if context.property is None:
-        return False,
-    if not poll_check(context, 'EDIT', use_active_node=(APNODE_Toggle, APNODE_Slider_Common, APNODE_BonePicker_Common), allow_foreign_area=True):
-        return False
-    prop: tuple[ID, str, int] = context.property
-    datablock, data_path, index = prop
-    if index != -1:
-        return False
-    print("poll property:", prop)
-    try:
-        value = datablock.path_resolve(data_path) #, coerce=True)
-    except (TypeError, AttributeError):
-        print("ERROR: Could not resolve data path:", datablock, data_path)
-        return False
-    # print(value)
-    if not isinstance(value, bool):
-        return False
-    return True
-
 
 @ACK.Deco.UI_APPEND(UI_MT_button_context_menu, poll=None, prepend=False)
 def ext_UIButtonsContextMenu(menu, context: Context):
-    op = AP_OPS.PickLayoutProperty.operator
-    if op.is_modal_running:
-        op.pick_property_from_context(context)
-    return
-    if not poll(context):
-        return
-    row = menu.layout.row()
-    row.scale_y = 1.5
-    AP_OPS.PickLayoutProperty.draw_in_layout(row, label="To Armature-Picker's Active Widget", icon='EYEDROPPER')
-    return
-    datablock, data_path, index = context.property
-    datablock.keyframe_insert(data_path=data_path, index=index, frame=1)
+    if AP_OPS.PickLayoutProperty.operator.is_modal_running:
+        AP_OPS.PickLayoutProperty.operator.pick_from_context(context)
+    if AP_OPS.PickLayoutButton.operator.is_modal_running:
+        AP_OPS.PickLayoutButton.operator.pick_from_context(context)

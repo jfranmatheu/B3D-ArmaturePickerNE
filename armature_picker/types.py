@@ -1,16 +1,12 @@
 """ File generated automatically by ackit (Addon Creator Kit). """
-from bpy.types import Context, WindowManager, NodeTree, Armature
+from bpy.types import Armature, Context, WindowManager, NodeTree
 
 
 """ Addon-Defined PropertyGroup: """
-class WM_PG_armature_picker:
-	# Root PG, attached to bpy.types.WindowManager
+class PG__BonePickerGeo__LocalStyle:
 	name: str
-	active_tool: str
-
-	@classmethod
-	def get_data(cls: 'WM_PG_armature_picker', context: Context) -> 'WM_PG_armature_picker':
-		return context.window_manager.armature_picker
+	use_object_color: bool
+	color_tag: str
 
 class PG__ButtonScript__Style:
 	name: str
@@ -33,10 +29,14 @@ class PG_ArmaturePicker_ColorTag:
 	name: str
 	color: tuple[float]
 
-class PG__BonePickerGeo__LocalStyle:
+class WM_PG_armature_picker:
+	# Root PG, attached to bpy.types.WindowManager
 	name: str
-	use_object_color: bool
-	color_tag: str
+	active_tool: str
+
+	@classmethod
+	def get_data(cls: 'WM_PG_armature_picker', context: Context) -> 'WM_PG_armature_picker':
+		return context.window_manager.armature_picker
 
 class PG__Image__Style:
 	name: str
@@ -74,6 +74,12 @@ class PG__Slider2D__Style:
 	handle_scale: float
 	roundness: float
 	outline_thickness: float
+
+class PG__Toggle__Style:
+	name: str
+	color: tuple[float]
+	toggle_color: tuple[float]
+	roundness: float
 
 class PG__BonePickerGeo__Style:
 	name: str

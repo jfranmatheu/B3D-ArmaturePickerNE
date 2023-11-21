@@ -54,7 +54,7 @@ class PickLayoutProperty(ACK.Type.OPS.MODAL):
         return poll_check(context, 'EDIT', use_active_node=(APNODE_Toggle, APNODE_Slider_CommonNode, APNODE_BonePicker_Common), allow_foreign_area=True)
 
     @classmethod
-    def pick_property_from_context(cls, context: Context) -> None:
+    def pick_from_context(cls, context: Context) -> None:
         global active_node
         global picked_data_path
         global picked_data_path_index

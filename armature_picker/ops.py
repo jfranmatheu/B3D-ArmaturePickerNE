@@ -10,6 +10,7 @@ __all__ = ["Ops",]
 
 
 class Ops(OpTypeEnum, Enum):
+	PickLayoutButton = auto()
 	PickLayoutProperty = auto()
 	LoadCustomShapeFromGeometry = auto()
 	AlignWidgets = auto()
@@ -20,6 +21,6 @@ class Ops(OpTypeEnum, Enum):
 
 ''' Usage example:
 from addon_module.ops import Ops
-Ops.PickLayoutProperty() # directly run execute the operator.
-Ops.PickLayoutProperty.operator.run_invoke() # access to the operator class and run invoke the operator.
+Ops.PickLayoutButton() # directly run execute the operator.
+Ops.PickLayoutButton.operator.run_invoke() # access to the operator class and run invoke the operator.
 '''
