@@ -49,8 +49,9 @@ class APNODE_ButtonScript(APNODE_ButtonScript_NodeProps, AP_Node, Node):
 
     def init_operator_button(self, context: Context):
         self.button_type = 'OPERATOR'
-        self.label = 'Run Operator'
-        self.op_idname = 'render.render'
+        self.label = ''
+        self.op_module = 'pose'
+        self.op_id = 'transforms_clear'
 
 
     def create_default_script(self) -> None:
@@ -89,7 +90,7 @@ class APNODE_ButtonScript(APNODE_ButtonScript_NodeProps, AP_Node, Node):
                 if self.operator is not None:
                     command = self.operator.run_invoke
                 else:
-                    command = lambda : exec(f"bpy.ops.{self.op_idname}('INVOKE_DEFAULT')")
+                    command = lambda : exec(f"bpy.ops.{self.op_module}.{self.op_id}('INVOKE_DEFAULT')")
 
             try:
                 with context.temp_override(**view3d_context, armature=armature_object.data):

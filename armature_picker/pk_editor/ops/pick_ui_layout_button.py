@@ -42,7 +42,7 @@ class PickLayoutButton(ACK.Type.OPS.MODAL):
         if not hasattr(context, 'button_operator'):
             picked_op_idname = ''
             return
-        
+
         # op.data_path -> eg: 'active_pose_pose'
 
         op = context.button_operator
@@ -117,5 +117,5 @@ class PickLayoutButton(ACK.Type.OPS.MODAL):
             return
 
         if picked_op_idname is not None:
-            self.active_node.op_idname = picked_op_idname
+            self.active_node.op_module, self.active_node.op_id = picked_op_idname.split('.')
         picked_op_idname = None
