@@ -49,9 +49,10 @@ class APNODE_ButtonScript(APNODE_ButtonScript_NodeProps, AP_Node, Node):
 
     def init_operator_button(self, context: Context):
         self.button_type = 'OPERATOR'
-        self.label = ''
+        self.label = 'Run Operator'
         self.op_module = 'pose'
-        self.op_id = 'transforms_clear'
+        # self.op_id = 'transforms_clear'
+        self.set_state('INIT_OP_PROPS', False)
 
 
     def create_default_script(self) -> None:
@@ -90,7 +91,7 @@ class APNODE_ButtonScript(APNODE_ButtonScript_NodeProps, AP_Node, Node):
                 op = self.get_op(rna=False)
                 if op is None:
                     return {'CANCELLED'}
-                command = lambda : op('INVOKE_DEFAULT', **self.get_op_props())
+                command = lambda : op('INVOKE_DEFAULT', **self.get_op_props(context))
 
             try:
                 with context.temp_override(**view3d_context, armature=armature_object.data):

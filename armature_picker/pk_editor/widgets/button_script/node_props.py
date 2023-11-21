@@ -2,6 +2,7 @@ from bpy.props import PointerProperty
 from bpy.types import Text, Context, UILayout, Operator, NodeTree
 from bpy import ops as BPY_OPS
 import bpy
+from rna_prop_ui import rna_idprop_quote_path
 
 from armature_picker.utils.ui_layout import draw_section
 from armature_picker.ackit import ACK
@@ -44,6 +45,7 @@ op_module_ids_search = {
 
 @ACK.Deco.PROP_GROUP.CHILD
 class OperatorPropertiesIdnames:
+    name: ACK.Prop.STRING()
     op_idname: ACK.Prop.STRING()
     temp_idname: ACK.Prop.STRING()
 
@@ -63,12 +65,13 @@ class APNODE_ButtonScript_NodeProps(APNODE_Button_Common):
     # OPERATOR ------------------------------------------------------------------------------
     def update_op_idname(self, context: Context) -> None:
         if op_module := getattr(BPY_OPS, self.op_module):
-            if operator := getattr(op_module, self.op_id, None):
-                self.invalid_command = False
-                self.operator = operator.get_rna_type()
-                self.label = self.op_action
-                self.update_op_props()
-                return
+            if self.op_id != '':
+                if operator := getattr(op_module, self.op_id, None):
+                    self.invalid_command = False
+                    self.operator = operator.get_rna_type()
+                    self.label = self.op_action
+                    self.update_op_props()
+                    return
         self.label = 'Invalid Operator'
         self.invalid_command = True
 
@@ -119,6 +122,8 @@ class APNODE_ButtonScript_NodeProps(APNODE_Button_Common):
     )
     @property
     def op_id(self) -> str:
+        if self.op_action == '':
+            return ''
         return op_module_ids_search[self.op_module][self.op_action]
 
     op_action: ACK.Prop.STRING(
@@ -135,12 +140,16 @@ class APNODE_ButtonScript_NodeProps(APNODE_Button_Common):
             return
         for prop in self.op_props_idnames:
             # print("removing temp operator property...", prop.op_idname, prop.temp_idname)
-            if prop.temp_idname and hasattr(bpy.types.NodeTree, prop.temp_idname):
-                exec('del bpy.types.NodeTree.' + prop.temp_idname, globals())
+            if prop.temp_idname and hasattr(bpy.types.WindowManager, prop.temp_idname):
+                exec('del bpy.types.WindowManager.' + prop.temp_idname, globals())
+            custom_prop_idname = 'op@' + prop.op_idname
+            if custom_prop_idname in self:
+                del self[custom_prop_idname]
         self.op_props_idnames.clear()
+        self.set_state('INIT_OP_PROPS', False)
 
-    def update_op_prop(self, context, prop_idname: str) -> None:
-        pass
+    def update_op_prop(self, context: Context, op_prop: OperatorPropertiesIdnames) -> None:
+        self['op@' + op_prop.op_idname] = getattr(context.window_manager, op_prop.temp_idname)
 
     def update_op_props(self) -> None:
         # Cleanup previous operator properties...
@@ -161,12 +170,14 @@ class APNODE_ButtonScript_NodeProps(APNODE_Button_Common):
             if prop_id.startswith('_'):
                 continue
             prop = self.op_props_idnames.add()
+            prop.name = op_prop.name
             prop.op_idname = prop_id
             prop.temp_idname = 'temp__' + _id + '_' + prop_id
+
             # print("New operator prop:", prop_id, prop.temp_idname)
 
             shared_props = dict(name=op_prop.name, description=op_prop.description, default=op_prop.default, options=set(),
-                                update=lambda node_tree, ctx: self.update_op_prop(ctx, prop_id))
+                                update=lambda node_tree, ctx: self.update_op_prop(ctx, prop))
 
             if op_prop.is_skip_save:
                 shared_props['options'].add('SKIP_SAVE')
@@ -214,8 +225,12 @@ class APNODE_ButtonScript_NodeProps(APNODE_Button_Common):
                 print("NONE")
                 continue
 
-            # print("runtime register prop:", NodeTree, prop.temp_idname, ppt)
-            ACK.Helper.PROP_RUNTIME(NodeTree, prop.temp_idname, ppt)
+            # print("runtime register prop:", prop.temp_idname, ppt)
+            ACK.Helper.PROP_RUNTIME(bpy.types.WindowManager, prop.temp_idname, ppt)
+            self['op@' + prop_id] = shared_props['default']
+        
+        self.set_state('INIT_OP_PROPS', True)
+
 
     def get_op(self, rna: bool = True) -> Operator:
         if self.operator is not None and rna:
@@ -230,11 +245,16 @@ class APNODE_ButtonScript_NodeProps(APNODE_Button_Common):
             return
         return op
 
-    def get_op_props(self) -> dict:
-        node_tree = self.node_tree
-        return {
-            op_prop.op_idname: getattr(node_tree, op_prop.temp_idname) for op_prop in self.op_props_idnames
-        }
+    def get_op_props(self, context: Context) -> dict:
+        if self.get_state('INIT_OP_PROPS', False):
+            wm = context.window_manager
+            return {
+                op_prop.op_idname: getattr(wm, op_prop.temp_idname) for op_prop in self.op_props_idnames
+            }
+        else:
+            return {
+                op_prop.op_idname: self['op@' + op_prop.op_idname] for op_prop in self.op_props_idnames
+            }
 
 
     # UI -----------------------------------------------------------------------------------
@@ -271,8 +291,15 @@ class APNODE_ButtonScript_NodeProps(APNODE_Button_Common):
                 col.prop(self, 'op_action', text='Action')
                 if self.invalid_command:
                     col.alert = False
+                
                 if len(self.op_props_idnames) != 0:
-                    content = draw_section(layout, 'Operator Properties', icon='PROPERTIES')
-                    node_tree = self.node_tree
-                    for op_prop in self.op_props_idnames:
-                        content.prop(node_tree, op_prop.temp_idname)
+                    props_are_initialized = self.get_state('INIT_OP_PROPS', False)
+                    content = draw_section(layout, 'Operator Properties', icon='PROPERTIES', align_content=not props_are_initialized)
+                    if props_are_initialized:
+                        wm = context.window_manager
+                        for op_prop in self.op_props_idnames:
+                            content.prop(wm, op_prop.temp_idname)
+                    else:
+                        content.enabled = False
+                        for op_prop in self.op_props_idnames:
+                            content.prop(self, rna_idprop_quote_path('op@' + op_prop.op_idname), text=op_prop.name)
