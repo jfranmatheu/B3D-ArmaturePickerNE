@@ -10,13 +10,17 @@ from ..._globals import GLOBALS
 class PropertyWrapper:
     prop_name: str
     property: Type
+    remove_on_unregister: bool
 
 
 to_register_properties: Dict[Type, List[PropertyWrapper]] = defaultdict(list)
 
 
-def PropertyRegister(data, prop_name, property: PropertyTypes) -> None:
-    to_register_properties[data].append(PropertyWrapper(prop_name, property))
+def PropertyRegister(data, prop_name, property: PropertyTypes, remove_on_unregister: bool = True) -> None:
+    to_register_properties[data].append(PropertyWrapper(prop_name, property, remove_on_unregister))
+
+def PropertyRegisterRuntime(data, prop_name, property: PropertyTypes) -> None:
+    setattr(data, prop_name, property)
 
 def BatchPropertyRegister(data, **props: dict) -> None:
     to_register_properties[data].extend(
@@ -35,7 +39,8 @@ def late_register():
 def unregister():
     for data, props in to_register_properties.items():
         for prop_wrap in props:
-            delattr(data, prop_wrap.prop_name)
+            if prop_wrap.remove_on_unregister:
+                delattr(data, prop_wrap.prop_name)
     
     if GLOBALS.check_in_production():
         to_register_properties.clear()

@@ -76,7 +76,7 @@ class APNODE_ButtonScript(APNODE_ButtonScript_NodeProps, AP_Node, Node):
                 self.error_message = "Bad context!\nCould not find a 3D Viewport"
                 context.window_manager.popover(self.draw_error_message)
                 return {'CANCELLED'}
-            
+
             armature_object = context.active_object
 
             if self.button_type == 'SCRIPT':
@@ -87,10 +87,10 @@ class APNODE_ButtonScript(APNODE_ButtonScript_NodeProps, AP_Node, Node):
             elif self.button_type == 'OPERATOR':
                 if self.invalid_command:
                     return {'CANCELLED'}
-                if self.operator is not None:
-                    command = self.operator.run_invoke
-                else:
-                    command = lambda : exec(f"bpy.ops.{self.op_module}.{self.op_id}('INVOKE_DEFAULT')")
+                op = self.get_op(rna=False)
+                if op is None:
+                    return {'CANCELLED'}
+                command = lambda : op('INVOKE_DEFAULT', **self.get_op_props())
 
             try:
                 with context.temp_override(**view3d_context, armature=armature_object.data):
