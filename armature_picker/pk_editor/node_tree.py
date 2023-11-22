@@ -608,6 +608,10 @@ class AP_NodeTree(PickerTransformModals, NodeTree):
                 select_all_bones_from_active(context)
             context.region.tag_redraw()
             return OpsReturn.FINISH
+    
+        if isEvent(EventType.I, EventValue.RELEASE):
+            OPS.anim.keyframe_insert_menu('INVOKE_DEFAULT')
+            return OpsReturn.FINISH
 
         if isEventValue.PRESS:
             # TRANSFORM HOTKEYS.
