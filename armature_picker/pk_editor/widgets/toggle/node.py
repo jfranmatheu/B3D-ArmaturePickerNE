@@ -88,10 +88,9 @@ class APNODE_Toggle(APNODE_Toggle_NodeProps, AP_Node, Node):
 
     def draw__pose(self, context: Context, view_loc: Vector, rect: RectTransform, style: PG__Toggle__Style, wg_settings, scale: float, active: bool, selected: bool, hovered: bool) -> None:
         if hovered:
-            s = rect.size
-            s = max(s.x, s.y) / 2
-            text_scale = s / 20
-            ts = int(10 * text_scale)
+            s = rect.size.x
+            ts = int(7 + s / 30)
+            # ts = max(int(10 * text_scale), 7)
 
             text_pos, text_dim = draw.text(
                 view_loc.copy(),
@@ -100,7 +99,7 @@ class APNODE_Toggle(APNODE_Toggle_NodeProps, AP_Node, Node):
                 (0.5, -1.5),
                 alpha=0,
             )
-            pad = Vector((4, 4)) * text_scale
+            pad = Vector((4, 4)) * ts/10
             draw.rectangle(
                 None, None,
                 text_pos - pad, text_dim + pad * 2, 0, (.05, .05, .05, .8)
