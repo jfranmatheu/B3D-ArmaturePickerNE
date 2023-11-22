@@ -102,32 +102,35 @@ def draw(layout, context, context_member, property_type, *, use_edit=True):
 
 class APNODE_PT_custom_properties(Panel):
     bl_idname = 'APNODE_PT_custom_properties'
-    bl_label = 'Custom Properties'
+    bl_label = 'PoseBone Custom Properties'
     bl_space_type = 'NODE_EDITOR'
     bl_region_type = 'UI'
     bl_category = 'Widget'
+    bl_parent_id = 'APNODE_PT_widget_properties'
     bl_options = {'DEFAULT_CLOSED'}
 
     bl_order = 10
 
     @classmethod
     def poll(cls, context: Context):    
-        return poll_check(context, 'EDIT', use_active_node=APNODE_BonePicker_Common)
+        return poll_check(context, 'EDIT', use_active_node=APNODE_BonePicker_Common, use_active_bone=True) and\
+            context.space_data.node_tree.nodes.active.bone_name != 'NONE'
 
     def draw(self, context: Context):
         layout = self.layout
-        node = context.space_data.node_tree.nodes.active
+        node: APNODE_BonePicker_Common = context.space_data.node_tree.nodes.active
         use_edit = True
 
         if not hasattr(node, 'bone_name'):
             return
 
-        pose_bone = context.active_pose_bone
-        if pose_bone is None:
-            return
+        # pose_bone = context.active_pose_bone
+        # if pose_bone is None:
+        #     return
+        # if pose_bone.name != node.bone_name:
+        #     return
 
-        if pose_bone.name != node.bone_name:
-            return
+        pose_bone = node.get_bone(context, from_pose_data=True)
 
         context_member = f'active_object.pose.bones["{pose_bone.name}"]'
         rna_item = context.path_resolve(context_member)
