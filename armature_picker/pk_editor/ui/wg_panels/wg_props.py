@@ -16,7 +16,7 @@ class APNODE_PT_widget_properties(Panel):
 
     @classmethod
     def poll(cls, context: Context):
-        return poll_check(context, 'ANY', use_active_node=True, use_picker_editor=True)
+        return poll_check(context, 'EDIT', use_active_node=True, use_picker_editor=True)
 
     def draw(self, context: Context):
         context.space_data.node_tree.nodes.active.draw_wg_props(context, self.layout)
